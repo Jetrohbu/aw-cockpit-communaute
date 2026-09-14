@@ -244,18 +244,20 @@
 </head>
 <body>
 
-<div id="lang-gate" role="dialog" aria-modal="true" aria-labelledby="gate-title" hidden>
+<!-- translate="no" + notranslate : la traduction automatique du navigateur (Chrome, Edge…) réécrivait
+     les 4 langues dans la sienne (« Choose your language » → « Choisissez votre langue »). -->
+<div id="lang-gate" class="notranslate" translate="no" role="dialog" aria-modal="true" aria-labelledby="gate-title" hidden>
   <div class="gate-card">
     <img src="aw-cockpit-communaute/logo.png" alt="">
-    <h2 id="gate-title">Langue · Language</h2>
-    <p class="gate-sub">Choisis ta langue · Choose your language · Elige tu idioma · Wähle deine Sprache</p>
+    <h2 id="gate-title"><span lang="fr">Langue</span> · <span lang="en">Language</span></h2>
+    <p class="gate-sub"><span lang="fr">Choisis ta langue</span> · <span lang="en">Choose your language</span> · <span lang="es">Elige tu idioma</span> · <span lang="de">Wähle deine Sprache</span></p>
     <div class="gate-langs">
       <button type="button" data-lang="fr" lang="fr"><b>Français</b><small>FR</small></button>
       <button type="button" data-lang="en" lang="en"><b>English</b><small>EN</small></button>
       <button type="button" data-lang="es" lang="es"><b>Español</b><small>ES</small></button>
       <button type="button" data-lang="de" lang="de"><b>Deutsch</b><small>DE</small></button>
     </div>
-    <label class="gate-mem"><input type="checkbox" id="gate-remember"><span class="box" aria-hidden="true"></span><span>Mémoriser · Remember · Recordar · Merken</span></label>
+    <label class="gate-mem"><input type="checkbox" id="gate-remember"><span class="box" aria-hidden="true"></span><span><span lang="fr">Mémoriser</span> · <span lang="en">Remember</span> · <span lang="es">Recordar</span> · <span lang="de">Merken</span></span></label>
   </div>
 </div>
 
@@ -265,7 +267,7 @@
     <nav class="links">
       <a href="#apercu" data-i18n="nav_preview">Aperçu</a><a href="#installer" data-i18n="nav_install">Installer</a><a href="#maj" data-i18n="nav_update">Mettre à jour</a><a href="#faq" data-i18n="nav_faq">FAQ</a><a href="#bug" data-i18n="nav_bug">Bug</a><a href="#versions" data-i18n="nav_versions">Versions</a>
     </nav>
-    <div class="lang-switch" role="group" aria-label="Langue / Language">
+    <div class="lang-switch notranslate" translate="no" role="group" aria-label="Langue / Language">
       <button type="button" data-lang="fr" lang="fr" title="Français">FR</button><button type="button" data-lang="en" lang="en" title="English">EN</button><button type="button" data-lang="es" lang="es" title="Español">ES</button><button type="button" data-lang="de" lang="de" title="Deutsch">DE</button><button type="button" class="lang-open" id="lang-open" title="Langue · Language" aria-label="Langue · Language"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z" stroke-linejoin="round"/></svg></button>
     </div>
   </div>
