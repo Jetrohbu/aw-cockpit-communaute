@@ -1049,6 +1049,8 @@
       "#aw3d-tip.big.tiny .t-tab td{padding:1px 6px 1px 0;max-width:140px;}",
       "#aw3d-tip.big.tiny .t-o,#aw3d-tip.big.tiny .t-g{font-size:.72rem;margin-top:5px;max-height:46px;}",
       "#aw3d-tip.big.tiny .t-f{font-size:.66rem;margin-top:6px;}",
+      "#aw3d-tip.big.sheet{top:auto !important;left:8px !important;right:8px !important;width:auto !important;}",
+      "#aw3d-tip.big.sheet.mini .t-tab,#aw3d-tip.big.sheet.mini .t-o{display:none;}",
 
       /* plein écran : l'hôte, déplacé sous <body>, couvre toute la fenêtre (sous le panneau Réglages 3D) */
       "#aw3d-host.aw3d-full{position:fixed !important;inset:0 !important;z-index:2147482600 !important;border-radius:0 !important;}",
@@ -1086,6 +1088,8 @@
       "  #aw3d-panel .aw3d-chip,#aw3d-panel .aw3d-filters label{min-height:38px;}",
       "  #aw3d-panel .aw3d-chip{padding:8px 12px;}",
       "  #aw3d-tip{left:8px !important;right:8px;top:46px !important;width:auto;}",
+      /* grande fiche en portrait : bandeau au-dessus de la barre rapide */
+      "  #aw3d-tip.big.sheet{top:auto !important;left:8px !important;right:8px !important;width:auto !important;}",
       "}",
       "#aw3d-fleetmenu{position:absolute;left:8px;bottom:56px;z-index:31;display:flex;flex-direction:column;gap:4px;",
       "  padding:6px;border-radius:6px;border:1px solid rgba(140,160,220,.35);background:rgba(10,14,28,.94);}",
@@ -1978,7 +1982,9 @@
        CSP img-src de la page), <img> en repli ; rien hors ressource d'extension (WebView du mod) */
     /* ⚠ La même regex que TEX_URL_OK de solar3d : sans localhost/127.0.0.1 le labo
        (servi en http) n'avait JAMAIS de texture sur la carte — sphères unies. */
-    var S3_URL_OK = /^(chrome-extension|moz-extension|data|blob):|^https?:\/\/(localhost|127\.0\.0\.1)[:/]/;
+    /* + raw.githubusercontent.com : l'app Android n'embarque pas les textures, son shim les pointe sur
+       le dépôt public de l'édition communauté (CORS « * », indispensable pour WebGL) */
+    var S3_URL_OK = /^(chrome-extension|moz-extension|data|blob):|^https?:\/\/(localhost|127\.0\.0\.1)[:/]|^https:\/\/raw\.githubusercontent\.com\//;
     function s3Tex(name, lin) {
       var key = name + (lin ? "#lin" : "");
       if (S3.tex[key]) return S3.tex[key];
@@ -1995,7 +2001,12 @@
         };
         var viaImg = function () { new T.TextureLoader().load(url, function (t) { res(fin(t)); }, undefined, rej); };
         var ibl = null;
-        try { ibl = new T.ImageBitmapLoader().setOptions({ imageOrientation: "flipY", premultiplyAlpha: "none" }); }
+        try {
+          /* au doigt : textures décodées à moitié de leur taille (mémoire graphique d'un téléphone) */
+          var iblOpt = { imageOrientation: "flipY", premultiplyAlpha: "none" };
+          if (MOBILE && !/ring_alpha/.test(name)) { iblOpt.resizeWidth = 512; iblOpt.resizeHeight = /_spec/.test(name) ? 128 : 256; iblOpt.resizeQuality = "medium"; }
+          ibl = new T.ImageBitmapLoader().setOptions(iblOpt);
+        }
         catch (e) { ibl = null; }
         if (!ibl) { viaImg(); return; }
         ibl.load(url, function (bmp) {
@@ -2130,7 +2141,8 @@
       /* sizeAttenuation off : l'échelle vaut une fraction de 2·tan(fov/2) — donc une hauteur fixe à l'écran */
       var k = (free || unk ? 0.62 : 1) * S3_LBL_H * 2 * Math.tan(camera.fov * Math.PI / 360);
       sp.scale.set(k * W / H, k, 1);
-      sp.userData = { hFrac: (free || unk ? 0.62 : 1) * S3_LBL_H, ink: (ink + 30) / W, prio: free || unk ? -1 : (p.pop || 0) + (p.sb || 0) * 0.1, alpha: 0 };
+      sp.userData = { hFrac: (free || unk ? 0.62 : 1) * S3_LBL_H, hBase: (free || unk ? 0.62 : 1) * S3_LBL_H, ratio: W / H,
+                      ink: (ink + 30) / W, prio: free || unk ? -1 : (p.pop || 0) + (p.sb || 0) * 0.1, alpha: 0 };
       sp.renderOrder = 5;
       sp.frustumCulled = false;
       sp.layers.set(LAYER_OPEN);
@@ -2399,7 +2411,6 @@
     }
     /* système à masquer : l'actif s'il est déployé, sinon celui qui se replie */
     function occTarget(active) {
-      if (MOBILE) return null;
       if (active && active.deploy > .02 && active.vis) return active;
       if (S3.sys && S3.sys.deploy > .02 && S3.sys.vis) return S3.sys;
       return null;
@@ -2421,8 +2432,9 @@
        sizeBloc : idem dans le bloc de la carte du jeu (hors plein écran), plus petit pour laisser la place à la fiche
        orbit  : vitesse des orbites du système ouvert (1 = celle de la carte) — « très lentement », 14/09
        spin   : vitesse de rotation propre des planètes du bloc (1 = vue système)
-       wheel  : rotation d'ensemble du système ouvert (rad/s ; ,025 ≈ un tour en 4 min) — cf. s3Layout */
-    var PRESENT = { x: .31, y: .47, roll: -.22, pitch: .38, disc: .82, size: .44, sizeBloc: .34, orbit: .06, spin: .35, wheel: .025 }, PITCH_MAX = 1.36;   /* roll < 0 : penché à DROITE (14/09 « de l'autre côté, même inclinaison ») */
+       wheel  : rotation d'ensemble du système ouvert (rad/s ; ,025 ≈ un tour en 4 min) — cf. s3Layout
+       sizePortrait / yPortrait : téléphone en portrait — rayon en fraction de la LARGEUR (,44 débordait : perspective + inclinaison), centre à 30 % de la hauteur */
+    var PRESENT = { x: .31, y: .47, roll: -.22, pitch: .38, disc: .82, size: .44, sizeBloc: .34, orbit: .06, spin: .35, wheel: .025, sizePortrait: .42, yPortrait: .30 }, PITCH_MAX = 1.36;   /* roll < 0 : penché à DROITE (14/09 « de l'autre côté, même inclinaison ») */
     var openCam = null, openSys = null, openF = 0, _openW = null, _openD = null, _openT = null, _openO = null;
     function smooth01(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
     function updateOpenCam(s) {
@@ -2443,16 +2455,22 @@
       /* bloc en GRAND : distance telle que l'anneau extérieur (système déployé) fasse
          PRESENT.size de la hauteur — jamais plus loin que la caméra de la carte */
       var rFull = (s.outerOpen || unit * (.30 + 11 * .055) * 6.5) * 1.1;
-      var dWant = rFull / (2 * (isFull() ? PRESENT.size : PRESENT.sizeBloc) * Math.tan(camera.fov * Math.PI / 360));
-      rr = rr + (Math.min(rr, dWant) - rr) * openF;
+      var portrait = ch > cw * 1.05;
+      /* portrait (téléphone) : l'anneau extérieur fait PRESENT.sizePortrait de la LARGEUR */
+      var sizeK = portrait ? PRESENT.sizePortrait * cw / ch : (isFull() ? PRESENT.size : PRESENT.sizeBloc);
+      var dWant = rFull / (2 * sizeK * Math.tan(camera.fov * Math.PI / 360));
+      /* taille FIXE à l'écran, quel que soit le zoom de la carte (avant : jamais plus loin que la caméra
+         de la carte — après une recherche, qui rapproche la caméra, le système débordait du téléphone) */
+      rr = rr + (dWant - rr) * openF;
       var ph = Math.acos(Math.max(-1, Math.min(1, _openO.y / (_openO.length() || 1)))), th = Math.atan2(_openO.x, _openO.z);
       var ph2 = ph >= PITCH_MAX ? ph : Math.min(PITCH_MAX, ph + PRESENT.pitch * openF);
       _openO.set(rr * Math.sin(ph2) * Math.sin(th), rr * Math.cos(ph2), rr * Math.sin(ph2) * Math.cos(th));
       openCam.position.copy(_openT).add(_openO);
       openCam.lookAt(_openT);
-      openCam.rotateZ(-PRESENT.roll * openF);   /* caméra roulée à droite = image penchée à gauche */
+      openCam.rotateZ(-PRESENT.roll * (portrait ? 0.6 : 1) * openF);   /* caméra roulée à droite = image penchée à gauche */
       var W = Math.max(1, cw), H = Math.max(1, ch);
-      openCam.setViewOffset(W, H, (.5 - PRESENT.x) * W * openF, (.5 - PRESENT.y) * H * openF, W, H);
+      var px = portrait ? 0.5 : PRESENT.x, py = portrait ? PRESENT.yPortrait : PRESENT.y;
+      openCam.setViewOffset(W, H, (.5 - px) * W * openF, (.5 - py) * H * openF, W, H);
       openCam.updateMatrixWorld();
     }
     /* le pointeur est-il sur le bloc présenté ? (garde le système ouvert quand on va vers ses planètes) */
@@ -3578,7 +3596,7 @@
       insp.add(scanRing);
       inspector = insp; group.add(insp);
       /* orbites : seulement en passe 3 (présentation) ; au doigt pas de présentation, elles restent sur la carte */
-      insp.traverse(function (o) { o.layers.set(MOBILE ? 0 : LAYER_OPEN); });
+      insp.traverse(function (o) { o.layers.set(LAYER_OPEN); });
 
       rangeRing = new T.LineLoop(circleGeo, new T.LineBasicMaterial({color:0xffb347,
         transparent:true, opacity:.75, depthWrite:false}));
@@ -4413,7 +4431,7 @@
              demi-hauteur du sprite (0,153) plus une marge de 4 centiemes :
              le haut du texte affleure l'anneau. */
           /* système ouvert (présentation) : nom et tags d'alliance ×2,6, décalés d'autant */
-          var FL = s === openSys && openF > 0 ? 1 + 1.6 * openF : 1;
+          var FL = s === openSys && openF > 0 ? 1 + 1.6 * openF * Math.min(1, w / Math.max(1, h) * 1.4) : 1;
           s.lbl.scale.set(unit * 2.45 * FL, unit * 0.306 * FL, 1);
           if (s.lblTop) { var aw2 = s.lblTop.userData.w || 2.5; s.lblTop.scale.set(unit * aw2 * FL, unit * aw2 / 8 * FL, 1); }
           s.lblDBc = rA * lblTilt + 0.19 * FL + s.deploy * 0.9 + (rk - 1) * 0.30;
@@ -4470,7 +4488,7 @@
         /* zoom sémantique : très près, les 12 planètes en orbite grossissent */
         var zf = Math.max(1, Math.min(3, pxCellNow / 70));
         /* planètes texturées : seul le système actif (ou celui qui se replie) en a */
-        if (!MOBILE) {
+        if (true) {   /* 14/09 : aussi au doigt (testé sur l'émulateur : 60 i/s système ouvert) */
           if (active && active !== S3.sys && active.deploy > .02) s3Build(active);
           else if (S3.sys && S3.sys !== active && S3.sys.deploy < .02) s3Clear();
           if (S3.sys && S3.light) {
@@ -4488,7 +4506,7 @@
              quittent le soleil l'une après l'autre (orbite intérieure d'abord, 70 ms d'écart),
              en spirale, dépassent leur orbite d'environ 10 % puis s'y posent ; la dernière
              arrive vers 1,2 s. Au repli, elles rentrent ensemble (sy.deploy). */
-          if (sy === active && sy.unfoldT != null && !MOBILE && sy === S3.sys && ob.mesh3) {
+          if (sy === active && sy.unfoldT != null && sy === S3.sys && ob.mesh3) {
             var fx = unfoldFx(ob, sy), e0 = (t - sy.unfoldT - fx.delay) / fx.dur, ek = Math.max(0, Math.min(1, e0));
             if (fx.mode === 0) {            /* SPIRALE */
               dp = easeBackOut(ek); swirl = (1 - ek) * fx.swirl;
@@ -4543,6 +4561,13 @@
             }
             if (ob.lbl3 && S3.down) {
               var lk = Math.max(0, Math.min(1, (dq - 0.55) * 2.5)), lu = ob.lbl3.userData;
+              /* portrait : taille rapportée à la largeur (sinon les noms mangeaient l'écran d'un téléphone) */
+              var hf = lu.hBase * Math.min(1, w / Math.max(1, h) * 1.15);
+              if (Math.abs(hf - lu.hFrac) > 1e-4 || !lu.scaled) {
+                lu.hFrac = hf; lu.scaled = true;
+                var kk = hf * 2 * Math.tan(camera.fov * Math.PI / 360);
+                ob.lbl3.scale.set(kk * lu.ratio, kk, 1);
+              }
               var lka = lk * (lu.alpha == null ? 1 : lu.alpha);
               ob.lbl3.visible = m3.visible && lka > 0.02;
               ob.lbl3.material.opacity = lka;
@@ -4567,7 +4592,7 @@
         }
         planetPts.geometry.attributes.position.needsUpdate = true;
         planetPts.geometry.attributes.aScale.needsUpdate = true;
-        if (!MOBILE && S3.sys) s3Declutter(dt);
+        if (S3.sys) s3Declutter(dt);
       }
 
       if (inspector) {
@@ -4870,8 +4895,7 @@
     }
     var vctx = null, veilKey = "";
     function updateVeil() {
-      /* Effet de confort, pas une information : au doigt on s'en passe. */
-      if (MOBILE) return;
+      /* au doigt aussi depuis le 14/09 : le canevas n'est redessiné que quand l'ellipse bouge */
       var a2 = hov || sel;
       if (!veil) {
         /* ⚠ Canevas 2D À LA TAILLE DE L'ÉCRAN, redessiné seulement quand l'ellipse
@@ -4931,18 +4955,33 @@
       lastTipX = lastTipY = -9999;   /* forcer un repositionnement */
     }
     function placeTip(sx, sy) {
-      /* au doigt la fiche est ancree en haut de la carte (CSS) : la poser pres
-         du systeme la mettait sous le doigt qui vient d'appuyer */
-      if (MOBILE) return;
       var el = tip();
       if (el.classList.contains("big")) {
-        /* plein écran : grande fiche ; dans le bloc de la carte : compacte, ou réduite si le bloc est bas */
-        var tmode = isFull() ? "" : (ch >= 540 ? "compact" : "tiny");
+        /* portrait : bandeau en bas, réduit (CSS .sheet) ; plein écran : grande fiche ;
+           dans le bloc de la carte : compacte, ou réduite si le bloc est bas */
+        var sheet = ch > cw * 1.05;
+        /* bandeau dans un bloc bas (carte dans la page, téléphone) : sans le tableau des 12 planètes,
+           les propriétaires sont écrits sous les planètes ; le tableau revient en plein écran */
+        var mini = sheet && ch < 700;
+        if (el.classList.contains("mini") !== mini) { el.classList.toggle("mini", mini); measureTip(); }
+        if (el.classList.contains("sheet") !== sheet) {
+          el.classList.toggle("sheet", sheet);
+          if (!sheet) { el.style.removeProperty("bottom"); el.__bot = null; }
+          measureTip();
+        }
+        var tmode = sheet ? "tiny" : isFull() ? "" : (ch >= 540 ? "compact" : "tiny");
         var tcur = el.classList.contains("compact") ? "compact" : el.classList.contains("tiny") ? "tiny" : "";
         if (tmode !== tcur) {
           el.classList.remove("compact", "tiny");
           if (tmode) el.classList.add(tmode);
           measureTip();
+        }
+        if (sheet) {
+          /* bandeau : juste au-dessus de la barre rapide, qui passe sur deux rangées en portrait */
+          var qb = document.getElementById("aw3d-quickbar");
+          var bot = (qb && qb.offsetHeight ? qb.offsetHeight + 8 : 48) + 10;
+          if (el.__bot !== bot) { el.__bot = bot; el.style.setProperty("bottom", bot + "px", "important"); }
+          return;
         }
         /* système ouvert : le bloc est à gauche (PRESENT.x), la fiche à DROITE, centrée
            dans l'espace libre et verticalement ; jamais sous le panneau Réglages 3D */
@@ -4969,6 +5008,9 @@
         el.style.top = bt + "px";
         return;
       }
+      /* au doigt la fiche normale est ancrée en haut de la carte (CSS) : la poser près
+         du système la mettait sous le doigt qui vient d'appuyer */
+      if (MOBILE) return;
       var x = sx | 0, y = sy | 0;
       if (x === lastTipX && y === lastTipY) return;   /* rien n'a bougé */
       lastTipX = x; lastTipY = y;
@@ -5045,7 +5087,7 @@
           '<span>pop ' + (hidden ? "?" : s.pop) + '</span>' +
           (s.sbMax && !hidden ? '<span style="color:#ffd24a">SB ' + s.sbMax + '</span>' : '') +
           (sel === s ? '<b>portée ' + range + '</b>' : '') + '</div>';
-      tip().classList.toggle("big", !MOBILE);   /* système ouvert : fiche en grand, à droite (placeTip) */
+      tip().classList.toggle("big", true);   /* système ouvert : grande fiche (à droite, ou en bandeau en portrait — placeTip) */
       tip().classList.add("on");
       measureTip();   /* mesure unique par contenu, cf. placeTip */
       placeTip(s.sx, s.sy);
@@ -5064,7 +5106,7 @@
           (p.sb ? '<span style="color:#ffd24a">SB ' + p.sb + '</span>' : '<span>pas de SB</span>') +
           (p.siege ? '<b>assiégée</b>' : '') + '</div>' +
         (p.id ? '<div class="t-f"><span>clic → fiche planète</span></div>' : '');
-      tip().classList.toggle("big", !MOBILE && s === openSys);
+      tip().classList.toggle("big", s === openSys);
       tip().classList.add("on");
       measureTip();
       placeTip(ob.sx, ob.sy);
