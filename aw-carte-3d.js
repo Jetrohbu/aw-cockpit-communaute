@@ -2204,35 +2204,52 @@
        Les orbites tournant à des vitesses différentes, deux voisines se croisent : cet
        écart garantit qu'elles ne se touchent jamais (hors battement d'un siège). */
     var S3_MARGE = 0.07;   /* en unités de carte, entre deux planètes voisines */
+    /* ── PLACEMENT EN ROUE À L'ANGLE D'OR (14/09, « améliore le placement, système trop large ») ──
+       Avant : chaque planète gardait sa phase de la carte et sa vitesse propre ; elles finissaient
+       groupées d'un côté, et il fallait écarter les orbites pour qu'elles ne se touchent pas en se
+       croisant. Maintenant le système ouvert tourne D'UN BLOC, très lentement (PRESENT.wheel), et
+       deux orbites voisines sont décalées de l'angle d'or (137,5°) : la disposition reste étalée en
+       permanence, les étiquettes se gênent moins, et comme deux planètes ne se croisent plus jamais
+       on peut resserrer les orbites. Les distances entre toutes les paires sont vérifiées (elles sont
+       constantes, la roue étant rigide) ; si une paire se toucherait, l'écart grandit de 8 %. */
+    var S3_GOLD = Math.PI * (3 - Math.sqrt(5));
     function s3Layout(sys) {
       var lvS = starIdx(sys.popLevel), rkS = sys.richK || 1;
       var sunR = unit * (0.24 + lvS * 0.035) * rkS * 2.2;          /* rayon du soleil déployé (cf. updateMap) */
       /* bande du donut : rayons 0,746 à 0,879 du demi-côté du plan (arc 104/128 px, trait 17 px) */
       var donutS = Math.max(sunR * 1.12 / 0.746, unit * 0.5);
       var its = S3.list.slice().sort(function (a, b) { return a.ob.k - b.ob.k; });
-      /* rayon « encombrant » : atmosphère ×1,07 ; anneaux ×1,45 (ils sont inclinés, ×1,72 écartait
-         trop les géantes et repoussait les dernières orbites au loin) */
+      /* rayon « encombrant » : atmosphère ×1,07 ; anneaux ×1,45 (inclinés) */
       var eff = its.map(function (it) { var ud = it.mesh.userData; return unit * ud.r * (ud.ringed ? 1.45 : 1.07); });
-      var rad = [], n = its.length;
-      if (!n) { sys.radOpen = rad; sys.donutOpen = donutS; sys.outerOpen = unit * 5.9; return; }
-      /* JUSTE MILIEU (14/09, « certaines trop près de l'étoile, d'autres trop loin ») :
-         un écart RÉGULIER G entre deux orbites = médiane des paires de voisines + marge, élargi
-         seulement là où deux grosses planètes se toucheraient ; les petites (libres) ne sont plus
-         tassées les unes contre les autres, les grosses ne repoussent plus tout le reste. */
+      var n = its.length, m = unit * S3_MARGE;
+      its.forEach(function (it, i) { it.ob.gold = i; });
+      sys.openRot = 0;
+      sys.wheel0 = s3rand((+sys.id || 0) + 0.37) * Math.PI * 2;   /* départ propre à chaque système, stable */
+      if (!n) { sys.radOpen = []; sys.donutOpen = donutS; sys.outerOpen = unit * 5.9; return; }
       var pairs = [];
       for (var i = 1; i < n; i++) pairs.push(eff[i - 1] + eff[i]);
       pairs.sort(function (a, b) { return a - b; });
-      var G = (pairs.length ? pairs[Math.floor(pairs.length / 2)] : eff[0] * 2) + unit * S3_MARGE * 2;
-      /* première orbite : bord de l'anneau à crans + un écart régulier, jamais collée à l'étoile */
-      var R = donutS * 0.879 + Math.max(G * 0.85, eff[0] + unit * S3_MARGE * 2);
-      rad[its[0].ob.k] = R;
-      for (var j = 1; j < n; j++) {
-        R += Math.max(G, eff[j - 1] + eff[j] + unit * S3_MARGE);
-        rad[its[j].ob.k] = R;
+      var med = pairs.length ? pairs[Math.floor(pairs.length / 2)] : eff[0] * 2;
+      /* écart régulier resserré : ~0,7 × la paire médiane ; une orbite ne passe jamais à moins de
+         0,72 × (rayon voisin + rayon) de la précédente, pour que les corps n'effacent pas les tracés */
+      var G = med * 0.7 + m, radii = null;
+      for (var essai = 0; essai < 30 && !radii; essai++) {
+        var R = donutS * 0.879 + Math.max(G * 0.9, eff[0] * 1.4 + m * 2), rr = [R], ok = true;
+        for (var j = 1; j < n; j++) { R += Math.max(G, (eff[j - 1] + eff[j]) * 0.72 + m); rr.push(R); }
+        for (var a = 0; a < n && ok; a++) {
+          for (var b = a + 1; b < n; b++) {
+            var d = Math.sqrt(rr[a] * rr[a] + rr[b] * rr[b] - 2 * rr[a] * rr[b] * Math.cos((b - a) * S3_GOLD));
+            if (d < eff[a] + eff[b] + m) { ok = false; break; }
+          }
+        }
+        if (ok) radii = rr; else G *= 1.08;
       }
+      if (!radii) { radii = []; var R2 = donutS * 0.879 + eff[0] + m * 2; for (var q = 0; q < n; q++) { if (q) R2 += eff[q - 1] + eff[q] + m; radii.push(R2); } }
+      var rad = [];
+      its.forEach(function (it, i2) { rad[it.ob.k] = radii[i2]; });
       sys.radOpen = rad;
       sys.donutOpen = donutS;
-      sys.outerOpen = R + eff[n - 1];
+      sys.outerOpen = radii[n - 1] + eff[n - 1];
     }
     function s3Build(sys) {
       s3Clear();
@@ -2403,8 +2420,9 @@
        size   : rayon de l'anneau extérieur à l'écran, en fraction de la hauteur (le bloc n'est jamais plus petit) — plein écran
        sizeBloc : idem dans le bloc de la carte du jeu (hors plein écran), plus petit pour laisser la place à la fiche
        orbit  : vitesse des orbites du système ouvert (1 = celle de la carte) — « très lentement », 14/09
-       spin   : vitesse de rotation propre des planètes du bloc (1 = vue système) */
-    var PRESENT = { x: .31, y: .47, roll: -.22, pitch: .38, disc: .82, size: .44, sizeBloc: .34, orbit: .06, spin: .35 }, PITCH_MAX = 1.36;   /* roll < 0 : penché à DROITE (14/09 « de l'autre côté, même inclinaison ») */
+       spin   : vitesse de rotation propre des planètes du bloc (1 = vue système)
+       wheel  : rotation d'ensemble du système ouvert (rad/s ; ,025 ≈ un tour en 4 min) — cf. s3Layout */
+    var PRESENT = { x: .31, y: .47, roll: -.22, pitch: .38, disc: .82, size: .44, sizeBloc: .34, orbit: .06, spin: .35, wheel: .025 }, PITCH_MAX = 1.36;   /* roll < 0 : penché à DROITE (14/09 « de l'autre côté, même inclinaison ») */
     var openCam = null, openSys = null, openF = 0, _openW = null, _openD = null, _openT = null, _openO = null;
     function smooth01(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
     function updateOpenCam(s) {
@@ -4336,6 +4354,7 @@
         if (s.deploy > dmax) dmax = s.deploy;
         /* horloge de la cascade des planètes : départ quand le système devient actif */
         if (s === active) { if (s.unfoldT == null) s.unfoldT = t; } else if (s.deploy < .02) s.unfoldT = null;
+        if (s === S3.sys) s.openRot = (s.openRot || 0) + dt * PRESENT.wheel;
         var fog = layers.fog && !s.inVision ? .3 : 1;
         var op = s.dim * fog, sc = 1 + s.deploy * 2.2;
         var lv = starIdx(s.popLevel);
@@ -4495,7 +4514,10 @@
           var kSp = sy === openSys ? 1 + (PRESENT.orbit - 1) * smooth01(sy.deploy * 1.5) : 1 + sy.deploy * .4;
           ob.acc = (ob.acc || 0) + dt * ob.sp * kSp;
           var ro = sy === S3.sys && sy.radOpen ? sy.radOpen[ob.k] : null;
-          var an = ob.ph + ob.acc + swirl, rad = ro != null ? ob.rad + (ro - ob.rad) * dp : ob.rad * k;
+          /* système ouvert : roue à l'angle d'or (cf. s3Layout) ; ailleurs, la phase et la vitesse de la carte */
+          var an = ro != null && ob.gold != null ? (sy.wheel0 || 0) + (sy.openRot || 0) + ob.gold * S3_GOLD + swirl
+                                                 : ob.ph + ob.acc + swirl;
+          var rad = ro != null ? ob.rad + (ro - ob.rad) * dp : ob.rad * k;
           var x = sy.cx * unit + Math.cos(an) * rad, z = sy.cy * unit + Math.sin(an) * rad;
           var ey = sy.node.position.y + lift * unit;
           arr[o*3] = x; arr[o*3+1] = ey; arr[o*3+2] = z;
