@@ -119,7 +119,7 @@
      et les halos, eux, gardent la couleur brute — ce sont de larges aplats,
      ils n'ont pas ce problème. */
   var _cssCv = null;
-  function readableTag(css) {
+  function readableTag(css, lVise) {
     if (!_cssCv) { _cssCv = document.createElement("canvas"); _cssCv.width = _cssCv.height = 1; }
     var x = _cssCv.getContext("2d", { willReadFrequently: true });
     x.clearRect(0, 0, 1, 1);
@@ -135,8 +135,11 @@
       h = mx === r ? (g-b)/dd + (g<b ? 6:0) : mx === g ? (b-r)/dd + 2 : (r-g)/dd + 4;
       h /= 6;
     }
-    if (l >= 0.60) return css;                 /* déjà clair : on n'y touche pas */
-    return hslHex(h, sat, 0.62);               /* hex, jamais hsl : cf. tagColor */
+    /* lVise : luminosité voulue (0,62 par défaut ; la fiche au survol demande 0,74 — ses
+       lignes sont en petit corps sur fond sombre, le bleu pur de HNU y restait illisible) */
+    var L = lVise || 0.62;
+    if (l >= L - 0.02) return css;             /* déjà assez clair : on n'y touche pas */
+    return hslHex(h, sat, L);                  /* hex, jamais hsl : cf. tagColor */
   }
 
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
@@ -399,10 +402,14 @@
         seenIdx[idx] = 1;
         var owner = bareOwner(row.owner);
         var tag = (row.alliance || "").trim();
+        /* les scans gardent les libellés du jeu : « Free Planet » = libre, « Unknown » = hors
+           vision. Pris pour des noms, ils faisaient des planètes « solo » (fiche, anneau, colons). */
+        var libre = !owner || /^free planet$/i.test(owner), inconnue = /^unknown$/i.test(owner);
         planets.push({
           id: null, idx: idx, name: (row.system || "") + " #" + idx,
-          state: !owner ? "free" : (tag ? "held" : "solo"),
-          tag: tag, owner: owner || "Planète libre", ownerId: null,
+          state: libre ? "free" : inconnue ? "unknown" : (tag ? "held" : "solo"),
+          tag: libre || inconnue ? "" : tag,
+          owner: libre ? "Planète libre" : inconnue ? "Inconnu" : owner, ownerId: null,
           pop: num(row.population), sb: num(row.starbase), siege: false
         });
       });
@@ -1003,10 +1010,28 @@
       "  font-variant-numeric:tabular-nums;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;}",
       "#aw3d-tip .t-o{margin-top:7px;font-size:.72rem;color:rgba(255,255,255,.6);max-height:46px;overflow:hidden;}",
       "#aw3d-tip .t-o b{color:#fff;font-weight:600;}",
+      "#aw3d-tip .t-g{margin-top:6px;font-size:.68rem;color:rgba(255,255,255,.5);}",
+      "#aw3d-tip .t-g b{color:rgba(255,255,255,.78);font-weight:600;}",
+      "#aw3d-tip .t-sg{color:#ff6b6b;font-weight:700;margin-left:4px;}",
       "#aw3d-tip .t-f{display:flex;justify-content:space-between;gap:6px;margin-top:7px;font-size:.66rem;",
       "  letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.45);}",
       "#aw3d-tip .t-f b{color:#ffb347;font-weight:600;}",
+      /* fiche du SYSTÈME OUVERT : en grand, à droite, centrée (cf. placeTip) */
+      "#aw3d-tip.big{width:460px;padding:18px 20px;border-radius:8px;}",
+      "#aw3d-tip.big .t-n{font-size:1.6rem;}",
+      "#aw3d-tip.big .t-t{font-size:.95rem;}",
+      "#aw3d-tip.big .t-t i{width:11px;height:11px;}",
+      "#aw3d-tip.big .t-xy{font-size:1rem;}",
+      "#aw3d-tip.big .t-tab{margin-top:12px;font-size:1.12rem;}",
+      "#aw3d-tip.big .t-tab th{font-size:.86rem;padding:3px 12px 5px 0;}",
+      "#aw3d-tip.big .t-tab td{padding:4px 12px 4px 0;max-width:250px;}",
+      "#aw3d-tip.big .t-o{font-size:1.05rem;max-height:110px;margin-top:12px;}",
+      "#aw3d-tip.big .t-g{font-size:1rem;margin-top:10px;}",
+      "#aw3d-tip.big .t-f{font-size:.92rem;margin-top:12px;}",
 
+      /* plein écran : l'hôte, déplacé sous <body>, couvre toute la fenêtre (sous le panneau Réglages 3D) */
+      "#aw3d-host.aw3d-full{position:fixed !important;inset:0 !important;z-index:2147482600 !important;border-radius:0 !important;}",
+      "html.aw3d-full-on,html.aw3d-full-on body{overflow:hidden !important;}",
       "#aw3d-quickbar{position:absolute;left:8px;bottom:8px;display:flex;gap:6px;z-index:30;",
       "  flex-wrap:wrap;max-width:calc(100% - 16px);}",
       /* touch-action:manipulation supprime l'attente de double-tap (la WebView
@@ -1088,6 +1113,7 @@
         '<span class="aw3d-qbtn" id="aw3d-fleetbtn" title="Flottes en vol : la mienne, alliées, ennemies"><i class="bi bi-rocket-takeoff-fill"></i> Flottes</span>' +
         '<span class="aw3d-qbtn" data-qgo="origin" title="Centre de la galaxie"><i class="bi bi-record-circle"></i> Centre</span>' +
         '<span class="aw3d-qbtn" id="aw3d-flat" title="Basculer la vue de dessus" aria-pressed="false"><i class="bi bi-map"></i> Vue dessus</span>' +
+        '<span class="aw3d-qbtn" id="aw3d-fullbtn" title="Carte en plein écran (touche F) — Échap pour revenir" aria-pressed="false"><i class="bi bi-arrows-fullscreen"></i> Plein écran</span>' +
       '</div>' +
       '<div id="aw3d-actions">' +
         '<a href="#" id="aw3d-open" hidden>Ouvrir le système ↗</a>' +
@@ -1330,6 +1356,7 @@
     if (!ui) ui = buildHost();
     if (!ui) return;
     ui.classList.add("on");
+    try { if (localStorage.getItem(FULL_KEY) === "1") setFull(true, true); } catch (e) {}
     /* Réglages 3D : calques, filtres, fond de carte, curseurs de galaxie.
        Le panneau s'ouvre replié sur les petits écrans (voir COLLAPSE_KEY),
        pour ne pas manger la carte sur un téléphone. */
@@ -1386,8 +1413,40 @@
     }
   }
 
+  /* ── PLEIN ÉCRAN (14/09, « la map en plein écran comme le labo ») ─────────
+     La 3D quitte le bloc de la carte du jeu et occupe toute la fenêtre, sous le
+     panneau Réglages 3D. On DÉPLACE l'hôte sous <body> : un ancêtre du jeu avec
+     transform ou overflow le rognerait sinon ; le contexte WebGL survit au
+     déplacement du canvas. Bouton, touche F, Échap pour revenir ; le choix est
+     retenu (aw3d_full) et réappliqué à la prochaine ouverture de la 3D. */
+  var FULL_KEY = "aw3d_full", fullHome = null;
+  function isFull() { return !!(ui && ui.classList.contains("aw3d-full")); }
+  function setFull(on, keepPref) {
+    if (!ui) return;
+    on = !!on;
+    if (on === isFull()) return;
+    if (on) {
+      fullHome = { parent: ui.parentNode, next: ui.nextSibling };
+      document.body.appendChild(ui);
+    } else if (fullHome && fullHome.parent) {
+      var nx = fullHome.next && fullHome.next.parentNode === fullHome.parent ? fullHome.next : null;
+      fullHome.parent.insertBefore(ui, nx);
+    }
+    ui.classList.toggle("aw3d-full", on);
+    document.documentElement.classList.toggle("aw3d-full-on", on);
+    var fb = document.getElementById("aw3d-fullbtn");
+    if (fb) {
+      fb.setAttribute("aria-pressed", String(on));
+      fb.innerHTML = on ? '<i class="bi bi-fullscreen-exit"></i> Quitter le plein écran' : '<i class="bi bi-arrows-fullscreen"></i> Plein écran';
+    }
+    if (!keepPref) { try { localStorage.setItem(FULL_KEY, on ? "1" : "0"); } catch (e) {} }
+    /* taille du canvas, caméra, rectangle de survol : recalés par le resize de l'app */
+    setTimeout(function () { dispatchEvent(new Event("resize")); }, 30);
+  }
+
   function close() {
     if (!ui) return;
+    if (isFull()) setFull(false, true);   /* on garde la préférence : la 3D rouvrira en plein écran */
     ui.classList.remove("on");
     if (panelEl) panelEl.classList.remove("on");
     var nm = nativeMap();
@@ -1537,6 +1596,9 @@
     ].join("\n");
     var FRAG = [
       "varying vec3 vColor;",
+      /* uFade : estompage du DÉCOR (galaxie, ciel, amas) pendant qu'un système
+         est déployé, cf. decorFade() — 1 pour les planètes */
+      "uniform float uFade;",
       "void main(){",
       "  float d = distance(gl_PointCoord, vec2(0.5));",
       "  float s = clamp(1.0 - d*2.0, 0.0, 1.0);",
@@ -1547,7 +1609,7 @@
          montée : le mélange est additif, donc passer l'alpha de 0,72 à 1 rend
          déjà chaque étoile ~40 % plus lumineuse, et des milliers de points qui
          se recouvrent saturent en un tapis uniforme. */
-      "  gl_FragColor = vec4(vColor * s * 0.82, s);",
+      "  gl_FragColor = vec4(vColor * s * 0.82 * uFade, s);",
       "}"
     ].join("\n");
     var STAR_VERT = VERT.replace("  mp.xyz += aRandom;\n", "").replace("attribute vec3 aRandom;", "");
@@ -1569,7 +1631,8 @@
           /* doit suivre le ratio RÉEL du renderer (1,4 sur mobile) : à 2 les
              points étaient dessinés deux fois trop gros en surface — d'où un
              ciel saturé d'étoiles, et deux fois plus de fragments à remplir */
-          uPixelRatio:{value: renderer.getPixelRatio()}
+          uPixelRatio:{value: renderer.getPixelRatio()},
+          uFade:{value: 1}
         },
         transparent:true, depthWrite:false, blending:T.AdditiveBlending
       });
@@ -1633,6 +1696,33 @@
       m.t0 = t; m.dur = 0.9 + Math.random() * 0.9;
     }
     var _mh = new T.Vector3(), _mt = new T.Vector3();
+    /* ── DÉCOR ESTOMPÉ pendant qu'un système est déployé ─────────────────
+       Poussière de galaxie, nébuleuse, ciel, amas et repère passaient PAR-DESSUS
+       les anneaux du système ouvert et en faussaient la lecture. On les fond
+       jusqu'à 8 % au rythme du déploiement (et ils reviennent au repli). Le voile
+       CSS assombrit déjà tout ce qui est hors des anneaux : dedans, il ne reste
+       que le système. Matériaux modifiés seulement quand le facteur bouge. */
+    var decorK = 1, decorKSet = -1;
+    function fadeMats(root, k) {
+      if (!root) return;
+      root.traverse(function (o) {
+        var m = o.material;
+        if (!m || m.uniforms) return;
+        if (m.userData.baseOp == null) m.userData.baseOp = m.opacity;
+        m.opacity = m.userData.baseOp * k;
+      });
+    }
+    function decorFade(dmax) {
+      decorK = 1 - 0.92 * Math.max(0, Math.min(1, dmax));
+      if (Math.abs(decorK - decorKSet) < 0.004) return;
+      decorKSet = decorK;
+      [galaxyMat, clusterMat, skyDome && skyDome.material].forEach(function (m) {
+        if (m && m.uniforms && m.uniforms.uFade) m.uniforms.uFade.value = decorK;
+      });
+      fadeMats(nebula, decorK);
+      fadeMats(grid, decorK);
+    }
+
     function updateMeteors(t) {
       for (var i = 0; i < meteors.length; i++) {
         var m = meteors[i];
@@ -1651,7 +1741,7 @@
         ar[0] = _mt.x; ar[1] = _mt.y; ar[2] = _mt.z;
         ar[3] = _mh.x; ar[4] = _mh.y; ar[5] = _mh.z;
         m.line.geometry.attributes.position.needsUpdate = true;
-        m.line.material.opacity = Math.sin(Math.PI * ph) * 0.9;
+        m.line.material.opacity = Math.sin(Math.PI * ph) * 0.9 * decorK;
       }
     }
 
@@ -1753,6 +1843,7 @@
       var nebK = params.neb === undefined ? 1 : params.neb;
       if (nebK <= 0) return;            /* fond « Vide » : pas de voile non plus */
       nebula = new T.Group();
+      decorKSet = -1;   /* nouveaux matériaux : l'estompage en cours doit s'y réappliquer */
       var nmix = new T.Color();
       /* la nébuleuse est le plus gros surdessin de la scène : on suit le parti
          pris choisi au lieu d'en poser 34 quoi qu'il arrive */
@@ -1796,7 +1887,627 @@
     var group = null, unit = 1, extent = 30;
     var systems = [], planetPts = null, planetMat = null, clusterMat = null;
     var orbits = [], grid = null, sbg = null;
+    /* courbe « back-out » douce (dépassement de quelques %) pour la cascade des planètes */
+    function easeBackOut(x) { var c1 = 1.7, c3 = c1 + 1, u = x - 1; return 1 + c3 * u * u * u + c1 * u * u; }
+    function elasticOut(x) {
+      if (x <= 0) return 0;
+      if (x >= 1) return 1;
+      return Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * (2 * Math.PI / 3)) + 1;
+    }
+    /* ── APPARITION DES PLANÈTES DU SYSTÈME OUVERT (14/09, « plus stylée, plus aléatoire ») ──
+       Tirée au HASARD à chaque ouverture (Math.random, pas de graine) :
+         · ordre de sortie mélangé, écarts irréguliers ;
+         · une manière dominante pour l'ouverture, et environ une planète sur trois en change :
+             0 SPIRALE : jaillit du soleil en tourbillon, léger saut au-dessus du plan ;
+             1 CHUTE   : tombe de plus haut (ou d'en dessous) et de plus loin, en arc, puis se pose ;
+             2 WARP    : surgit directement sur son orbite, grossit en élastique ;
+         · sens et ampleur du tourbillon, hauteur et distance de départ, durée propre ;
+         · un éclair à l'arrivée (au départ pour le warp). */
+    function unfoldFx(ob, sy) {
+      if (ob.fx && ob.fx.t0 === sy.unfoldT) return ob.fx;
+      if (sy.fxT0 !== sy.unfoldT) {
+        sy.fxT0 = sy.unfoldT;
+        var ord = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+        for (var j = ord.length - 1; j > 0; j--) { var r = Math.floor(Math.random() * (j + 1)), tmp = ord[j]; ord[j] = ord[r]; ord[r] = tmp; }
+        sy.fxOrd = ord;
+        sy.fxMode = Math.floor(Math.random() * 3);
+      }
+      var rank = sy.fxOrd[ob.k % 12];
+      ob.fx = {
+        t0: sy.unfoldT,
+        mode: Math.random() < 0.65 ? sy.fxMode : Math.floor(Math.random() * 3),
+        delay: rank * (0.06 + Math.random() * 0.06) + Math.random() * 0.14,
+        dur: 0.75 + Math.random() * 0.6,
+        swirl: (Math.random() < 0.5 ? -1 : 1) * (1.6 + Math.random() * 2.4),
+        lift: (Math.random() < 0.72 ? 1 : -1) * (0.8 + Math.random() * 2.4),
+        far: 1.35 + Math.random() * 0.7
+      };
+      return ob.fx;
+    }
+
+    /* ── PLANÈTES TEXTURÉES DU SYSTÈME SURVOLÉ ────────────────────────────────
+       Comme la vue système (/Game/Map/SolarSystem, solar3d.js) : mêmes textures
+       (assets/planets/, Solar System Scope CC BY 4.0), même archétype tiré de la
+       même graine (idx × 7,3 + id % 50), mêmes zones et même règle « le type le
+       moins servi du système » : une planète a le même visage dans les deux vues.
+       Seul le système déployé en a (12 sphères au plus), posées sur les points de
+       la cascade, dont les points s'effacent. Pas sur mobile. */
+    var S3 = { sys: null, list: [], geo: null, light: null, amb: false, tex: {} };
+    function s3Zone(i) { return i <= 3 ? "hot" : (i <= 7 ? "temperate" : "cold"); }
+    var S3_ARCH = { hot: ["lava", "desert", "dead"], temperate: ["ocean", "continental", "desert", "ice"],
+                    cold: ["gas", "ice", "dead"] };
+    function s3World(n) { return "world" + n + "_day.jpg"; }
+    var S3_FAM = {
+      ocean: [s3World(2), s3World(4), s3World(7), s3World(3)],
+      continental: [s3World(1), s3World(5), s3World(6), s3World(8)],
+      desert: ["mars.jpg", "venus_surface.jpg"],
+      ice: ["eris.jpg", "haumea.jpg", "moon.jpg"],
+      lava: ["makemake.jpg", "venus_surface.jpg"],
+      gas: ["jupiter.jpg", "saturn.jpg", "uranus.jpg", "neptune.jpg"],
+      dead: ["moon.jpg", "mercury.jpg", "ceres.jpg"]
+    };
+    var S3_REPLI = { continental: "#3f7a46", ocean: "#2fa8b8", lava: "#8a2f18", ice: "#a8cbe8",
+                     desert: "#b07a3c", gas: "#c08a4a", dead: "#5a5a62" };
+    var S3_BASER = { gas: 1.3, ice: 0.85, lava: 0.8, desert: 0.85, ocean: 1.0, continental: 1.0, dead: 0.7 };
+    /* taille des planètes texturées du système ouvert (×1 jusqu'au 14/09, ×1,8 à la demande
+       « augmente la taille des planètes » ; l'écart entre deux orbites vaut ≈ 0,36 unit) */
+    var S3_TAILLE = 3.0;   /* 1,8 puis 3,0 le 14/09 (« grossis encore ») — l'espacement des orbites suit (s3Layout) */
+    function s3rand(s) { var v = Math.sin(s * 127.1) * 43758.5453; return v - Math.floor(v); }
+    /* même chargement que solar3d : ImageBitmapLoader (réseau de l'extension, insensible à la
+       CSP img-src de la page), <img> en repli ; rien hors ressource d'extension (WebView du mod) */
+    /* ⚠ La même regex que TEX_URL_OK de solar3d : sans localhost/127.0.0.1 le labo
+       (servi en http) n'avait JAMAIS de texture sur la carte — sphères unies. */
+    var S3_URL_OK = /^(chrome-extension|moz-extension|data|blob):|^https?:\/\/(localhost|127\.0\.0\.1)[:/]/;
+    function s3Tex(name, lin) {
+      var key = name + (lin ? "#lin" : "");
+      if (S3.tex[key]) return S3.tex[key];
+      S3.tex[key] = new Promise(function (res, rej) {
+        var url;
+        try { url = chrome.runtime.getURL("assets/planets/" + name); } catch (e) { rej(e); return; }
+        if (!S3_URL_OK.test(url)) { rej(new Error("asset hors extension")); return; }
+        var fin = function (t) {
+          /* albédos, nuages, villes : sRGB ; spéculaire et relief : données linéaires */
+          if (!lin) t.colorSpace = T.SRGBColorSpace;
+          try { t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy() || 1); } catch (e) {}
+          t.needsUpdate = true;
+          return t;
+        };
+        var viaImg = function () { new T.TextureLoader().load(url, function (t) { res(fin(t)); }, undefined, rej); };
+        var ibl = null;
+        try { ibl = new T.ImageBitmapLoader().setOptions({ imageOrientation: "flipY", premultiplyAlpha: "none" }); }
+        catch (e) { ibl = null; }
+        if (!ibl) { viaImg(); return; }
+        ibl.load(url, function (bmp) {
+          var t = new T.Texture(bmp);
+          t.flipY = false;
+          res(fin(t));
+        }, undefined, viaImg);
+      });
+      return S3.tex[key];
+    }
+
+    /* ── détail de la vue système (solar3d.js), recopié pour le bloc présenté ──
+       relief + spéculaire + villes la nuit (mondes générés), nuages, voile vénusien,
+       atmosphère au limbe, anneaux d'une géante sur deux, inclinaison d'axe ; mêmes
+       fichiers, mêmes graines, mêmes réglages que la vue système. */
+    var S3_ATMO = { continental: "#7ec0ff", ocean: "#63d8ff", lava: "#ff7a3a", ice: "#bfe4ff",
+                    desert: "#f0c898", gas: "#e8c89a", dead: null };
+    var S3_GAS_ATMO = { "jupiter.jpg": "#e8c090", "saturn.jpg": "#f0d8a8", "uranus.jpg": "#a0e0f0", "neptune.jpg": "#5878ff" };
+    function s3Extra(map) {
+      var m = /^world(\d)_day\.jpg$/.exec(map);
+      if (m) return { earth: true, spec: "world" + m[1] + "_spec.jpg", normal: "world" + m[1] + "_normal.jpg", night: "world" + m[1] + "_night.jpg" };
+      if (map === "venus_surface.jpg") return { veil: "venus_atmo.jpg" };
+      return {};
+    }
+    function s3Geos() {
+      if (S3.geos) return S3.geos;
+      /* quatre variantes d'UV (miroirs) de la même sphère, comme PLANET_GEOS de solar3d */
+      S3.geos = [0, 1, 2, 3].map(function (k) {
+        var g = new T.SphereGeometry(1, 48, 32), uv = g.attributes.uv;
+        for (var i = 0; k && i < uv.count; i++) {
+          uv.setXY(i, (k & 1) ? 1 - uv.getX(i) : uv.getX(i), (k & 2) ? 1 - uv.getY(i) : uv.getY(i));
+        }
+        return g;
+      });
+      return S3.geos;
+    }
+    function s3NightMask(shader) {
+      var key = "#include <emissivemap_fragment>";
+      if (shader.fragmentShader.indexOf(key) < 0) return;
+      shader.fragmentShader = shader.fragmentShader.replace(key, key +
+        "\n#if NUM_POINT_LIGHTS > 0\n  vec3 awL = normalize(pointLights[0].position + vViewPosition);\n" +
+        "  totalEmissiveRadiance *= smoothstep(0.18, -0.12, dot(normalize(vNormal), awL));\n#endif\n");
+    }
+    function s3Swap(mesh, mat, then) {
+      var apply = function () { mesh.material = mat; if (then) then(); };
+      if (typeof renderer.compileAsync !== "function") { apply(); return; }
+      renderer.compileAsync(new T.Mesh(mesh.geometry, mat), camera, scene).then(apply, apply);
+    }
+    function s3Atmo(hex, amt) {
+      if (!S3.sunU) S3.sunU = { value: new T.Vector3() };
+      var m = new T.Mesh(s3Geos()[0], new T.ShaderMaterial({
+        uniforms: { col: { value: new T.Color(hex) }, amt: { value: amt }, uSun: S3.sunU },
+        vertexShader: "varying vec3 vN; varying vec3 vW; void main(){ vec4 wp = modelMatrix * vec4(position,1.0);" +
+          " vN = normalize(mat3(modelMatrix) * normal); vW = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }",
+        fragmentShader: "uniform vec3 col; uniform float amt; uniform vec3 uSun; varying vec3 vN; varying vec3 vW;" +
+          " void main(){ vec3 N = normalize(vN); vec3 V = normalize(cameraPosition - vW);" +
+          " float rim = smoothstep(0.0, 0.34, -dot(N, V)); rim *= rim;" +
+          " float sun = 0.22 + 0.78 * smoothstep(-0.35, 0.45, dot(N, normalize(uSun - vW)));" +
+          " float a = rim * sun * amt; gl_FragColor = vec4(col * a, a); }",
+        side: T.BackSide, transparent: true, depthWrite: false, blending: T.AdditiveBlending
+      }));
+      m.scale.setScalar(1.07);
+      m.renderOrder = 2;
+      return m;
+    }
+    function s3Rings(tint) {
+      var rIn = 1.28, rOut = 1.72, geo = new T.RingGeometry(rIn, rOut, 96, 1), pos = geo.attributes.position, v = new T.Vector3();
+      for (var i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i);
+        geo.attributes.uv.setXY(i, (v.length() - rIn) / (rOut - rIn), 0.5);
+      }
+      var mat = new T.MeshPhongMaterial({ color: tint, transparent: true, side: T.DoubleSide, depthWrite: false,
+        opacity: 0.75, shininess: 4, specular: 0x050505 });
+      var m = new T.Mesh(geo, mat);
+      m.rotation.x = -Math.PI / 2;
+      m.renderOrder = 1;
+      m.visible = false;   /* un disque plein serait pire qu'aucun anneau */
+      s3Tex("ring_alpha.png").then(function (t) {
+        mat.map = t; mat.emissiveMap = t; mat.emissive.set(0xffffff); mat.emissiveIntensity = 1.25;
+        mat.needsUpdate = true; m.visible = true;
+      }, function () {});
+      return m;
+    }
+    /* étiquette sous la planète, comme lblTex de solar3d : propriétaire [TAG] en couleur,
+       puis « #n · pop · SB » (et le siège) */
+    /* hauteur d'une étiquette de planète, en fraction de la hauteur de l'écran (taille FIXE :
+       sizeAttenuation off) — 14/09 « on n'arrive pas à lire les noms » ; libres/inconnues plus petites */
+    var S3_LBL_H = 0.062;   /* 0,074 puis 0,062 le 14/09 (« un poil trop gros par rapport aux planètes ») */
+    function s3Label(s, p) {
+      var W = 640, H = 180;
+      var c = document.createElement("canvas"); c.width = W; c.height = H;
+      var x = c.getContext("2d"), hex = planetHex(s, p), free = p.state === "free", unk = p.state === "unknown";
+      x.textAlign = "left"; x.textBaseline = "alphabetic";
+      x.shadowColor = "rgba(2,3,10,1)"; x.shadowBlur = 10;
+      var owner = free ? "#" + p.idx + " libre" : unk ? "#" + p.idx + " inconnue" : (p.owner || "?");
+      if (owner.length > 16) owner = owner.slice(0, 15) + "…";
+      var tag = !free && !unk && p.tag ? " [" + p.tag + "]" : "";
+      /* ligne 1 : propriétaire (blanc cassé) + [TAG] à la couleur de l'alliance, même taille */
+      x.font = "700 70px 'Segoe UI',system-ui,sans-serif";
+      var w1 = x.measureText(owner).width, w2 = tag ? x.measureText(tag).width : 0;
+      var line2 = "";
+      if (!free && !unk) {
+        var parts = ["#" + p.idx, "pop " + (p.pop || 0)];
+        if (p.sb > 0) parts.push("SB " + p.sb);
+        if (p.siege) parts.push("⚔ siège");
+        line2 = parts.join("  ·  ");
+      }
+      var fit = Math.min(1, (W - 24) / Math.max(1, w1 + w2));
+      if (fit < 1) x.font = "700 " + Math.floor(70 * fit) + "px 'Segoe UI',system-ui,sans-serif";
+      w1 = x.measureText(owner).width; w2 = tag ? x.measureText(tag).width : 0;
+      var x0 = (W - w1 - w2) / 2;
+      /* contour sombre : lisible sur les planètes et les nébuleuses */
+      x.lineJoin = "round"; x.lineWidth = 10; x.strokeStyle = "rgba(3,4,10,.92)";
+      x.strokeText(owner, x0, 78); if (tag) x.strokeText(tag, x0 + w1, 78);
+      x.fillStyle = free || unk ? "rgba(185,198,230,.8)" : "#f2f5ff";
+      x.fillText(owner, x0, 78);
+      if (tag) { x.fillStyle = hex; x.fillText(tag, x0 + w1, 78); }
+      var ink = w1 + w2;
+      if (line2) {
+        x.font = "600 46px 'Segoe UI',system-ui,sans-serif";
+        var w3 = x.measureText(line2).width;
+        x.lineWidth = 8; x.strokeText(line2, (W - w3) / 2, 146);
+        x.fillStyle = p.siege ? "#ffb0b0" : "#b9c4e6";
+        x.fillText(line2, (W - w3) / 2, 146);
+        ink = Math.max(ink, w3);
+      }
+      var tx = new T.CanvasTexture(c);
+      tx.colorSpace = T.SRGBColorSpace;
+      tx.anisotropy = 4;
+      var sp = new T.Sprite(new T.SpriteMaterial({ map: tx, transparent: true, depthWrite: false, depthTest: false,
+        opacity: 0, sizeAttenuation: false }));
+      /* sizeAttenuation off : l'échelle vaut une fraction de 2·tan(fov/2) — donc une hauteur fixe à l'écran */
+      var k = (free || unk ? 0.62 : 1) * S3_LBL_H * 2 * Math.tan(camera.fov * Math.PI / 360);
+      sp.scale.set(k * W / H, k, 1);
+      sp.userData = { hFrac: (free || unk ? 0.62 : 1) * S3_LBL_H, ink: (ink + 30) / W, prio: free || unk ? -1 : (p.pop || 0) + (p.sb || 0) * 0.1, alpha: 0 };
+      sp.renderOrder = 5;
+      sp.frustumCulled = false;
+      sp.layers.set(LAYER_OPEN);
+      sp.visible = false;
+      return sp;
+    }
+    /* DÉ-ENCOMBREMENT des étiquettes de planètes du bloc présenté : les plus peuplées d'abord,
+       une étiquette qui en chevaucherait une déjà placée s'efface (fondu). Hystérésis : une
+       étiquette déjà affichée est testée avec une boîte réduite, pour ne pas clignoter quand
+       deux planètes se croisent lentement. */
+    var _s3Boxes = [];
+    function s3Declutter(dt) {
+      if (!S3.list.length) return;
+      var cam = S3.sys === openSys && openF > 0 && openCam ? openCam : camera;
+      var W = cw, H = ch, items = [];
+      S3.list.forEach(function (it) {
+        var sp = it.lbl;
+        if (!sp || !sp.userData || !it.mesh.visible) { if (sp) sp.userData.want = 0; return; }
+        _v.copy(sp.position).applyMatrix4(group.matrixWorld).project(cam);
+        if (_v.z > 1) { sp.userData.want = 0; return; }
+        var hpx = sp.userData.hFrac * H, wpx = sp.userData.ink * hpx * (640 / 180);
+        items.push({ sp: sp, cx: (_v.x * .5 + .5) * W, cy: (-_v.y * .5 + .5) * H, w: wpx, h: hpx * 0.86 });
+      });
+      items.sort(function (a, b) { return b.sp.userData.prio - a.sp.userData.prio; });
+      _s3Boxes.length = 0;
+      items.forEach(function (a) {
+        var shrink = a.sp.userData.alpha > 0.5 ? 0.82 : 1;
+        var hw = a.w * shrink / 2, hh = a.h * shrink / 2, ok = true;
+        for (var i = 0; i < _s3Boxes.length; i++) {
+          var b = _s3Boxes[i];
+          if (Math.abs(a.cx - b.cx) < hw + b.hw && Math.abs(a.cy - b.cy) < hh + b.hh) { ok = false; break; }
+        }
+        a.sp.userData.want = ok ? 1 : 0;
+        if (ok) _s3Boxes.push({ cx: a.cx, cy: a.cy, hw: hw, hh: hh });
+      });
+      S3.list.forEach(function (it) {
+        var u = it.lbl && it.lbl.userData;
+        if (!u) return;
+        u.alpha += ((u.want || 0) - u.alpha) * Math.min(1, (dt || 0.016) * 7);
+      });
+    }
+    function s3Clear() {
+      S3.list.forEach(function (it) {
+        if (it.mesh.parent) it.mesh.parent.remove(it.mesh);
+        it.mesh.traverse(function (o) {
+          if (!o.material) return;
+          o.material.dispose();
+          if (o.geometry && o.geometry.type === "RingGeometry") o.geometry.dispose();
+        });
+        if (it.lbl) {
+          if (it.lbl.parent) it.lbl.parent.remove(it.lbl);
+          if (it.lbl.material.map) it.lbl.material.map.dispose();
+          it.lbl.material.dispose();
+        }
+        if (it.flash) { if (it.flash.parent) it.flash.parent.remove(it.flash); it.flash.material.dispose(); }
+        if (it.ob.mesh3 === it.mesh) it.ob.mesh3 = null;
+        if (it.ob.lbl3 === it.lbl) it.ob.lbl3 = null;
+        if (it.ob.flash3 === it.flash) it.ob.flash3 = null;
+      });
+      S3.list = []; S3.sys = null;
+      if (S3.light && S3.light.parent) S3.light.parent.remove(S3.light);
+    }
+    /* ── DISPOSITION DU SYSTÈME OUVERT ──────────────────────────────────────
+       Avant : orbites fixes (0,30 + k × 0,055) × 6,5 — la première passait SUR l'anneau
+       de possession à crans, et des planètes grossies se touchaient d'une orbite à
+       l'autre. Maintenant, à partir du soleil déployé :
+         · l'anneau à crans se resserre juste autour du soleil (donutOpen) ;
+         · première orbite = bord extérieur de l'anneau + marge + rayon de la planète ;
+         · chaque orbite suivante = précédente + rayon précédent + rayon suivant + marge.
+       Rayon « encombrant » d'une planète = son atmosphère (×1,07) ou ses anneaux (×1,72).
+       Les orbites tournant à des vitesses différentes, deux voisines se croisent : cet
+       écart garantit qu'elles ne se touchent jamais (hors battement d'un siège). */
+    var S3_MARGE = 0.07;   /* en unités de carte, entre deux planètes voisines */
+    function s3Layout(sys) {
+      var lvS = starIdx(sys.popLevel), rkS = sys.richK || 1;
+      var sunR = unit * (0.24 + lvS * 0.035) * rkS * 2.2;          /* rayon du soleil déployé (cf. updateMap) */
+      /* bande du donut : rayons 0,746 à 0,879 du demi-côté du plan (arc 104/128 px, trait 17 px) */
+      var donutS = Math.max(sunR * 1.12 / 0.746, unit * 0.5);
+      var its = S3.list.slice().sort(function (a, b) { return a.ob.k - b.ob.k; });
+      /* rayon « encombrant » : atmosphère ×1,07 ; anneaux ×1,45 (ils sont inclinés, ×1,72 écartait
+         trop les géantes et repoussait les dernières orbites au loin) */
+      var eff = its.map(function (it) { var ud = it.mesh.userData; return unit * ud.r * (ud.ringed ? 1.45 : 1.07); });
+      var rad = [], n = its.length;
+      if (!n) { sys.radOpen = rad; sys.donutOpen = donutS; sys.outerOpen = unit * 5.9; return; }
+      /* JUSTE MILIEU (14/09, « certaines trop près de l'étoile, d'autres trop loin ») :
+         un écart RÉGULIER G entre deux orbites = médiane des paires de voisines + marge, élargi
+         seulement là où deux grosses planètes se toucheraient ; les petites (libres) ne sont plus
+         tassées les unes contre les autres, les grosses ne repoussent plus tout le reste. */
+      var pairs = [];
+      for (var i = 1; i < n; i++) pairs.push(eff[i - 1] + eff[i]);
+      pairs.sort(function (a, b) { return a - b; });
+      var G = (pairs.length ? pairs[Math.floor(pairs.length / 2)] : eff[0] * 2) + unit * S3_MARGE * 2;
+      /* première orbite : bord de l'anneau à crans + un écart régulier, jamais collée à l'étoile */
+      var R = donutS * 0.879 + Math.max(G * 0.85, eff[0] + unit * S3_MARGE * 2);
+      rad[its[0].ob.k] = R;
+      for (var j = 1; j < n; j++) {
+        R += Math.max(G, eff[j - 1] + eff[j] + unit * S3_MARGE);
+        rad[its[j].ob.k] = R;
+      }
+      sys.radOpen = rad;
+      sys.donutOpen = donutS;
+      sys.outerOpen = R + eff[n - 1];
+    }
+    function s3Build(sys) {
+      s3Clear();
+      if (!group) return;
+      if (!S3.geo) S3.geo = new T.SphereGeometry(1, 32, 20);
+      if (!S3.amb) {
+        var amb = new T.AmbientLight(0x4a5a8c, 1.15);
+        amb.layers.enable(LAYER_OPEN);        /* les lumières sont filtrées par couche : la passe 3 doit les voir */
+        scene.add(amb); S3.amb = true;
+      }
+      if (!S3.light) { S3.light = new T.PointLight(0xfff2dc, 3.4, 0, 0); S3.light.layers.enable(LAYER_OPEN); }
+      group.add(S3.light);
+      S3.sys = sys;
+      var taken = { arch: {}, tex: {} };
+      orbits.filter(function (ob) { return ob.s === sys && ob.p; })
+        .sort(function (a, b) { return (a.p.idx || 0) - (b.p.idx || 0); })
+        .forEach(function (ob) {
+          var p = ob.p, seed = p.idx * 7.3 + ((+sys.id || 0) % 50), free = p.state === "free", arch;
+          if (free) arch = "dead";
+          else {
+            var list = S3_ARCH[s3Zone(p.idx)], start = Math.floor(s3rand(seed + 11.3) * list.length) % list.length;
+            var best = list[start], bestN = taken.arch[best] || 0;
+            for (var k = 1; k < list.length && bestN > 0; k++) {
+              var cand = list[(start + k) % list.length], n = taken.arch[cand] || 0;
+              if (n < bestN) { best = cand; bestN = n; }
+            }
+            arch = best;
+          }
+          taken.arch[arch] = (taken.arch[arch] || 0) + 1;
+          var fam = S3_FAM[arch], ts = Math.min(fam.length - 1, Math.floor(s3rand(seed + 1.7) * fam.length)), map = fam[ts];
+          for (var q = 0; q < fam.length; q++) {
+            var c2 = fam[(ts + q) % fam.length];
+            if (!taken.tex[c2]) { taken.tex[c2] = 1; map = c2; break; }
+          }
+          var tint = new T.Color(1, 1, 1).lerp(new T.Color().setHSL(s3rand(seed), 0.5, 0.5), 0.08);
+          if (arch === "ocean") tint.lerp(new T.Color("#9cd0ff"), 0.22);
+          if (arch === "continental") tint.lerp(new T.Color("#e0f0c0"), 0.16);
+          if (arch === "ice") tint.lerp(new T.Color("#bcd6ff"), 0.4);
+          if (arch === "lava") tint.lerp(new T.Color("#ff9a48"), 0.5);
+          var ex = s3Extra(map), earth = !!ex.earth, geos = s3Geos();
+          var pg = new T.Group();
+          var matP = new T.MeshPhongMaterial({ color: new T.Color(S3_REPLI[arch]), shininess: earth ? 26 : 6,
+            specular: new T.Color(earth ? 0x66788a : 0x0c0c0c) });
+          var body = new T.Mesh(geos[Math.floor(s3rand(seed + 23.9) * 4) & 3], matP);
+          pg.add(body);
+          /* toutes les cartes de la planète attendues ensemble, puis un matériau neuf compilé à part */
+          var lights = Math.min(1, (p.pop || 0) / 6), withNight = earth && lights > 0;
+          var wants = [s3Tex(map)];
+          if (earth) { wants.push(s3Tex(ex.spec, true), s3Tex(ex.normal, true)); if (withNight) wants.push(s3Tex(ex.night)); }
+          (function (body, matP, tint, arch, earth, withNight, lights) {
+            Promise.allSettled(wants).then(function (rs) {
+              var got = function (i) { return rs[i] && rs[i].status === "fulfilled" ? rs[i].value : null; };
+              if (!got(0) || !body.parent) return;
+              var m2 = new T.MeshPhongMaterial({ map: got(0), color: tint.clone(), shininess: earth ? 26 : 6,
+                specular: new T.Color(earth ? 0x66788a : 0x0c0c0c) });
+              if (arch === "lava") { m2.emissive.set("#4a1200"); m2.emissiveIntensity = 1.0; }
+              if (earth) {
+                if (got(1)) m2.specularMap = got(1);
+                if (got(2)) { m2.normalMap = got(2); m2.normalScale.set(0.85, 0.85); }
+                if (withNight && got(3)) {
+                  m2.emissiveMap = got(3); m2.emissive.set("#ffb45a");
+                  m2.emissiveIntensity = 0.3 + 1.1 * lights;
+                  m2.onBeforeCompile = s3NightMask;
+                }
+              }
+              s3Swap(body, m2, function () { matP.dispose(); });
+            });
+          })(body, matP, tint, arch, earth, withNight, lights);
+          var clouds = null, cloudFile = earth ? "earth_clouds.jpg" : (ex.veil || null);
+          if (cloudFile) {
+            var cm = new T.MeshPhongMaterial({ color: 0xffffff, transparent: true, depthWrite: false,
+              opacity: earth ? 1.0 : 0.42, shininess: 3, specular: 0x000000 });
+            clouds = new T.Mesh(geos[Math.floor(s3rand(seed + 27.1) * 4) & 3], cm);
+            clouds.scale.setScalar(1.018);
+            clouds.renderOrder = 1;
+            clouds.visible = false;
+            (function (clouds, cm, earth) {
+              s3Tex(cloudFile).then(function (t) {
+                if (earth) cm.alphaMap = t; else cm.map = t;
+                cm.needsUpdate = true; clouds.visible = true;
+              }, function () {});
+            })(clouds, cm, earth);
+            pg.add(clouds);
+          }
+          var atmoHex = arch === "gas" ? (S3_GAS_ATMO[map] || S3_ATMO.gas) : S3_ATMO[arch];
+          if (atmoHex) pg.add(s3Atmo(atmoHex, arch === "gas" ? 0.5 : 0.65));
+          var ringed = arch === "gas" && s3rand(seed + 21.7) < 0.5;
+          if (ringed) pg.add(s3Rings(new T.Color(S3_GAS_ATMO[map] || S3_ATMO.gas).lerp(new T.Color(1, 1, 1), 0.65)));
+          /* inclinaison d'axe déterministe (anneaux franchement couchés), comme la vue système */
+          pg.rotation.z = (s3rand(seed + 9.1) - 0.5) * 0.6;
+          pg.rotation.x = ringed ? (s3rand(seed + 9.7) < 0.5 ? -1 : 1) * (0.45 + s3rand(seed + 9.9) * 0.35)
+                                 : (s3rand(seed + 9.7) - 0.5) * 0.3;
+          pg.visible = false;
+          pg.userData = {
+            r: S3_TAILLE * (free ? 0.066 : 0.1 * S3_BASER[arch] * (0.85 + Math.min(8, p.pop || 0) * 0.045)),
+            spin: 0.06 + s3rand(seed + 13.7) * 0.16, rot0: s3rand(seed + 17.3) * Math.PI * 2,
+            body: body, clouds: clouds, ringed: ringed
+          };
+          /* dessinées UNIQUEMENT en passe 3, à la place de présentation */
+          pg.traverse(function (o) { o.layers.set(LAYER_OPEN); o.frustumCulled = false; });
+          group.add(pg);
+          var lbl = s3Label(sys, p);
+          group.add(lbl);
+          var flash = new T.Sprite(new T.SpriteMaterial({ map: haloTex(), color: free ? "#cfd8ff" : planetHex(sys, p),
+            transparent: true, depthWrite: false, blending: T.AdditiveBlending, opacity: 0 }));
+          flash.frustumCulled = false; flash.visible = false; flash.renderOrder = 4;
+          flash.layers.set(LAYER_OPEN);
+          group.add(flash);
+          ob.mesh3 = pg; ob.lbl3 = lbl; ob.flash3 = flash;
+          S3.list.push({ ob: ob, mesh: pg, lbl: lbl, flash: flash });
+        });
+      s3Layout(sys);
+    }
     var inspector = null, orbitLines = [], scanRing = null, rangeRing = null, visionRing = null;
+
+    /* ── MASQUE SOUS LES ANNEAUX DU SYSTÈME OUVERT ──────────────────────────
+       Estomper le décor ne suffisait pas : on voyait encore, entre les orbites,
+       les systèmes voisins, leurs noms, leurs halos et le repère. Quand un
+       système est ouvert (desktop), l'image se fait en TROIS passes :
+         1. la scène normale ;
+         2. un disque couleur fond de carte, dans le plan du système, rayon =
+            anneau extérieur (+ balayage et dépassement de la cascade), dessiné
+            PAR-DESSUS tout (depthTest off) ;
+         3. la couche LAYER_OPEN seule, redessinée sur le disque : le nœud du
+            système ouvert (sauf son halo d'alliance), ses orbites, ses planètes
+            texturées, leurs lumières, et les flottes.
+       Le disque vit dans sa propre scène, sa matrixWorld est calculée à la main
+       (group.matrixWorld × position/rotation/échelle) : pas d'arbre à recomposer. */
+    var LAYER_OPEN = 1, occScene = null, occ = null, occNode = null, occStars = null;
+    var _occL = null, _occQ = null, _occS = null, _occP = null;
+    function occTexture() {
+      var c = document.createElement("canvas"); c.width = c.height = 256;
+      var x = c.getContext("2d"), g = x.createRadialGradient(128, 128, 0, 128, 128, 128);
+      g.addColorStop(0, "rgba(255,255,255,1)"); g.addColorStop(.9, "rgba(255,255,255,1)"); g.addColorStop(1, "rgba(255,255,255,0)");
+      x.fillStyle = g; x.fillRect(0, 0, 256, 256);
+      var tx = new T.CanvasTexture(c);
+      tx.colorSpace = T.SRGBColorSpace;
+      return tx;
+    }
+    function occSetLayer(node, on) {
+      if (!node) return;
+      node.traverse(function (o) {
+        if (o.renderOrder === -3) return;   /* halo d'alliance (infl) : reste sur la carte, sous le masque */
+        /* ouvert : le système quitte la carte (couche 0) et n'est plus dessiné qu'en présentation */
+        o.layers.set(on ? LAYER_OPEN : 0);
+      });
+    }
+    /* système à masquer : l'actif s'il est déployé, sinon celui qui se replie */
+    function occTarget(active) {
+      if (MOBILE) return null;
+      if (active && active.deploy > .02 && active.vis) return active;
+      if (S3.sys && S3.sys.deploy > .02 && S3.sys.vis) return S3.sys;
+      return null;
+    }
+    /* ── PRÉSENTATION du système ouvert ─────────────────────────────────────
+       Le bloc (soleil, orbites, planètes) glisse vers une place fixe de l'écran,
+       à gauche et un peu haut, légèrement incliné vers la gauche ; la fiche va à
+       droite (placeTip). La CARTE ne bouge pas : c'est une caméra à part
+       (openCam), copie de la caméra principale braquée sur le système — même
+       distance donc même zoom — décalée par setViewOffset et roulée. Le survol
+       et le glissé de la carte continuent de viser la carte ; seules les
+       planètes du bloc sont projetées avec openCam (clic / survol justes). */
+    /* x, y   : place du bloc (fractions de l'écran)
+       roll   : inclinaison de l'image (rad, > 0 = vers la gauche) — .10, .22, puis -.22 le 14/09
+       pitch  : le plan des orbites est vu plus RASANT (rad ajoutés à l'angle depuis la verticale,
+                plafonné à PITCH_MAX pour ne jamais passer sous le plan)
+       disc   : opacité du masque sous les anneaux
+       size   : rayon de l'anneau extérieur à l'écran, en fraction de la hauteur (le bloc n'est jamais plus petit)
+       orbit  : vitesse des orbites du système ouvert (1 = celle de la carte) — « très lentement », 14/09
+       spin   : vitesse de rotation propre des planètes du bloc (1 = vue système) */
+    var PRESENT = { x: .31, y: .47, roll: -.22, pitch: .38, disc: .82, size: .44, orbit: .06, spin: .35 }, PITCH_MAX = 1.36;   /* roll < 0 : penché à DROITE (14/09 « de l'autre côté, même inclinaison ») */
+    var openCam = null, openSys = null, openF = 0, _openW = null, _openD = null, _openT = null, _openO = null;
+    function smooth01(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
+    function updateOpenCam(s) {
+      if (!openCam) {
+        openCam = new T.PerspectiveCamera();
+        _openW = new T.Vector3(); _openD = new T.Vector3(); _openT = new T.Vector3(); _openO = new T.Vector3();
+      }
+      openF = smooth01(s.deploy * 1.25);
+      openCam.copy(camera, false);
+      /* même orientation, même distance, mais braquée sur le système (en proportion de openF) */
+      _openW.set(s.cx * unit, s.node.position.y, s.cy * unit).applyMatrix4(group.matrixWorld);
+      _openD.copy(_openW).sub(target).multiplyScalar(openF);
+      openCam.position.add(_openD);
+      _openT.copy(target).add(_openD);                 /* point visé = cible → système */
+      /* plan plus incliné : on tourne autour du point visé, en éloignant la caméra de la verticale */
+      _openO.copy(openCam.position).sub(_openT);
+      var rr = _openO.length() || 1;
+      /* bloc en GRAND : distance telle que l'anneau extérieur (système déployé) fasse
+         PRESENT.size de la hauteur — jamais plus loin que la caméra de la carte */
+      var rFull = (s.outerOpen || unit * (.30 + 11 * .055) * 6.5) * 1.1;
+      var dWant = rFull / (2 * PRESENT.size * Math.tan(camera.fov * Math.PI / 360));
+      rr = rr + (Math.min(rr, dWant) - rr) * openF;
+      var ph = Math.acos(Math.max(-1, Math.min(1, _openO.y / (_openO.length() || 1)))), th = Math.atan2(_openO.x, _openO.z);
+      var ph2 = ph >= PITCH_MAX ? ph : Math.min(PITCH_MAX, ph + PRESENT.pitch * openF);
+      _openO.set(rr * Math.sin(ph2) * Math.sin(th), rr * Math.cos(ph2), rr * Math.sin(ph2) * Math.cos(th));
+      openCam.position.copy(_openT).add(_openO);
+      openCam.lookAt(_openT);
+      openCam.rotateZ(-PRESENT.roll * openF);   /* caméra roulée à droite = image penchée à gauche */
+      var W = Math.max(1, cw), H = Math.max(1, ch);
+      openCam.setViewOffset(W, H, (.5 - PRESENT.x) * W * openF, (.5 - PRESENT.y) * H * openF, W, H);
+      openCam.updateMatrixWorld();
+    }
+    /* le pointeur est-il sur le bloc présenté ? (garde le système ouvert quand on va vers ses planètes) */
+    var openEllipse = null;
+    function onOpenBlock(mx, my) {
+      var e = openEllipse;
+      if (!e || !openSys || openF < .5) return false;
+      var dx = mx - e.x, dy = my - e.y, c = Math.cos(-e.ang), sn = Math.sin(-e.ang);
+      var u = dx * c - dy * sn, v = dx * sn + dy * c;
+      return (u * u) / (e.a * e.a) + (v * v) / (e.b * e.b) <= 1;
+    }
+    function renderOpen(active) {
+      var s = occTarget(active);
+      if (occNode !== (s ? s.node : null)) {
+        occSetLayer(occNode, false);
+        occNode = s ? s.node : null;
+        occSetLayer(occNode, true);
+      }
+      openSys = s;
+      if (!s) { openF = 0; openEllipse = null; return; }
+      updateOpenCam(s);
+      if (!occScene) {
+        occScene = new T.Scene();
+        occScene.matrixWorldAutoUpdate = false;
+        occ = new T.Mesh(new T.CircleGeometry(1, 96), new T.MeshBasicMaterial({
+          color: 0x04050c, map: occTexture(), transparent: true, depthTest: false, depthWrite: false, side: T.DoubleSide }));
+        occ.matrixAutoUpdate = false;
+        occ.frustumCulled = false;
+        occScene.add(occ);
+        /* FOND D'ÉTOILES (14/09) : triangle plein écran, étoiles procédurales en coordonnées
+           d'écran (3 couches, tailles et teintes variées, scintillement), voile de nébuleuse
+           à la couleur du système. Additif : par-dessus le disque sombre, sous le système
+           (passe 3) ; hors du bloc, le voile CSS les atténue comme le reste de la carte. */
+        var stGeo = new T.BufferGeometry();
+        stGeo.setAttribute("position", new T.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3));
+        occStars = new T.Mesh(stGeo, new T.ShaderMaterial({
+          uniforms: { uTime: { value: 0 }, uAlpha: { value: 0 }, uTint: { value: new T.Color("#9fb4ff") } },
+          vertexShader: "void main(){ gl_Position = vec4(position.xy, 0.0, 1.0); }",
+          fragmentShader: [
+            "uniform float uTime; uniform float uAlpha; uniform vec3 uTint;",
+            "float h21(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }",
+            "float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);",
+            "  return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), f.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + vec2(1.0, 1.0)), f.x), f.y); }",
+            "void main(){",
+            "  vec2 uv = gl_FragCoord.xy; vec3 col = vec3(0.0);",
+            "  for (int L = 0; L < 3; L++) {",
+            "    float fl = float(L), cell = 16.0 + fl * 15.0;",
+            "    vec2 g = uv / cell + fl * 7.13; vec2 id = floor(g); vec2 f = fract(g) - 0.5;",
+            "    float r = h21(id + fl * 17.0);",
+            "    if (r > 0.83 - fl * 0.04) {",
+            "      vec2 off = vec2(h21(id + 3.1), h21(id + 7.7)) - 0.5;",
+            "      float d = length(f - off * 0.7);",
+            "      float sz = mix(0.035, 0.11, h21(id + 11.3)) * (1.0 - fl * 0.22);",
+            "      float tw = 0.55 + 0.45 * sin(uTime * (0.7 + 2.6 * h21(id + 5.5)) + r * 40.0);",
+            "      float st = smoothstep(sz, 0.0, d) * tw * (1.0 - fl * 0.25);",
+            "      vec3 c = mix(vec3(0.72, 0.8, 1.0), vec3(1.0, 0.88, 0.72), h21(id + 9.9));",
+            "      col += c * st * 1.6;",
+            "    }",
+            "  }",
+            "  float nb = vn(uv / 340.0 + vec2(uTime * 0.006, 0.0)) * 0.65 + vn(uv / 140.0) * 0.35;",
+            "  col += uTint * pow(nb, 3.0) * 0.14;",
+            "  gl_FragColor = vec4(col * uAlpha, 1.0);",
+            "}"
+          ].join("\n"),
+          transparent: true, depthTest: false, depthWrite: false, blending: T.AdditiveBlending
+        }));
+        occStars.frustumCulled = false;
+        occStars.renderOrder = 1;
+        occScene.add(occStars);
+        _occL = new T.Matrix4(); _occQ = new T.Quaternion().setFromAxisAngle(new T.Vector3(1, 0, 0), -Math.PI / 2);
+        _occS = new T.Vector3(); _occP = new T.Vector3();
+      }
+      var dep = Math.max(0, Math.min(1, s.deploy));
+      var R = s.outerOpen ? (unit * .9 + (s.outerOpen * 1.12 - unit * .9) * dep)
+                          : unit * (.30 + 11 * .055) * (1 + dep * 5.5) * 1.2;
+      _occP.set(s.cx * unit, s.node.position.y, s.cy * unit);
+      _occS.set(R, R, R);
+      _occL.compose(_occP, _occQ, _occS);
+      occ.matrixWorld.multiplyMatrices(group.matrixWorld, _occL);
+      /* un peu de transparence : on devine la carte derrière le bloc */
+      occ.material.opacity = Math.min(PRESENT.disc, dep * 1.6);
+      if (occStars) {
+        occStars.material.uniforms.uTime.value = clock.elapsedTime;
+        occStars.material.uniforms.uAlpha.value = Math.min(1, dep * 1.4);
+        if (s.hex && /^#[0-9a-f]{6}$/i.test(s.hex)) occStars.material.uniforms.uTint.value.set(s.hex);
+      }
+
+      renderer.autoClear = false;
+      renderer.clearDepth();
+      renderer.render(occScene, openCam);
+      renderer.clearDepth();
+      openCam.layers.set(LAYER_OPEN);
+      renderer.render(scene, openCam);
+      renderer.autoClear = true;
+    }
     var fleets = [], fleetGroup = null, loaded = null;
     /* Comme la carte du jeu : la couleur des astres suffit, les tags sur
        chaque système encombraient. Le halo d'alliance porte la lecture
@@ -2033,6 +2744,47 @@
        256 px de textTex (texte coupe, enorme). Canvas de 512 et police
        reduite jusqu'a tenir, comme pour les noms de systemes. */
     var SHIP_ROT = 0;   /* le triangle pointe a DROITE (angle 0) */
+    /* ── LABO : marqueur de flotte au choix (14/09, « à la place du cône triangle ») ──
+       triangle  : l'actuel (mes vols et alliés)
+       comete    : noyau brillant + longue queue qui s'estompe derrière la tête
+       chevrons  : quatre chevrons en file derrière la tête, feux qui défilent
+       dard      : petit vaisseau 3D (pyramide) orienté dans le sens du vol, réacteur
+       flux      : grains qui coulent le long de l'arc restant, vers la cible
+       insigne   : pastille ronde couleur de relation avec la puissance (CV) */
+    var FLEET_STYLES = ["triangle", "comete", "chevrons", "dard", "flux", "insigne"];
+    var FLEET_STYLE = "comete";   /* choisi le 14/09 */
+    try { var fs0 = localStorage.getItem("labo_fleet_style"); if (FLEET_STYLES.indexOf(fs0) >= 0) FLEET_STYLE = fs0; } catch (e) {}
+    function chevTex() {
+      if (texCache.chev) return texCache.chev;
+      var c = document.createElement("canvas"); c.width = c.height = 96;
+      var x = c.getContext("2d");
+      x.lineCap = "round"; x.lineJoin = "round";
+      x.shadowColor = "rgba(255,255,255,.8)"; x.shadowBlur = 10;
+      x.strokeStyle = "#ffffff"; x.lineWidth = 13;
+      x.beginPath(); x.moveTo(30, 18); x.lineTo(66, 48); x.lineTo(30, 78); x.stroke();
+      texCache.chev = flatTex(c);
+      return texCache.chev;
+    }
+    function badgeTex(hex, txt) {
+      var k = "badge|" + hex + "|" + txt;
+      if (texCache[k]) return texCache[k];
+      var c = document.createElement("canvas"); c.width = c.height = 128;
+      var x = c.getContext("2d");
+      x.beginPath(); x.arc(64, 64, 50, 0, Math.PI * 2);
+      x.fillStyle = "rgba(6,9,18,.92)"; x.fill();
+      x.lineWidth = 9; x.strokeStyle = hex; x.shadowColor = hex; x.shadowBlur = 14; x.stroke();
+      x.shadowBlur = 0;
+      x.fillStyle = "#ffffff"; x.textAlign = "center"; x.textBaseline = "middle";
+      x.font = "700 " + (txt.length > 3 ? 34 : 42) + "px 'Segoe UI', system-ui, sans-serif";
+      x.fillText(txt, 64, 67);
+      texCache[k] = flatTex(c);
+      return texCache[k];
+    }
+    function fmtCv(cv) {
+      cv = +cv || 0;
+      return cv >= 1e6 ? (cv / 1e6).toFixed(1).replace(/\.0$/, "") + "M"
+        : cv >= 1e3 ? Math.round(cv / 1e3) + "k" : String(Math.round(cv));
+    }
     var _shipTex = null;
     /* Marqueur de vol : un triangle plein, dessine sur canvas — aucune image a
        embarquer, identique sur PC et dans l'app. Nez a droite, cerne sombre
@@ -2356,7 +3108,7 @@
        ══════════════════════════════════════════════════════════════════════ */
 
     function buildMap() {
-      if (group) { scene.remove(group); ptDrop(planetMat); ptDrop(clusterMat); disposeTree(group); }
+      if (group) { s3Clear(); scene.remove(group); ptDrop(planetMat); ptDrop(clusterMat); disposeTree(group); }
       /* la sélection et les survols pointaient dans l'ancienne carte */
       sel = null; hov = null; hovPlanet = null; hovFleet = null; hideTip();
       group = new T.Group(); scene.add(group);
@@ -2517,6 +3269,7 @@
            pixels du texte ne bouge pas. */
         var aw = aTags.length > 1 ? 3.3 : 2.5;
         lblTop.scale.set(unit * aw, unit * aw / 8, 1);   /* ratio canvas 448×56 */
+        lblTop.userData.w = aw;   /* largeur de base, relue quand le système ouvert agrandit ses étiquettes */
         lblTop.position.y = unit * 0.8;
         node.add(lblTop);
         group.add(node);
@@ -2763,6 +3516,7 @@
         }
       }
       grid = g; group.add(g);
+      decorKSet = -1;   /* idem décor : repère reconstruit pendant qu'un système est ouvert */
     }
 
     function buildInspector() {
@@ -2783,6 +3537,8 @@
         transparent:true, opacity:.6, depthWrite:false}));
       insp.add(scanRing);
       inspector = insp; group.add(insp);
+      /* orbites : seulement en passe 3 (présentation) ; au doigt pas de présentation, elles restent sur la carte */
+      insp.traverse(function (o) { o.layers.set(MOBILE ? 0 : LAYER_OPEN); });
 
       rangeRing = new T.LineLoop(circleGeo, new T.LineBasicMaterial({color:0xffb347,
         transparent:true, opacity:.75, depthWrite:false}));
@@ -2862,7 +3618,7 @@
           tube.frustumCulled = false; fleetGroup.add(tube);
           tube.userData.r = own ? 0.06 : 0.045;
         }
-        if (own || ally) {
+        if ((own || ally) && FLEET_STYLE === "triangle") {
           ship = new T.Sprite(new T.SpriteMaterial({map:shipTex(), transparent:true, depthWrite:false,
             opacity: own ? 1 : .9, color: own ? "#ffffff" : hex}));
           var ssz = own ? 0.95 : 0.62;
@@ -2871,7 +3627,7 @@
         }
         /* traînée lumineuse derrière la tête : dégradé de couleur par sommet
            (en additif, un sommet noir est invisible → fondu naturel) */
-        var TN = 14;
+        var TN = FLEET_STYLE === "comete" ? 40 : 14;
         var tgeo = new T.BufferGeometry();
         tgeo.setAttribute("position", new T.Float32BufferAttribute(new Float32Array(TN * 3), 3));
         var tcol = new Float32Array(TN * 3);
@@ -2888,10 +3644,40 @@
            champ sur une matrice périmée et n'est jamais dessiné. */
         line.frustumCulled = false; trail.frustumCulled = false; head.frustumCulled = false;
         fleetGroup.add(line); fleetGroup.add(trail); fleetGroup.add(head);
+        /* ── objets du marqueur choisi (FLEET_STYLE) ── */
+        var mk = { style: FLEET_STYLE };
+        var addSp = function (tex, color, op, blend) {
+          var sp = new T.Sprite(new T.SpriteMaterial({ map: tex, color: color, transparent: true, depthWrite: false,
+            opacity: op, blending: blend ? T.AdditiveBlending : T.NormalBlending }));
+          sp.frustumCulled = false; fleetGroup.add(sp); return sp;
+        };
+        if (FLEET_STYLE === "comete") {
+          mk.core = addSp(haloTex(), "#ffffff", 1, true);
+          head.material.opacity = own ? .75 : .9;
+        } else if (FLEET_STYLE === "chevrons") {
+          mk.chev = [0, 1, 2, 3].map(function () { return addSp(chevTex(), hex, .9, true); });
+        } else if (FLEET_STYLE === "dard") {
+          var dg = new T.ConeGeometry(1, 3.2, 4, 1);
+          dg.rotateY(Math.PI / 4);
+          mk.dart = new T.Mesh(dg, new T.MeshBasicMaterial({ color: own ? "#ffffff" : hex, transparent: true, opacity: .95, depthWrite: false }));
+          mk.dart.frustumCulled = false; fleetGroup.add(mk.dart);
+          mk.engine = addSp(haloTex(), hex, .9, true);
+          head.material.opacity = .25;
+        } else if (FLEET_STYLE === "flux") {
+          var FN = 16, fgeo = new T.BufferGeometry();
+          fgeo.setAttribute("position", new T.Float32BufferAttribute(new Float32Array(FN * 3), 3));
+          mk.flow = new T.Points(fgeo, new T.PointsMaterial({ color: hex, size: unit * 0.42, map: haloTex(), transparent: true,
+            depthWrite: false, blending: T.AdditiveBlending, sizeAttenuation: true, opacity: own ? 1 : .85 }));
+          mk.flow.frustumCulled = false; mk.flowN = FN; fleetGroup.add(mk.flow);
+          head.material.opacity = .6;
+        } else if (FLEET_STYLE === "insigne") {
+          mk.badge = addSp(badgeTex(hex, fmtCv(raw.combatValue)), "#ffffff", 1, false);
+          head.material.opacity = .35;
+        }
         fleets.push({
           from:from, to:to, line:line, trail:trail, trailN:TN, head:head, hex:hex, rel:rel,
           own: own, glow: glow, lbl: null, lblTxt: "", tube: tube, ship: ship, tubeAt: 0,
-          apex:apex, seg:SEGA, dur:dur,
+          apex:apex, seg:SEGA, dur:dur, mk: mk,
           owner: bareOwner(raw.ownerName || raw.playerName) || "?",
           tag: raw.allianceTag || "",
           cv: raw.combatValue || 0,
@@ -2949,6 +3735,14 @@
        c'est le comportement qui marche — ne pas « corriger », et ne jamais
        passer cette variable en const. */
     var pxCellNow = 24;
+    /* ── DURÉE D'OUVERTURE d'un système (survol / sélection) ────────────────
+       rate : vitesse d'écartement des orbites (approche exponentielle, 95 % en ≈ 3 / rate s)
+       step : écart de départ entre deux planètes de la cascade (s)
+       dur  : trajet d'une planète jusqu'à son orbite (s)
+       → dernière planète posée à 11 × step + dur.
+       Avant (14/09) : rate 7, step .07, dur .45 → orbites à 95 % en 0,43 s, cascade finie en 1,22 s.
+       Maintenant ×2 : orbites à 95 % en 0,86 s, cascade finie en 2,44 s. */
+    var UNFOLD = { rate: 3.5, step: .14, dur: .9 };
 
     function distFor(radiusCells) {
       var R = radiusCells * unit;
@@ -3197,6 +3991,7 @@
            après updateMap, soit deux parcours complets de l'arbre par image. */
         scene.updateMatrixWorld();
         renderer.render(scene, camera);
+        renderOpen(sel || hov);   /* passes 2 et 3 : masque sous les anneaux du système ouvert */
       } catch (e) { running = false; trap(e); return; }
       requestAnimationFrame(loop);
     }
@@ -3510,9 +4305,14 @@
       camera.getWorldDirection(_vdir);
       var lblTilt = Math.abs(_vdir.y);          /* 1 = vue de dessus */
 
+      var dmax = 0;
       for (var i = 0; i < systems.length; i++) {
         var s = systems[i];
-        s.deploy += ((s === active ? 1 : 0) - s.deploy) * Math.min(1, dt * 7);
+        /* ouverture posée (UNFOLD.rate), repli vif (7) : survoler la carte ne doit pas traîner */
+        s.deploy += ((s === active ? 1 : 0) - s.deploy) * Math.min(1, dt * (s === active ? UNFOLD.rate : 7));
+        if (s.deploy > dmax) dmax = s.deploy;
+        /* horloge de la cascade des planètes : départ quand le système devient actif */
+        if (s === active) { if (s.unfoldT == null) s.unfoldT = t; } else if (s.deploy < .02) s.unfoldT = null;
         var fog = layers.fog && !s.inVision ? .3 : 1;
         var op = s.dim * fog, sc = 1 + s.deploy * 2.2;
         var lv = starIdx(s.popLevel);
@@ -3527,7 +4327,11 @@
         var rk = s.richK || 1;
         /* L'anneau suit, mais bien plus doucement : il dit déjà la COMPOSITION
            par ses crans colorés, il ne prend ici qu'un peu de MAGNITUDE. */
-        s.ring.scale.setScalar(unit * (s.ringK || 0.92) * sc);
+        if (s === S3.sys && s.donutOpen) {
+          /* système ouvert : l'anneau à crans reste collé au soleil, les planètes orbitent au-delà */
+          var ring0 = unit * (s.ringK || 0.92);
+          s.ring.scale.setScalar(ring0 + (s.donutOpen - ring0) * Math.min(1, s.deploy));
+        } else s.ring.scale.setScalar(unit * (s.ringK || 0.92) * sc);
         if (s.plas) {
           /* plas et promG DOIVENT garder exactement le même scalaire : les
              protubérances sont des arcs tracés sur la sphère unité */
@@ -3566,10 +4370,31 @@
              demi-cellule sous l'anneau des qu'on inclinait. Le +0,19 est la
              demi-hauteur du sprite (0,153) plus une marge de 4 centiemes :
              le haut du texte affleure l'anneau. */
-          s.lblDBc = rA * lblTilt + 0.19 + s.deploy * 0.9 + (rk - 1) * 0.30;
-          s.lblDTc = rA * lblTilt + 0.18 + s.deploy * 1.2 + (rk - 1) * 0.30;
+          /* système ouvert (présentation) : nom et tags d'alliance ×2,6, décalés d'autant */
+          var FL = s === openSys && openF > 0 ? 1 + 1.6 * openF : 1;
+          s.lbl.scale.set(unit * 2.45 * FL, unit * 0.306 * FL, 1);
+          if (s.lblTop) { var aw2 = s.lblTop.userData.w || 2.5; s.lblTop.scale.set(unit * aw2 * FL, unit * aw2 / 8 * FL, 1); }
+          s.lblDBc = rA * lblTilt + 0.19 * FL + s.deploy * 0.9 + (rk - 1) * 0.30;
+          s.lblDTc = rA * lblTilt + 0.18 * FL + s.deploy * 1.2 + (rk - 1) * 0.30;
           s.lbl.position.copy(_lblDn).multiplyScalar(unit * s.lblDBc);
           if (s.lblTop) s.lblTop.position.copy(_lblDn).multiplyScalar(-unit * s.lblDTc);
+          if (FL > 1 && openEllipse && S3.down && openCam) {
+            /* Système ouvert : les étiquettes calculées pour la caméra de la CARTE tombaient au
+               milieu des orbites (et de travers : la présentation est inclinée). On les pose au-dessus
+               du bloc, dans le repère de la caméra de présentation : tags d'alliance en haut, puis
+               « Nom [ID] (x/y) », juste au-dessus du bord de l'ellipse du bloc. */
+            var eo = openEllipse;
+            var extPx = Math.sqrt(Math.pow(eo.a * Math.sin(eo.ang), 2) + Math.pow(eo.b * Math.cos(eo.ang), 2));
+            _v.set(s.cx * unit, s.node.position.y, s.cy * unit).applyMatrix4(group.matrixWorld);
+            var wppL = 2 * Math.tan(openCam.fov * Math.PI / 360) * _v.distanceTo(openCam.position) / Math.max(1, h);
+            var nameH = unit * 0.306 * FL, tagH = s.lblTop ? unit * (s.lblTop.userData.w || 2.5) / 8 * FL : 0;
+            var dName = (extPx + 8) * wppL + nameH * 0.5;
+            var dTag = dName + nameH * 0.5 + tagH * 0.5 + 4 * wppL;
+            if (!S3.upL) S3.upL = new T.Vector3();
+            S3.upL.copy(S3.down).multiplyScalar(-dName);
+            s.lbl.position.lerp(S3.upL, openF);
+            if (s.lblTop) { S3.upL.copy(S3.down).multiplyScalar(-dTag); s.lblTop.position.lerp(S3.upL, openF); }
+          }
           if (layers.flat) {
             s.lbl.position.y = unit * .06;
             if (s.lblTop) s.lblTop.position.y = unit * .06;
@@ -3593,6 +4418,7 @@
         s.vis = _v.z < 1 && s.node.visible;
         s.sx = (_v.x*.5+.5) * w; s.sy = (-_v.y*.5+.5) * h;
       }
+      decorFade(dmax);
 
       placeLabels(w, h, dt);
 
@@ -3601,35 +4427,124 @@
         var sca = planetPts.geometry.attributes.aScale.array;
         /* zoom sémantique : très près, les 12 planètes en orbite grossissent */
         var zf = Math.max(1, Math.min(3, pxCellNow / 70));
+        /* planètes texturées : seul le système actif (ou celui qui se replie) en a */
+        if (!MOBILE) {
+          if (active && active !== S3.sys && active.deploy > .02) s3Build(active);
+          else if (S3.sys && S3.sys !== active && S3.sys.deploy < .02) s3Clear();
+          if (S3.sys && S3.light) {
+            S3.light.position.set(S3.sys.cx * unit, S3.sys.node.position.y, S3.sys.cy * unit);
+            if (S3.sunU) S3.sunU.value.copy(S3.light.position).applyMatrix4(group.matrixWorld);
+            /* « bas de l'écran » ramené dans le repère du groupe : les étiquettes restent SOUS leur planète */
+            if (!S3.down) { S3.down = new T.Vector3(); S3.gq = new T.Quaternion(); }
+            var lcam = S3.sys === openSys && openF > 0 && openCam ? openCam : camera;
+            S3.down.set(0, -1, 0).applyQuaternion(lcam.quaternion).applyQuaternion(group.getWorldQuaternion(S3.gq).invert());
+          }
+        }
         for (var o = 0; o < orbits.length; o++) {
-          var ob = orbits[o], sy = ob.s, k = 1 + sy.deploy * 5.5;
-          var an = ob.ph + t * ob.sp * (1 + sy.deploy * .4), rad = ob.rad * k;
+          var ob = orbits[o], sy = ob.s, dp = sy.deploy, swirl = 0, lift = 0, sk = -1, flashK = -1;
+          /* DÉPLOIEMENT EN CASCADE (horloge propre, cf. s.unfoldT) : au survol, les planètes
+             quittent le soleil l'une après l'autre (orbite intérieure d'abord, 70 ms d'écart),
+             en spirale, dépassent leur orbite d'environ 10 % puis s'y posent ; la dernière
+             arrive vers 1,2 s. Au repli, elles rentrent ensemble (sy.deploy). */
+          if (sy === active && sy.unfoldT != null && !MOBILE && sy === S3.sys && ob.mesh3) {
+            var fx = unfoldFx(ob, sy), e0 = (t - sy.unfoldT - fx.delay) / fx.dur, ek = Math.max(0, Math.min(1, e0));
+            if (fx.mode === 0) {            /* SPIRALE */
+              dp = easeBackOut(ek); swirl = (1 - ek) * fx.swirl;
+              lift = Math.sin(Math.PI * ek) * Math.abs(fx.lift) * 0.3; sk = Math.min(1, ek * 1.8);
+            } else if (fx.mode === 1) {     /* CHUTE */
+              var ec = 1 - Math.pow(1 - ek, 3);
+              dp = 1 + (fx.far - 1) * (1 - ec); swirl = (1 - ec) * fx.swirl * 0.45;
+              lift = (1 - ec) * fx.lift; sk = Math.min(1, ek * 2.4);
+            } else {                        /* WARP */
+              dp = 1; swirl = (1 - ek) * 0.3 * (fx.swirl < 0 ? -1 : 1); sk = elasticOut(ek);
+            }
+            /* éclair : à l'arrivée (0,6 s), ou dès le surgissement pour le warp */
+            if (fx.mode === 2) { if (e0 >= 0 && e0 < 0.55 / fx.dur) flashK = e0 * fx.dur / 0.55; }
+            else if (e0 >= 1 && e0 < 1 + 0.6 / fx.dur) flashK = (e0 - 1) * fx.dur / 0.6;
+          } else if (sy === active && sy.unfoldT != null) {
+            /* cascade d'origine (mobile, planètes en points) */
+            var ek2 = Math.max(0, Math.min(1, (t - sy.unfoldT - ob.k * UNFOLD.step) / UNFOLD.dur));
+            dp = easeBackOut(ek2);
+            swirl = (1 - ek2) * 2.4;
+          }
+          var k = 1 + dp * 5.5;
+          /* angle accumulé : la vitesse peut changer (système ouvert → très lent) sans que la planète saute */
+          var kSp = sy === openSys ? 1 + (PRESENT.orbit - 1) * smooth01(sy.deploy * 1.5) : 1 + sy.deploy * .4;
+          ob.acc = (ob.acc || 0) + dt * ob.sp * kSp;
+          var ro = sy === S3.sys && sy.radOpen ? sy.radOpen[ob.k] : null;
+          var an = ob.ph + ob.acc + swirl, rad = ro != null ? ob.rad + (ro - ob.rad) * dp : ob.rad * k;
           var x = sy.cx * unit + Math.cos(an) * rad, z = sy.cy * unit + Math.sin(an) * rad;
-          var ey = sy.node.position.y;
+          var ey = sy.node.position.y + lift * unit;
           arr[o*3] = x; arr[o*3+1] = ey; arr[o*3+2] = z;
-          sca[o] = (.55 + (o % 3) * .12) * (1 + sy.deploy * 2.4) * zf * (sy.node.visible ? 1 : 0);
+          /* planète assiégée : battement de cœur tant que le système est déployé */
+          var beat = ob.p && ob.p.siege && sy.deploy > .5 ? 1 + .5 * Math.pow(Math.max(0, Math.sin(t * 6)), 8) : 1;
+          /* planètes texturées du système actif (cf. S3) : la sphère prend la place du point */
+          if (ob.mesh3) {
+            var m3 = ob.mesh3, dq = sk >= 0 ? sk : Math.max(0, dp);
+            m3.visible = sy.node.visible && dq > .01;
+            m3.position.set(x, ey, z);
+            var rad3 = unit * m3.userData.r * dq * beat, ud3 = m3.userData;
+            m3.scale.setScalar(Math.max(1e-4, rad3));
+            ud3.rotAcc = (ud3.rotAcc || 0) + dt * ud3.spin * PRESENT.spin;
+            if (ud3.body) ud3.body.rotation.y = ud3.rot0 + ud3.rotAcc;
+            if (ud3.clouds) ud3.clouds.rotation.y = ud3.rot0 + 0.4 + ud3.rotAcc * 1.3;
+            if (ob.flash3) {
+              ob.flash3.visible = m3.visible && flashK >= 0 && flashK < 1;
+              if (ob.flash3.visible) {
+                ob.flash3.position.set(x, ey, z);
+                ob.flash3.scale.setScalar(unit * m3.userData.r * (2.2 + 7 * flashK));
+                ob.flash3.material.opacity = (1 - flashK) * (1 - flashK) * 0.95;
+              }
+            }
+            if (ob.lbl3 && S3.down) {
+              var lk = Math.max(0, Math.min(1, (dq - 0.55) * 2.5)), lu = ob.lbl3.userData;
+              var lka = lk * (lu.alpha == null ? 1 : lu.alpha);
+              ob.lbl3.visible = m3.visible && lka > 0.02;
+              ob.lbl3.material.opacity = lka;
+              /* sous la planète : son rayon (anneaux compris) + la demi-hauteur de l'étiquette,
+                 convertie de pixels en unités à la distance de la caméra de présentation */
+              var lcam3 = sy === openSys && openF > 0 && openCam ? openCam : camera;
+              _v.set(x, ey, z).applyMatrix4(group.matrixWorld);
+              var wpp = 2 * Math.tan(lcam3.fov * Math.PI / 360) * _v.distanceTo(lcam3.position) / Math.max(1, h);
+              var loff = rad3 * (ud3.ringed ? 1.72 : 1.07) + (lu.hFrac * h * 0.5 + 4) * wpp;
+              ob.lbl3.position.set(x + S3.down.x * loff, ey + S3.down.y * loff, z + S3.down.z * loff);
+            }
+          }
+          sca[o] = ob.mesh3 ? 0 : (.55 + (o % 3) * .12) * (1 + dp * 2.4) * beat * zf * (sy.node.visible ? 1 : 0);
           /* seules les planètes du système déployé sont cliquables */
           ob.vis = sy.deploy > .5;
           if (ob.vis) {
-            _v.set(x, ey, z).applyMatrix4(group.matrixWorld).project(camera);
+            /* planètes du bloc présenté : projetées là où elles sont DESSINÉES (openCam) */
+            _v.set(x, ey, z).applyMatrix4(group.matrixWorld).project(sy === openSys && openF > 0 && openCam ? openCam : camera);
             ob.sx = (_v.x*.5+.5) * w; ob.sy = (-_v.y*.5+.5) * h;
             ob.vis = _v.z < 1;
           }
         }
         planetPts.geometry.attributes.position.needsUpdate = true;
         planetPts.geometry.attributes.aScale.needsUpdate = true;
+        if (!MOBILE && S3.sys) s3Declutter(dt);
       }
 
       if (inspector) {
         if (active && active.deploy > .02) {
           inspector.visible = true;
           inspector.position.set(active.cx * unit, active.node.position.y, active.cy * unit);
+          var lay = active === S3.sys && active.radOpen ? active.radOpen : null;
           for (var k2 = 0; k2 < 12; k2++) {
-            orbitLines[k2].scale.setScalar(unit * (.30 + k2 * .055) * (1 + active.deploy * 5.5));
-            orbitLines[k2].material.opacity = .16 * active.deploy;
+            var base2 = unit * (.30 + k2 * .055);
+            if (lay) {
+              var ro2 = lay[k2];
+              orbitLines[k2].visible = ro2 != null;
+              if (ro2 != null) orbitLines[k2].scale.setScalar(base2 + (ro2 - base2) * active.deploy);
+            } else {
+              orbitLines[k2].visible = true;
+              orbitLines[k2].scale.setScalar(base2 * (1 + active.deploy * 5.5));
+            }
+            orbitLines[k2].material.opacity = .32 * active.deploy;
           }
           var ph = (t * .55) % 1;
-          var rmax = unit * (.30 + 11 * .055) * (1 + active.deploy * 5.5) * 1.12;
+          var rmax = lay ? (unit * (.30 + 11 * .055) + (active.outerOpen - unit * (.30 + 11 * .055)) * active.deploy) * 1.05
+                         : unit * (.30 + 11 * .055) * (1 + active.deploy * 5.5) * 1.12;
           scanRing.scale.setScalar(.12 * rmax + ph * rmax);
           scanRing.material.opacity = (1 - ph) * .55 * active.deploy;
         } else inspector.visible = false;
@@ -3667,6 +4582,10 @@
         if (f.tube) f.tube.visible = onCat;
         if (f.ship) f.ship.visible = onCat;
         if (f.lbl) f.lbl.visible = onCat;
+        if (f.mk) {
+          ["core", "dart", "engine", "flow", "badge"].forEach(function (k) { if (f.mk[k]) f.mk[k].visible = onCat; });
+          if (f.mk.chev && !onCat) f.mk.chev.forEach(function (c) { c.visible = false; });
+        }
         if (!onCat) { f.vis = false; return; }
         if (isFinite(f.t0) && isFinite(f.t1) && f.t1 > f.t0) {
           /* vraie progression temporelle : le marqueur avance en direct */
@@ -3756,10 +4675,65 @@
         if (f.trail) {
           var tp2 = f.trail.geometry.attributes.position.array;
           for (var ti2 = 0; ti2 < f.trailN; ti2++) {
-            bez(f.p * (ti2 / (f.trailN - 1)), _b);
+            var tu0 = f.mk && f.mk.core ? Math.max(0, f.p - 0.3) : 0;   /* comète : queue sur les 30 % derrière la tête */
+            bez(tu0 + (f.p - tu0) * (ti2 / (f.trailN - 1)), _b);
             tp2[ti2*3] = _b.x; tp2[ti2*3+1] = _b.y; tp2[ti2*3+2] = _b.z;
           }
           f.trail.geometry.attributes.position.needsUpdate = true;
+        }
+        /* ── marqueur choisi ── */
+        var mk = f.mk || {};
+        var angAt = function (u) {   /* angle À L'ÉCRAN de la tangente de l'arc en u (comme le triangle) */
+          bez(Math.max(0, Math.min(1, u)), _b);
+          _v.set(_b.x, _b.y, _b.z).applyMatrix4(group.matrixWorld).project(camera);
+          var ax0 = _v.x, ay0 = _v.y;
+          bez(Math.max(0, Math.min(1, u + 0.02)), _b);
+          _v.set(_b.x, _b.y, _b.z).applyMatrix4(group.matrixWorld).project(camera);
+          return Math.atan2(_v.y - ay0, (_v.x - ax0) * camera.aspect);
+        };
+        if (mk.core) {
+          mk.core.position.set(x, hy, z);
+          mk.core.scale.setScalar(unit * (f.own ? .55 : .42) * (1 + Math.sin(t * 7 + f.p * 11) * .12));
+        }
+        if (mk.chev) {
+          var run = (t * 2.2) % 4;
+          for (var ci = 0; ci < mk.chev.length; ci++) {
+            var cu = f.p - 0.012 - ci * 0.028;
+            var csp = mk.chev[ci];
+            csp.visible = cu > 0;
+            if (cu <= 0) continue;
+            bez(cu, _b);
+            csp.position.set(_b.x, _b.y, _b.z);
+            var lit = Math.max(0, 1 - Math.abs(((ci - run) % 4 + 4) % 4 - 0) / 1.2);
+            csp.material.opacity = (0.35 + 0.65 * lit) * (1 - ci * 0.16);
+            csp.material.rotation = angAt(cu);
+            var cs = unit * (f.own ? .62 : .48) * (1 - ci * 0.12);
+            csp.scale.set(cs, cs, 1);
+          }
+        }
+        if (mk.dart) {
+          mk.dart.position.set(x, hy + unit * .02, z);
+          bez(Math.min(1, f.p + 0.015), _b);
+          var ddx = _b.x - x, ddy = _b.y - hy, ddz = _b.z - z, dl = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz) || 1;
+          if (!mk.q) { mk.q = new T.Quaternion(); mk.up = new T.Vector3(0, 1, 0); mk.dir = new T.Vector3(); }
+          mk.dir.set(ddx / dl, ddy / dl, ddz / dl);
+          mk.dart.quaternion.setFromUnitVectors(mk.up, mk.dir);
+          mk.dart.scale.setScalar(unit * (f.own ? .16 : .12));
+          /* réacteur : juste derrière la pyramide, qui scintille */
+          mk.engine.position.set(x - mk.dir.x * unit * .32, hy - mk.dir.y * unit * .32, z - mk.dir.z * unit * .32);
+          mk.engine.scale.setScalar(unit * (.45 + Math.sin(t * 23 + f.p * 5) * .08));
+        }
+        if (mk.flow) {
+          var fpos = mk.flow.geometry.attributes.position.array, ph0 = (t * .45) % 1;
+          for (var fi = 0; fi < mk.flowN; fi++) {
+            bez(f.p + (1 - f.p) * ((fi + ph0) / mk.flowN), _b);
+            fpos[fi * 3] = _b.x; fpos[fi * 3 + 1] = _b.y; fpos[fi * 3 + 2] = _b.z;
+          }
+          mk.flow.geometry.attributes.position.needsUpdate = true;
+        }
+        if (mk.badge) {
+          mk.badge.position.set(x, hy + unit * .1, z);
+          mk.badge.scale.setScalar(unit * (f.own ? .95 : .8));
         }
         _v.set(x, hy, z).applyMatrix4(group.matrixWorld).project(camera);
         f.vis = _v.z < 1;
@@ -3816,30 +4790,89 @@
     /* ── la fiche ── */
     var tipEl = null;
     function tip() { return tipEl || (tipEl = document.getElementById("aw3d-tip")); }
-    /* voile sombre au survol/sélection : tout s'estompe sauf un halo clair
-       autour du système visé (dégradé radial CSS, aucun coût GPU) */
-    var veil = null;
+    /* voile sombre au survol/sélection : tout s'estompe AUTOUR du système visé,
+       jamais le système lui-même. La zone claire épouse son anneau d'orbite le
+       plus large tel qu'il apparaît à l'écran (une ellipse, penchée comme la
+       caméra) : avant, un cercle fixe de ~90 px assombrissait les orbites dès
+       que le système se déployait. Dégradé CSS, aucun coût GPU. */
+    var veil = null, _veilV = null, _veilC = null;
+    function veilEllipse(a2) {
+      /* rayon de la 12e orbite (cf. orbitLines) + le dépassement de la cascade
+         et du balayage (scanRing va jusqu'à ×1,12) */
+      var dep = Math.max(0, Math.min(1, a2.deploy || 0));
+      var R = a2 === S3.sys && a2.outerOpen ? (unit * .9 + (a2.outerOpen * 1.08 - unit * .9) * dep)
+                                            : unit * (.30 + 11 * .055) * (1 + dep * 5.5) * 1.14;
+      if (!_veilV) { _veilV = new T.Vector3(); _veilC = new T.Vector3(); }
+      var y = a2.node ? a2.node.position.y : 0;
+      var vcam = a2 === openSys && openF > 0 && openCam ? openCam : camera;   /* le voile suit le bloc présenté */
+      _veilC.set(a2.cx * unit, y, a2.cy * unit).applyMatrix4(group.matrixWorld).project(vcam);
+      if (_veilC.z > 1) return null;
+      var cx = (_veilC.x * .5 + .5) * cw, cy = (-_veilC.y * .5 + .5) * ch;
+      /* 24 points de l'anneau projetés : le plus loin donne le grand axe (et son
+         angle), le plus proche le petit axe */
+      var aMax = 0, aMin = Infinity, ang = 0;
+      for (var i = 0; i < 24; i++) {
+        var th = i / 24 * Math.PI * 2;
+        _veilV.set(a2.cx * unit + Math.cos(th) * R, y, a2.cy * unit + Math.sin(th) * R)
+          .applyMatrix4(group.matrixWorld).project(vcam);
+        if (_veilV.z > 1) return null;
+        var dx = (_veilV.x * .5 + .5) * cw - cx, dy = (-_veilV.y * .5 + .5) * ch - cy;
+        var d = Math.sqrt(dx * dx + dy * dy);
+        if (d > aMax) { aMax = d; ang = Math.atan2(dy, dx); }
+        if (d < aMin) aMin = d;
+      }
+      return { x: cx, y: cy, a: Math.max(40, aMax), b: Math.max(26, aMin), ang: ang };
+    }
+    var vctx = null, veilKey = "";
     function updateVeil() {
-      /* Le voile réécrit un radial-gradient PLEIN ÉCRAN à chaque image, donc
-         un repaint complet à chaque image pendant le glissé. C'est un effet de
-         confort, pas une information : au doigt on s'en passe. */
+      /* Effet de confort, pas une information : au doigt on s'en passe. */
       if (MOBILE) return;
       var a2 = hov || sel;
       if (!veil) {
-        veil = document.createElement("div");
-        veil.style.cssText = "position:absolute;inset:0;pointer-events:none;opacity:0;" +
+        /* ⚠ Canevas 2D À LA TAILLE DE L'ÉCRAN, redessiné seulement quand l'ellipse
+           bouge. Un <div> tourné de 2 × la diagonale (≈ 3 500 px de côté) avec un
+           radial-gradient recalculé à chaque image figeait l'onglet (écran noir,
+           renderer « unresponsive ») : ne pas y revenir. */
+        veil = document.createElement("canvas");
+        veil.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;" +
           "transition:opacity .3s;z-index:5;";
         canvas.parentNode.appendChild(veil);
+        vctx = veil.getContext("2d");
       }
-      if (a2 && a2.vis) {
-        var R1 = Math.max(80, pxCellNow * 1.2), R2 = R1 * 2.4;
-        veil.style.background = "radial-gradient(circle at " + a2.sx.toFixed(0) + "px " +
-          a2.sy.toFixed(0) + "px, rgba(4,5,12,0) " + R1.toFixed(0) + "px, rgba(4,5,12,.5) " +
-          R2.toFixed(0) + "px)";
-        veil.style.opacity = "1";
-      } else {
-        veil.style.opacity = "0";
+      var e = a2 && a2.vis ? veilEllipse(a2) : null;
+      openEllipse = e && a2 === openSys ? e : null;
+      if (!e || !vctx) { veil.style.opacity = "0"; return; }
+      var W = Math.max(1, Math.round(cw)), H = Math.max(1, Math.round(ch));
+      if (veil.width !== W || veil.height !== H) { veil.width = W; veil.height = H; veilKey = ""; }
+      var A = e.a + 14, B = e.b + 14;
+      var key = Math.round(e.x) + "|" + Math.round(e.y) + "|" + Math.round(A) + "|" + Math.round(B) + "|" + e.ang.toFixed(2);
+      if (key !== veilKey) {
+        veilKey = key;
+        /* RIEN par-dessus le système : sombre (0,8) partout, puis on PERCE une ellipse
+           pleine jusqu'à l'anneau extérieur (+ marge) qui s'estompe jusqu'à 1,6 × —
+           même rampe que l'ancien dégradé. (La lueur colorée du centre, qui
+           faussait les couleurs, est retirée.) */
+        vctx.setTransform(1, 0, 0, 1, 0, 0);
+        vctx.globalCompositeOperation = "source-over";
+        vctx.clearRect(0, 0, W, H);
+        vctx.fillStyle = "rgba(3,4,10,.8)";
+        vctx.fillRect(0, 0, W, H);
+        vctx.globalCompositeOperation = "destination-out";
+        vctx.translate(e.x, e.y);
+        vctx.rotate(e.ang);
+        vctx.scale(1, B / A);
+        var g = vctx.createRadialGradient(0, 0, 0, 0, 0, A * 1.6);
+        g.addColorStop(0, "rgba(0,0,0,1)");
+        g.addColorStop(1 / 1.6, "rgba(0,0,0,1)");
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        vctx.fillStyle = g;
+        vctx.beginPath();
+        vctx.arc(0, 0, A * 1.6, 0, Math.PI * 2);
+        vctx.fill();
+        vctx.setTransform(1, 0, 0, 1, 0, 0);
+        vctx.globalCompositeOperation = "source-over";
       }
+      veil.style.opacity = "1";
     }
     /* Taille de la fiche mesurée UNE fois par contenu, pas à chaque image.
        placeTip est appelée dans la boucle : lire offsetWidth/offsetHeight y
@@ -3856,10 +4889,36 @@
       /* au doigt la fiche est ancree en haut de la carte (CSS) : la poser pres
          du systeme la mettait sous le doigt qui vient d'appuyer */
       if (MOBILE) return;
+      var el = tip();
+      if (el.classList.contains("big")) {
+        /* système ouvert : le bloc est à gauche (PRESENT.x), la fiche à DROITE, centrée
+           dans l'espace libre et verticalement ; jamais sous le panneau Réglages 3D */
+        var right = cw - 16;
+        var pnl = document.getElementById("aw3d-panel");
+        if (pnl && pnl.classList.contains("on") && !pnl.classList.contains("collapsed")) {
+          var pr = pnl.getBoundingClientRect();
+          if (pr.width && pr.left - rectL > cw * .5) right = Math.min(right, pr.left - rectL - 16);
+        }
+        var blockR = openEllipse ? openEllipse.x + Math.max(openEllipse.a, openEllipse.b) : cw * (PRESENT.x + .24);
+        var zoneL = Math.min(cw - tipW - 16, blockR + 20);
+        var top = (ch - tipH) / 2;
+        var bx = Math.min(right - tipW, Math.max(zoneL, (zoneL + right - tipW) / 2));
+        if (bx < zoneL && pnl && right < cw - 16) {
+          /* pas la place entre le bloc et le panneau : la fiche passe SOUS le panneau, calée à droite */
+          var pb = pnl.getBoundingClientRect().bottom - rectT + 12;
+          if (pb + tipH <= ch - 8) { bx = cw - 16 - tipW; top = Math.max(pb, top); }
+        }
+        /* la fiche suit le bloc pendant qu'il glisse : on la recale dès que sa place change */
+        var bl = Math.round(Math.max(8, bx)), bt = Math.round(Math.max(8, Math.min(ch - tipH - 8, top)));
+        if (bl === lastTipX && bt === lastTipY) return;
+        lastTipX = bl; lastTipY = bt;
+        el.style.left = bl + "px";
+        el.style.top = bt + "px";
+        return;
+      }
       var x = sx | 0, y = sy | 0;
       if (x === lastTipX && y === lastTipY) return;   /* rien n'a bougé */
       lastTipX = x; lastTipY = y;
-      var el = tip();
       /* bien à droite de l'astre pour ne pas couvrir le système ; s'il n'y a
          plus la place, on passe à gauche plutôt que de recouvrir */
       var left = sx + 150;
@@ -3900,37 +4959,40 @@
           }).join(" · ") +
           (rows.length > 4 ? " +" + (rows.length - 4) : "") + '</div>';
       }
-      /* comme la vue du jeu : le tableau #/Pop/SB/Propriétaire des 12
-         planètes, libres comprises (estompées) */
-      var rowsP = "";
+      /* le tableau #/Pop/SB/Propriétaire des planètes PRISES seulement : les libres et les
+         inconnues tiennent chacune sur une ligne (« 5 libres : #4 · #6… ») — 12 lignes
+         cachaient les systèmes voisins. Le tag est dans l'en-tête : une ligne ne le répète
+         que s'il diffère. Couleurs éclaircies pour le texte (readableTag), ⚔ = assiégée. */
+      var rowsP = "", libres = [], inconnues = [];
       if (!hidden) s.planets.forEach(function (p) {
-        var free = p.state === "free";
-        var hx2 = free ? "rgba(160,175,210,.5)" : planetHex(s, p);
-        rowsP += '<tr><td>' + p.idx + '</td>' +
-          '<td>' + (p.state === "unknown" ? "?" : (free ? "·" : p.pop)) + '</td>' +
-          '<td>' + (p.sb || "·") + '</td>' +
-          '<td style="color:' + hx2 + '">' +
-            esc(free ? "Planète libre" : p.state === "unknown" ? "Inconnu"
-              : p.owner + (p.tag ? " [" + p.tag + "]" : "")) +
-          '</td></tr>';
+        if (p.state === "free") { libres.push(p.idx); return; }
+        if (p.state === "unknown") { inconnues.push(p.idx); return; }
+        var txt = p.owner + (p.tag && p.tag !== s.tag ? " [" + p.tag + "]" : "");
+        rowsP += '<tr><td>' + p.idx + '</td><td>' + p.pop + '</td><td>' + (p.sb || "·") + '</td>' +
+          '<td style="color:' + readableTag(planetHex(s, p), 0.74) + '">' + esc(txt) +
+            (p.siege ? '<span class="t-sg" title="assiégée">⚔</span>' : '') + '</td></tr>';
       });
-      var tabHtml = rowsP
+      var tabHtml = (rowsP
         ? '<table class="t-tab"><tr><th>#</th><th>Pop</th><th>SB</th><th>Propriétaire</th></tr>' + rowsP + '</table>'
-        : "";
+        : "") +
+        (libres.length ? '<div class="t-g"><b>' + libres.length + (libres.length > 1 ? " libres" : " libre") +
+          '</b> : #' + libres.join(" · #") + '</div>' : "") +
+        (inconnues.length ? '<div class="t-g"><b>' + inconnues.length + (inconnues.length > 1 ? " inconnues" : " inconnue") +
+          '</b> : #' + inconnues.join(" · #") + '</div>' : "");
       tip().innerHTML =
         '<div class="t-n">' + esc(s.name) + '</div>' +
-        '<div class="t-h"><span class="t-t" style="color:' + s.hex + '">' +
+        '<div class="t-h"><span class="t-t" style="color:' + readableTag(s.hex, 0.74) + '">' +
           '<i style="background:' + s.hex + '"></i>' + esc(label) + '</span>' +
           '<span class="t-xy">[' + s.id + '] ' + s.cx + '/' + s.cy + ' · sect. ' + s.sector + '</span></div>' +
         tabHtml +
         orbHtml +
-        (hidden ? "" : '<div class="t-o">' + (s.owners.length
-          ? s.owners.slice(0,6).map(function (o) { return '<b>' + esc(o) + '</b>'; }).join(" · ")
-          : "aucun colon") + '</div>') +
+        /* la liste des colons doublait le tableau : elle ne reste que s'il est vide */
+        (hidden || rowsP ? "" : '<div class="t-o">aucun colon</div>') +
         '<div class="t-f"><span>niveau ' + (hidden ? "?" : s.popLevel) + '</span>' +
           '<span>pop ' + (hidden ? "?" : s.pop) + '</span>' +
           (s.sbMax && !hidden ? '<span style="color:#ffd24a">SB ' + s.sbMax + '</span>' : '') +
           (sel === s ? '<b>portée ' + range + '</b>' : '') + '</div>';
+      tip().classList.toggle("big", !MOBILE);   /* système ouvert : fiche en grand, à droite (placeTip) */
       tip().classList.add("on");
       measureTip();   /* mesure unique par contenu, cf. placeTip */
       placeTip(s.sx, s.sy);
@@ -3949,6 +5011,7 @@
           (p.sb ? '<span style="color:#ffd24a">SB ' + p.sb + '</span>' : '<span>pas de SB</span>') +
           (p.siege ? '<b>assiégée</b>' : '') + '</div>' +
         (p.id ? '<div class="t-f"><span>clic → fiche planète</span></div>' : '');
+      tip().classList.toggle("big", !MOBILE && s === openSys);
       tip().classList.add("on");
       measureTip();
       placeTip(ob.sx, ob.sy);
@@ -3980,6 +5043,7 @@
         '<div class="t-f"><span>ETA <b style="color:#ffb347">' + (isFinite(f.t1) ? fmtEta(f.eta) : "inconnue") + '</b></span>' +
           (isFinite(f.t1) ? '<span>' + new Date(f.t1).toLocaleTimeString("fr-FR",
             {hour:"2-digit", minute:"2-digit"}) + '</span>' : '') + '</div>';
+      tip().classList.remove("big");
       tip().classList.add("on");
       measureTip();
       placeTip(f.sx, f.sy);
@@ -4166,6 +5230,8 @@
         if (hov) showSystemTip(hov); else if (sel) showSystemTip(sel); else hideTip();
       }
       var s = pickSystem(mx, my);
+      /* le bloc présenté a glissé à gauche : aller vers ses planètes ne doit pas le refermer */
+      if (!s && hov && hov === openSys && onOpenBlock(mx, my)) s = hov;
       if (s !== hov) {
         hov = s;
         canvas.style.cursor = s ? "pointer" : "";
@@ -4374,6 +5440,13 @@
         else buildGalaxy();
       },
       refreshFleets: function () { if (D) buildFleets(); },
+      /* LABO : changer de marqueur sans recharger (reconstruit les flottes) */
+      setFleetStyle: function (st) {
+        if (FLEET_STYLES.indexOf(st) < 0) return;
+        FLEET_STYLE = st;
+        try { localStorage.setItem("labo_fleet_style", st); } catch (e) {}
+        if (D) buildFleets();
+      },
       fleetVis: function () { return { own: fleetVis.own, ally: fleetVis.ally, enemy: fleetVis.enemy }; },
       setFleetVis: function (cat, on) { if (cat in fleetVis) fleetVis[cat] = !!on; },
       fleetCounts: function () {
@@ -4473,7 +5546,15 @@
     ui.__wired = true;
 
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && ui.classList.contains("on")) { rememberView("2d"); close(); }
+      if (e.key === "Escape" && ui.classList.contains("on")) {
+        if (isFull()) { setFull(false); return; }   /* Échap : d'abord sortir du plein écran */
+        rememberView("2d"); close();
+        return;
+      }
+      if ((e.key === "f" || e.key === "F") && ui.classList.contains("on") && !e.ctrlKey && !e.metaKey && !e.altKey &&
+          !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || "") && !(e.target && e.target.isContentEditable)) {
+        setFull(!isFull());
+      }
     });
 
     if (panelEl) {
@@ -4560,6 +5641,7 @@
         fmenu.querySelectorAll(".aw3d-fm-eye").forEach(function (el) { el.classList.toggle("off", v[el.dataset.fvis] === false); });
       };
       NS.paintFleetEyes = peindreYeux;
+      NS.labFleetStyle = function (st) { if (app && app.setFleetStyle) app.setFleetStyle(st); };
       fmenu.querySelectorAll(".aw3d-fm-eye").forEach(function (el) {
         /* (pas de stopPropagation en capture : sur la cible elle-meme il
            bloquerait aussi les ecouteurs bubble d'onTap) */
@@ -4572,6 +5654,8 @@
       });
       peindreYeux();
     }
+    var fullBtn = ui.querySelector("#aw3d-fullbtn");
+    if (fullBtn) onTap(fullBtn, function () { setFull(!isFull()); });
     var flatBtn = ui.querySelector("#aw3d-flat");
     /* l'état visuel du bouton, partagé avec « Mon système » qui rétablit la 3D */
     NS.flatSync = function (on) {
