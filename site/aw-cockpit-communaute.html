@@ -7,12 +7,19 @@
 <meta name="description" content="Habillage d'AstroWars : skins HUD, Verre et Classique, jauges graduées, cartes 3D. Extension gratuite, sans compte, rien n'est envoyé.">
 <link rel="icon" href="aw-cockpit-communaute/logo.png">
 <script>
-  /* Langue : ?lang=xx, sinon le choix mémorisé. Page masquée le temps de la traduire (pas de flash de français). */
+  /* Langue. La fenêtre de choix s'ouvre à chaque arrivée, sauf :
+     - lien avec ?lang=xx (ex. depuis l'extension, qui connaît déjà la langue) ;
+     - choix MÉMORISÉ (case « Mémoriser mon choix » : awcc_lang + awcc_lang_mem=1).
+     Sans mémorisation, le choix ne vaut que pour l'onglet (sessionStorage), et la page
+     derrière la fenêtre est déjà dans la dernière langue utilisée ou celle du navigateur. */
   (function () {
-    var L = ["fr", "en", "es", "de"], lang = null;
-    try { var q = new URLSearchParams(location.search).get("lang"); if (L.indexOf(q) >= 0) lang = q; } catch (e) {}
-    if (!lang) { try { var s = localStorage.getItem("awcc_lang"); if (L.indexOf(s) >= 0) lang = s; } catch (e) {} }
+    var L = ["fr", "en", "es", "de"], lang = null, gate = true;
+    function get(store, k) { try { return window[store].getItem(k); } catch (e) { return null; } }
+    try { var q = new URLSearchParams(location.search).get("lang"); if (L.indexOf(q) >= 0) { lang = q; gate = false; } } catch (e) {}
+    if (!lang && get("localStorage", "awcc_lang_mem") === "1" && L.indexOf(get("localStorage", "awcc_lang")) >= 0) { lang = get("localStorage", "awcc_lang"); gate = false; }
+    if (!lang && L.indexOf(get("sessionStorage", "awcc_lang")) >= 0) lang = get("sessionStorage", "awcc_lang");
     window.AWCC_LANG = lang;
+    window.AWCC_GATE = gate;
     if (lang && lang !== "fr") document.documentElement.classList.add("i18n-pending");
   })();
 </script>
@@ -93,6 +100,25 @@
   .gate-langs button:hover, .gate-langs button:focus-visible { outline: none; color: var(--cyan); box-shadow: inset 0 0 0 1px var(--cyan); background: rgba(42, 210, 216, .07); }
   .gate-langs button.suggested { box-shadow: inset 0 0 0 1px var(--cyan), 0 0 24px rgba(42, 210, 216, .18); }
   .gate-langs button.suggested small { color: var(--cyan); }
+  .gate-mem {
+    display: inline-flex; align-items: center; gap: 10px; margin-top: 18px; cursor: pointer; user-select: none;
+    font-family: var(--mono); font-size: 12px; letter-spacing: .04em; color: var(--dim);
+  }
+  .gate-mem input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .gate-mem .box {
+    width: 18px; height: 18px; flex: none; display: grid; place-items: center;
+    box-shadow: inset 0 0 0 1px var(--line-2); background: rgba(255, 255, 255, .04);
+  }
+  .gate-mem .box::after {
+    content: ""; width: 5px; height: 9px; margin-top: -2px; border: solid var(--ink); border-width: 0 2px 2px 0;
+    transform: rotate(45deg); opacity: 0;
+  }
+  .gate-mem input:checked + .box { background: var(--cyan); box-shadow: none; }
+  .gate-mem input:checked + .box::after { opacity: 1; }
+  .gate-mem input:focus-visible + .box { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .gate-mem:hover { color: var(--text); }
+  .lang-switch .lang-open { min-width: 30px; padding: 0 6px; }
+  .lang-switch .lang-open svg { width: 15px; height: 15px; display: block; margin: auto; }
   @media (max-width: 400px) { .gate-langs { grid-template-columns: minmax(0, 1fr); } }
 
   /* ── héros ── */
@@ -229,6 +255,7 @@
       <button type="button" data-lang="es" lang="es"><b>Español</b><small>ES</small></button>
       <button type="button" data-lang="de" lang="de"><b>Deutsch</b><small>DE</small></button>
     </div>
+    <label class="gate-mem"><input type="checkbox" id="gate-remember"><span class="box" aria-hidden="true"></span><span>Mémoriser mon choix · Remember my choice · Recordar · Merken</span></label>
   </div>
 </div>
 
@@ -239,7 +266,7 @@
       <a href="#apercu" data-i18n="nav_preview">Aperçu</a><a href="#installer" data-i18n="nav_install">Installer</a><a href="#maj" data-i18n="nav_update">Mettre à jour</a><a href="#faq" data-i18n="nav_faq">FAQ</a><a href="#bug" data-i18n="nav_bug">Bug</a><a href="#versions" data-i18n="nav_versions">Versions</a>
     </nav>
     <div class="lang-switch" role="group" aria-label="Langue / Language">
-      <button type="button" data-lang="fr" lang="fr" title="Français">FR</button><button type="button" data-lang="en" lang="en" title="English">EN</button><button type="button" data-lang="es" lang="es" title="Español">ES</button><button type="button" data-lang="de" lang="de" title="Deutsch">DE</button>
+      <button type="button" data-lang="fr" lang="fr" title="Français">FR</button><button type="button" data-lang="en" lang="en" title="English">EN</button><button type="button" data-lang="es" lang="es" title="Español">ES</button><button type="button" data-lang="de" lang="de" title="Deutsch">DE</button><button type="button" class="lang-open" id="lang-open" title="Langue · Language" aria-label="Langue · Language"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z" stroke-linejoin="round"/></svg></button>
     </div>
   </div>
 </header>
@@ -729,48 +756,64 @@
     });
     var sel = document.querySelector('.tab[aria-selected="true"]');
     if (sel) img.alt = t("shot_alt") + sel.textContent;
-    document.querySelectorAll(".lang-switch button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.lang === lang)); });
+    document.querySelectorAll(".lang-switch button[data-lang]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.lang === lang)); });
     renderVersion();
     document.documentElement.classList.remove("i18n-pending");
   }
 
-  function choose(l) {
-    try { localStorage.setItem("awcc_lang", l); } catch (e) {}
+  function store(kind, k, v) { try { if (v == null) window[kind].removeItem(k); else window[kind].setItem(k, v); } catch (e) {} }
+  function remembered() { try { return localStorage.getItem("awcc_lang_mem") === "1"; } catch (e) { return false; } }
+
+  /* remember : true = mémoriser, false = oublier, undefined = garder l'état actuel (sélecteur de l'en-tête) */
+  function choose(l, remember) {
+    if (remember === undefined) remember = remembered();
+    store("sessionStorage", "awcc_lang", l);
+    store("localStorage", "awcc_lang", remember ? l : null);
+    store("localStorage", "awcc_lang_mem", remember ? "1" : null);
     apply(l);
     try { var u = new URL(location.href); if (u.searchParams.has("lang")) { u.searchParams.set("lang", l); history.replaceState(null, "", u); } } catch (e) {}
   }
 
-  document.querySelectorAll(".lang-switch button").forEach(function (b) {
+  document.querySelectorAll(".lang-switch button[data-lang]").forEach(function (b) {
     b.addEventListener("click", function () { choose(b.dataset.lang); });
   });
 
-  /* ── choix de la langue à la première visite ── */
+  /* ── fenêtre de choix de la langue : à chaque arrivée (sauf ?lang= ou choix mémorisé), et via 🌐 ── */
   var gate = document.getElementById("lang-gate");
-  if (!window.AWCC_LANG) {
-    var nav = (navigator.languages && navigator.languages[0]) || navigator.language || "";
-    var guess = String(nav).slice(0, 2).toLowerCase();
-    if (LANGS.indexOf(guess) < 0) guess = "en";
-    var btns = gate.querySelectorAll(".gate-langs button");
-    var closeGate = function (l) { gate.hidden = true; document.body.style.overflow = ""; choose(l); };
-    btns.forEach(function (b) {
-      if (b.dataset.lang === guess) b.classList.add("suggested");
-      b.addEventListener("click", function () { closeGate(b.dataset.lang); });
-    });
+  var btns = gate.querySelectorAll(".gate-langs button");
+  var mem = document.getElementById("gate-remember");
+  var opener = null;
+  var nav = (navigator.languages && navigator.languages[0]) || navigator.language || "";
+  var guess = String(nav).slice(0, 2).toLowerCase();
+  if (LANGS.indexOf(guess) < 0) guess = "en";
+  function closeGate(l) {
+    gate.hidden = true;
+    document.body.style.overflow = "";
+    choose(l, mem.checked);
+    if (opener) { try { opener.focus(); } catch (e) {} opener = null; }
+  }
+  function openGate(from) {
+    opener = from || null;
+    var cur = from ? lang : (window.AWCC_LANG || guess);   // en arrivant : dernière langue de l'onglet, sinon celle du navigateur
+    btns.forEach(function (b) { b.classList.toggle("suggested", b.dataset.lang === cur); });
+    mem.checked = remembered();
     document.body.style.overflow = "hidden";
     gate.hidden = false;
-    gate.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") closeGate(guess);
-      if (e.key === "Tab") {   // garder le focus dans la fenêtre
-        var list = Array.prototype.slice.call(btns), i = list.indexOf(document.activeElement);
-        e.preventDefault();
-        list[(i + (e.shiftKey ? list.length - 1 : 1)) % list.length].focus();
-      }
-    });
     (gate.querySelector(".suggested") || btns[0]).focus();
-    apply(guess);   // la page derrière est déjà dans la langue proposée
-  } else {
-    apply(lang);
   }
+  btns.forEach(function (b) { b.addEventListener("click", function () { closeGate(b.dataset.lang); }); });
+  gate.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { var s = gate.querySelector(".suggested"); closeGate(s ? s.dataset.lang : lang); }
+    if (e.key === "Tab") {   // garder le focus dans la fenêtre (4 langues + case à cocher)
+      var list = Array.prototype.slice.call(btns).concat([mem]), i = list.indexOf(document.activeElement);
+      e.preventDefault();
+      list[(i + (e.shiftKey ? list.length - 1 : 1) + list.length) % list.length].focus();
+    }
+  });
+  document.getElementById("lang-open").addEventListener("click", function () { openGate(this); });
+
+  apply(window.AWCC_LANG || guess);   // la page derrière la fenêtre est déjà dans la langue proposée
+  if (window.AWCC_GATE) openGate(null);
 
   /* ── dernière version : Release GitHub (source de vérité), repli sur le version.json du site ── */
   function useLocal() {
