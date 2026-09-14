@@ -1,0 +1,10 @@
+dist/
+backups_site/
+*.bak*
+__pycache__/
+.claude/
+notes.md
+# outils de patch internes (partagés avec l'édition complète) : hors dépôt
+tools/*
+!tools/build_zip.py
+!tools/release_notes.py

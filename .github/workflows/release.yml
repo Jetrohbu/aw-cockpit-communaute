@@ -1,0 +1,53 @@
+# Publication d'une version : pousser un tag vX.Y.Z (= "version" de manifest.json).
+# L'Action construit les ZIP (tools/build_zip.py), écrit les notes depuis
+# site/aw-cockpit-communaute/version.json et crée la Release GitHub avec 3 fichiers
+# aux noms FIXES, lus par l'extension (background.js) et par la page de téléchargement :
+#   aw-cockpit-communaute.zip          tous navigateurs (un dossier par navigateur + LISEZ-MOI)
+#   aw-cockpit-communaute-chrome.zip   Chrome, Edge, Brave, Opera
+#   aw-cockpit-communaute-firefox.zip  Firefox 128+
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Tag = version du manifest
+        run: |
+          VER=$(python -c "import json; print(json.load(open('manifest.json', encoding='utf-8'))['version'])")
+          if [ "v$VER" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Le tag $GITHUB_REF_NAME ne correspond pas à manifest.json (v$VER)"; exit 1
+          fi
+          echo "VER=$VER" >> "$GITHUB_ENV"
+
+      - name: Construire les ZIP
+        run: python tools/build_zip.py
+
+      - name: Notes de version
+        run: python tools/release_notes.py "$VER" > notes.md
+
+      - name: Créer la Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp "dist/aw-cockpit-communaute-$VER-tous-navigateurs.zip" dist/aw-cockpit-communaute.zip
+          cp "dist/aw-cockpit-communaute-$VER.zip" dist/aw-cockpit-communaute-chrome.zip
+          cp "dist/aw-cockpit-communaute-$VER-firefox.zip" dist/aw-cockpit-communaute-firefox.zip
+          TITLE=$(python tools/release_notes.py "$VER" --title)
+          gh release create "$GITHUB_REF_NAME" \
+            dist/aw-cockpit-communaute.zip \
+            dist/aw-cockpit-communaute-chrome.zip \
+            dist/aw-cockpit-communaute-firefox.zip \
+            --title "v$VER — $TITLE" --notes-file notes.md --latest

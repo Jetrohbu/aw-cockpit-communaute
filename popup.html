@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr" class="sk-glass">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AW Cockpit</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="top">
+        <img class="logo" src="assets/astrowars-logo-rail.png" alt="" />
+        <div class="brand"><b>AW Cockpit</b><span id="ver"></span></div>
+        <div class="langs" role="group" data-i18n-aria="lang">
+          <button type="button" data-lang="fr">FR</button>
+          <button type="button" data-lang="en">EN</button>
+          <button type="button" data-lang="es">ES</button>
+          <button type="button" data-lang="de">DE</button>
+        </div>
+      </header>
+
+      <!-- premier lancement -->
+      <section id="welcome" hidden>
+        <h1 data-i18n="welcome_title">Bienvenue, commandant</h1>
+        <p class="lead" data-i18n="welcome_lead"></p>
+        <div class="group">
+          <label class="field"><span data-i18n="pseudo_label">Ton pseudo AstroWars</span>
+            <input type="text" id="w-pseudo" maxlength="30" autocomplete="off" data-i18n-ph="pseudo_placeholder" /></label>
+          <div class="hint" data-i18n="pseudo_hint_community"></div>
+        </div>
+        <div class="group">
+          <div class="kicker" data-i18n="sect_look">Apparence</div>
+          <div class="skins" data-skins>
+            <button type="button" class="skin" data-skin="glass"><i></i><b data-i18n="skin_glass">Verre</b><small data-i18n="skin_glass_d"></small></button>
+            <button type="button" class="skin" data-skin="hud"><i></i><b data-i18n="skin_hud">HUD</b><small data-i18n="skin_hud_d"></small></button>
+            <button type="button" class="skin" data-skin="classic"><i></i><b data-i18n="skin_classic">Classique</b><small data-i18n="skin_classic_d"></small></button>
+          </div>
+        </div>
+        <div class="msg" id="w-msg"></div>
+        <button type="button" class="primary" id="w-go" data-i18n="welcome_go">C'est parti</button>
+        <p class="fine" data-i18n="privacy_line"></p>
+      </section>
+
+      <!-- menu -->
+      <section id="menu" hidden>
+        <div class="hello">
+          <div class="avatar" id="m-ini">?</div>
+          <div>
+            <div class="hi" id="m-hi"></div>
+            <div class="sub" data-i18n="community">Édition communauté</div>
+          </div>
+        </div>
+        <div class="group">
+          <div class="kicker" data-i18n="sect_look">Apparence</div>
+          <div class="skins" data-skins>
+            <button type="button" class="skin" data-skin="glass"><i></i><b data-i18n="skin_glass">Verre</b><small data-i18n="skin_glass_d"></small></button>
+            <button type="button" class="skin" data-skin="hud"><i></i><b data-i18n="skin_hud">HUD</b><small data-i18n="skin_hud_d"></small></button>
+            <button type="button" class="skin" data-skin="classic"><i></i><b data-i18n="skin_classic">Classique</b><small data-i18n="skin_classic_d"></small></button>
+          </div>
+          <div class="swatches" id="m-sw"></div>
+        </div>
+        <div class="group">
+          <div class="kicker" data-i18n="sect_options">Options</div>
+          <div class="row"><span data-i18n="bg_image">Image de fond</span><button type="button" class="switch" id="m-bg"></button></div>
+          <div class="row"><span data-i18n="incoming_alert">Fond rouge si une flotte ennemie arrive</span><button type="button" class="switch" id="m-inc"></button></div>
+          <div class="row sub"><span data-i18n="incoming_mine">Seulement si elle vise mes planètes</span><button type="button" class="switch" id="m-inc-mine"></button></div>
+        </div>
+        <div class="group">
+          <div class="kicker" data-i18n="pseudo_label">Ton pseudo AstroWars</div>
+          <div class="inline">
+            <input type="text" id="m-pseudo" maxlength="30" autocomplete="off" data-i18n-ph="pseudo_placeholder" />
+            <button type="button" class="btn" id="m-save" data-i18n="save">Enregistrer</button>
+          </div>
+          <div class="msg" id="m-msg"></div>
+        </div>
+        <button type="button" class="primary" id="m-open" data-i18n="open_game">Ouvrir AstroWars</button>
+        <div class="foot">
+          <a id="m-updates" data-i18n="updates">Mises à jour</a>
+          <a id="m-welcome" data-i18n="welcome_again">Revoir l'accueil</a>
+        </div>
+      </section>
+    </main>
+    <script src="popup-i18n.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

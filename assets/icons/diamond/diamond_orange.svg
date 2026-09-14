@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs><linearGradient id="d_orange" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#f9cda8"/><stop offset="55%" stop-color="#f2913e"/><stop offset="100%" stop-color="#79481f"/>
+  </linearGradient></defs>
+  <polygon points="32,14 48,32 32,50 16,32" fill="url(#d_orange)" stroke="#fbdec5" stroke-width="1.8" stroke-linejoin="round"/>
+  <polyline points="16,32 32,24 48,32" fill="none" stroke="#f9d3b1" stroke-opacity="0.6" stroke-width="1"/>
+  <line x1="32" y1="24" x2="32" y2="50" stroke="#a9652b" stroke-opacity="0.5" stroke-width="1"/>
+</svg>

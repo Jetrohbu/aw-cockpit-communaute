@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AW Cockpit — Édition communauté</title>
+<meta name="description" content="Habillage d'AstroWars : skins HUD, Verre et Classique, jauges graduées, cartes 3D. Extension gratuite, sans compte, rien n'est envoyé.">
+<link rel="icon" href="aw-cockpit-communaute/logo.png">
+<script>
+  /* Langue : ?lang=xx, sinon le choix mémorisé. Page masquée le temps de la traduire (pas de flash de français). */
+  (function () {
+    var L = ["fr", "en", "es", "de"], lang = null;
+    try { var q = new URLSearchParams(location.search).get("lang"); if (L.indexOf(q) >= 0) lang = q; } catch (e) {}
+    if (!lang) { try { var s = localStorage.getItem("awcc_lang"); if (L.indexOf(s) >= 0) lang = s; } catch (e) {} }
+    window.AWCC_LANG = lang;
+    if (lang && lang !== "fr") document.documentElement.classList.add("i18n-pending");
+  })();
+</script>
+<style>
+  @font-face { font-family: "Rajdhani"; font-weight: 500; font-display: swap; src: url("aw-cockpit-communaute/fonts/Rajdhani-500.woff2") format("woff2"); }
+  @font-face { font-family: "Rajdhani"; font-weight: 600; font-display: swap; src: url("aw-cockpit-communaute/fonts/Rajdhani-600.woff2") format("woff2"); }
+  @font-face { font-family: "Rajdhani"; font-weight: 700; font-display: swap; src: url("aw-cockpit-communaute/fonts/Rajdhani-700.woff2") format("woff2"); }
+  @font-face { font-family: "JetBrains Mono"; font-weight: 400 500; font-display: swap; src: url("aw-cockpit-communaute/fonts/JetBrainsMono-var.woff2") format("woff2"); }
+
+  :root {
+    --bg: #04070a; --panel: rgba(7, 11, 15, .92); --line: rgba(42, 210, 216, .16); --line-2: rgba(42, 210, 216, .32);
+    --cyan: #2ad2d8; --ink: #03181a; --text: #dfeef0; --dim: rgba(223, 238, 240, .62); --faint: rgba(223, 238, 240, .4);
+    --ok: #45e0a2; --gold: #ffd262; --bad: #ff7a7a;
+    --display: "Rajdhani", "Segoe UI", system-ui, sans-serif;
+    --mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+    --body: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    --cham: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  }
+  html.i18n-pending body { visibility: hidden; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+  body {
+    margin: 0; background-color: var(--bg); color: var(--text); font-family: var(--body); font-size: 16px; line-height: 1.55;
+    background-image:
+      radial-gradient(1200px 600px at 70% -10%, rgba(42, 210, 216, .10), transparent 70%),
+      radial-gradient(900px 500px at 0% 100%, rgba(90, 99, 216, .10), transparent 70%),
+      linear-gradient(rgba(42, 210, 216, .025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(42, 210, 216, .025) 1px, transparent 1px);
+    background-size: auto, auto, 48px 48px, 48px 48px;
+    background-attachment: fixed;
+  }
+  a { color: var(--cyan); text-decoration: none; }
+  a:hover { color: #8ff0f3; }
+  .wrap { width: min(1120px, 100% - 40px); margin: 0 auto; }
+
+  /* ── en-tête ── */
+  header { position: sticky; top: 0; z-index: 10; background: rgba(4, 7, 10, .82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  header .wrap { display: flex; align-items: center; gap: 14px; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 12px; color: var(--text); flex: none; }
+  .brand img { width: 38px; height: 38px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .6)); }
+  .brand b { font-family: var(--display); font-weight: 700; font-size: 20px; letter-spacing: .14em; text-transform: uppercase; }
+  .brand span { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--faint); text-transform: uppercase; }
+  nav.links { margin-left: auto; display: flex; gap: 18px; flex-wrap: nowrap; }
+  nav.links a { font-family: var(--display); font-weight: 700; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); white-space: nowrap; }
+  nav.links a:hover { color: var(--cyan); }
+
+  /* ── sélecteur de langue (en-tête) ── */
+  .lang-switch { display: flex; gap: 2px; padding: 2px; box-shadow: inset 0 0 0 1px var(--line); flex: none; }
+  .lang-switch button {
+    height: 28px; min-width: 34px; padding: 0 7px; border: 0; background: none; color: var(--dim); cursor: pointer;
+    font-family: var(--mono); font-size: 12px; letter-spacing: .06em;
+  }
+  .lang-switch button:hover { color: var(--cyan); }
+  .lang-switch button[aria-pressed="true"] { background: var(--cyan); color: var(--ink); }
+  .lang-switch button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+
+  /* ── choix de la langue à l'arrivée ── */
+  #lang-gate {
+    position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px;
+    background: rgba(4, 7, 10, .78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    visibility: visible;
+  }
+  #lang-gate[hidden] { display: none; }
+  .gate-card {
+    position: relative; width: min(520px, 100%); padding: 30px 28px 26px; background: var(--panel);
+    box-shadow: inset 0 0 0 1px var(--line-2), 0 40px 100px rgba(0, 0, 0, .7); clip-path: var(--cham); text-align: center;
+  }
+  .gate-card img { width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(0, 0, 0, .6)); }
+  .gate-card h2 { margin: 12px 0 4px; font-size: 26px; }
+  .gate-sub { margin: 0 0 22px; font-family: var(--mono); font-size: 12px; letter-spacing: .04em; color: var(--faint); }
+  .gate-langs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .gate-langs button {
+    position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px 16px; border: 0; cursor: pointer;
+    background: rgba(255, 255, 255, .04); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); clip-path: var(--cham); text-align: left;
+  }
+  .gate-langs button b { font-family: var(--display); font-weight: 700; font-size: 20px; letter-spacing: .06em; }
+  .gate-langs button small { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--faint); text-transform: uppercase; }
+  .gate-langs button:hover, .gate-langs button:focus-visible { outline: none; color: var(--cyan); box-shadow: inset 0 0 0 1px var(--cyan); background: rgba(42, 210, 216, .07); }
+  .gate-langs button.suggested { box-shadow: inset 0 0 0 1px var(--cyan), 0 0 24px rgba(42, 210, 216, .18); }
+  .gate-langs button.suggested small { color: var(--cyan); }
+  @media (max-width: 400px) { .gate-langs { grid-template-columns: minmax(0, 1fr); } }
+
+  /* ── héros ── */
+  .hero { padding: 72px 0 40px; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 48px; align-items: center; }
+  .kicker { display: flex; align-items: center; gap: 12px; font-family: var(--display); font-weight: 700; font-size: 14px; letter-spacing: .2em; text-transform: uppercase; color: var(--cyan); }
+  .kicker::after { content: ""; width: 80px; height: 1px; background: linear-gradient(90deg, var(--line-2), transparent); }
+  h1 { font-family: var(--display); font-weight: 700; font-size: clamp(40px, 6vw, 68px); line-height: 1; letter-spacing: .04em; text-transform: uppercase; margin: 16px 0 18px; text-shadow: 0 0 30px rgba(42, 210, 216, .25); }
+  h1 em { font-style: normal; color: var(--cyan); }
+  .lead { font-size: 18px; color: var(--dim); max-width: 34em; margin: 0 0 28px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px; height: 50px; padding: 0 22px; border: 0; cursor: pointer;
+    font-family: var(--display); font-weight: 700; font-size: 16px; letter-spacing: .12em; text-transform: uppercase; clip-path: var(--cham);
+  }
+  .btn svg { width: 18px; height: 18px; flex: none; }
+  .btn-primary { background: var(--cyan); color: var(--ink); box-shadow: 0 0 30px rgba(42, 210, 216, .35); }
+  .btn-primary:hover { background: #7fe6ea; color: var(--ink); }
+  .btn-ghost { background: rgba(255, 255, 255, .04); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+  .btn-ghost:hover { color: var(--cyan); box-shadow: inset 0 0 0 1px var(--cyan); }
+  .btn-sm { height: 42px; padding: 0 16px; font-size: 14px; }
+  .meta { margin-top: 16px; font-family: var(--mono); font-size: 12px; color: var(--faint); letter-spacing: .04em; }
+  .meta b { color: var(--text); font-weight: 500; }
+  .privacy-pill { display: inline-flex; align-items: center; gap: 10px; margin-top: 22px; padding: 10px 14px; background: rgba(69, 224, 162, .06); box-shadow: inset 0 0 0 1px rgba(69, 224, 162, .35); clip-path: var(--cham); font-size: 14px; }
+  .privacy-pill svg { width: 18px; height: 18px; color: var(--ok); flex: none; }
+
+  /* ── aperçu ── */
+  .shot { position: relative; padding: 14px; background: var(--panel); border: 1px solid var(--line-2); box-shadow: 0 40px 100px rgba(0, 0, 0, .6); }
+  .shot::before, .shot::after { content: ""; position: absolute; width: 14px; height: 14px; border: 0 solid var(--cyan); }
+  .shot::before { left: -1px; top: -1px; border-left-width: 2px; border-top-width: 2px; }
+  .shot::after { right: -1px; bottom: -1px; border-right-width: 2px; border-bottom-width: 2px; }
+  .tabs { display: flex; gap: 2px; margin-bottom: 12px; box-shadow: inset 0 0 0 1px var(--line); width: max-content; max-width: 100%; padding: 2px; }
+  .tab { height: 30px; padding: 0 14px; border: 0; background: none; color: var(--dim); cursor: pointer; font-family: var(--display); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+  .tab[aria-selected="true"] { background: var(--cyan); color: var(--ink); clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+  .frame { aspect-ratio: 16 / 10; background: #070b0f; display: grid; place-items: center; overflow: hidden; }
+  .frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .frame .ph { font-family: var(--mono); font-size: 12px; color: var(--faint); letter-spacing: .08em; text-transform: uppercase; }
+
+  /* ── sections ── */
+  section { padding: 56px 0; }
+  h2 { font-family: var(--display); font-weight: 700; font-size: 32px; letter-spacing: .12em; text-transform: uppercase; margin: 10px 0 26px; }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .card { position: relative; padding: 22px 22px 20px; background: var(--panel); box-shadow: inset 0 0 0 1px var(--line); clip-path: var(--cham); }
+  .card svg { width: 26px; height: 26px; color: var(--cyan); filter: drop-shadow(0 0 8px rgba(42, 210, 216, .5)); }
+  .card h3 { font-family: var(--display); font-weight: 700; font-size: 19px; letter-spacing: .08em; text-transform: uppercase; margin: 12px 0 6px; }
+  .card p { margin: 0; color: var(--dim); font-size: 15px; }
+
+  .steps { counter-reset: s; display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+  .steps li { counter-increment: s; position: relative; padding: 16px 18px 16px 64px; background: var(--panel); box-shadow: inset 0 0 0 1px var(--line); clip-path: var(--cham); }
+  .steps li::before { content: counter(s, decimal-leading-zero); position: absolute; left: 18px; top: 14px; font-family: var(--mono); font-size: 20px; color: var(--cyan); text-shadow: 0 0 10px rgba(42, 210, 216, .5); }
+  .steps code, .kbd, .faq code { font-family: var(--mono); font-size: 13px; padding: 1px 6px; background: rgba(42, 210, 216, .08); box-shadow: inset 0 0 0 1px var(--line); color: var(--text); overflow-wrap: anywhere; }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; }
+  .note { margin-top: 14px; color: var(--faint); font-size: 14px; }
+
+  .check { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .check li { display: flex; gap: 12px; align-items: flex-start; }
+  .check svg { width: 18px; height: 18px; color: var(--ok); flex: none; margin-top: 4px; }
+
+  /* ── FAQ ── */
+  .faq { display: grid; gap: 10px; }
+  .faq details { background: var(--panel); box-shadow: inset 0 0 0 1px var(--line); clip-path: var(--cham); }
+  .faq details[open] { box-shadow: inset 0 0 0 1px var(--line-2); }
+  .faq summary {
+    list-style: none; cursor: pointer; display: flex; align-items: center; gap: 14px; padding: 16px 20px;
+    font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: .03em;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::before {
+    content: ""; width: 8px; height: 8px; flex: none; border: solid var(--cyan); border-width: 0 2px 2px 0;
+    transform: rotate(-45deg); transition: transform .2s ease; margin-left: 2px;
+  }
+  .faq details[open] summary::before { transform: rotate(45deg); }
+  .faq summary:hover { color: var(--cyan); }
+  .faq summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+  .faq .ans { padding: 0 20px 18px 44px; color: var(--dim); }
+  .faq .ans p { margin: 0 0 8px; }
+  .faq .ans p:last-child { margin: 0; }
+
+  /* ── rapport de bug ── */
+  .bug { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 32px; align-items: start; }
+  .form { padding: 22px; background: var(--panel); box-shadow: inset 0 0 0 1px var(--line); clip-path: var(--cham); display: grid; gap: 14px; }
+  .form .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .field { display: grid; gap: 6px; min-width: 0; }
+  .field span { font-family: var(--display); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+  .field span i { font-style: normal; color: var(--cyan); }
+  .field input, .field select, .field textarea {
+    width: 100%; min-width: 0; padding: 10px 12px; border: 0; border-radius: 0; color: var(--text); font: 15px/1.4 var(--body);
+    background: rgba(255, 255, 255, .04); box-shadow: inset 0 0 0 1px var(--line-2);
+  }
+  .field select option { background: #0b1116; }
+  .field textarea { min-height: 96px; resize: vertical; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; box-shadow: inset 0 0 0 1px var(--cyan); background: rgba(42, 210, 216, .05); }
+  .form .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .form .msg { font-family: var(--mono); font-size: 12px; color: var(--faint); min-height: 1.4em; }
+  .form .msg.ok { color: var(--ok); }
+  .form .msg.bad { color: var(--bad); }
+
+  /* ── historique ── */
+  .rel { position: relative; padding: 0 0 22px 30px; }
+  .rel::before { content: ""; position: absolute; left: 5px; top: 8px; bottom: 0; width: 1px; background: linear-gradient(180deg, var(--line-2), transparent); }
+  .rel::after { content: ""; position: absolute; left: 1px; top: 8px; width: 9px; height: 9px; transform: rotate(45deg); background: var(--bg); box-shadow: inset 0 0 0 1px var(--cyan); }
+  .rel.now::after { background: var(--cyan); box-shadow: 0 0 10px rgba(42, 210, 216, .9); }
+  .rel h3 { margin: 0; font-family: var(--mono); font-weight: 500; font-size: 15px; color: var(--cyan); }
+  .rel h3 small { color: var(--faint); margin-left: 10px; }
+  .rel h4 { margin: 6px 0 6px; font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: .04em; }
+  .rel ul { margin: 0; padding-left: 18px; color: var(--dim); }
+  .src-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; font-family: var(--mono); font-size: 13px; }
+  .src-link svg { width: 16px; height: 16px; }
+
+  footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--faint); font-size: 13px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+
+  @media (max-width: 1060px) { nav.links { display: none; } .lang-switch { margin-left: auto; } }
+  @media (max-width: 900px) {
+    .hero, .two, .bug { grid-template-columns: minmax(0, 1fr); }
+    .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .grid, .form .row { grid-template-columns: minmax(0, 1fr); } .hero { padding-top: 40px; }
+    .brand span { display: none; }
+    .faq .ans { padding-left: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="lang-gate" role="dialog" aria-modal="true" aria-labelledby="gate-title" hidden>
+  <div class="gate-card">
+    <img src="aw-cockpit-communaute/logo.png" alt="">
+    <h2 id="gate-title">Langue · Language</h2>
+    <p class="gate-sub">Choisis ta langue · Choose your language · Elige tu idioma · Wähle deine Sprache</p>
+    <div class="gate-langs">
+      <button type="button" data-lang="fr" lang="fr"><b>Français</b><small>FR</small></button>
+      <button type="button" data-lang="en" lang="en"><b>English</b><small>EN</small></button>
+      <button type="button" data-lang="es" lang="es"><b>Español</b><small>ES</small></button>
+      <button type="button" data-lang="de" lang="de"><b>Deutsch</b><small>DE</small></button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="aw-cockpit-communaute/logo.png" alt=""><div><b>AW Cockpit</b><br><span data-i18n="brand_sub">Édition communauté</span></div></a>
+    <nav class="links">
+      <a href="#apercu" data-i18n="nav_preview">Aperçu</a><a href="#installer" data-i18n="nav_install">Installer</a><a href="#maj" data-i18n="nav_update">Mettre à jour</a><a href="#faq" data-i18n="nav_faq">FAQ</a><a href="#bug" data-i18n="nav_bug">Bug</a><a href="#versions" data-i18n="nav_versions">Versions</a>
+    </nav>
+    <div class="lang-switch" role="group" aria-label="Langue / Language">
+      <button type="button" data-lang="fr" lang="fr" title="Français">FR</button><button type="button" data-lang="en" lang="en" title="English">EN</button><button type="button" data-lang="es" lang="es" title="Español">ES</button><button type="button" data-lang="de" lang="de" title="Deutsch">DE</button>
+    </div>
+  </div>
+</header>
+
+<main id="top" class="wrap">
+  <div class="hero">
+    <div>
+      <div class="kicker" data-i18n="hero_kicker">Extension pour AstroWars</div>
+      <h1 data-i18n="hero_h1">Le jeu,<br>en <em>mode cockpit</em></h1>
+      <p class="lead" data-i18n="hero_lead">Trois apparences au choix, des jauges graduées, un fond spatial et des cartes en 3D. Gratuit, sans compte, et rien ne quitte ton navigateur.</p>
+      <div class="cta">
+        <a class="btn btn-primary" id="dl" href="https://github.com/Jetrohbu/aw-cockpit-communaute/releases/latest/download/aw-cockpit-communaute.zip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4v11M7 10l5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke-linecap="round"/></svg>
+          <span id="dl-label" data-i18n="dl">Télécharger</span>
+        </a>
+        <a class="btn btn-ghost" id="dl-fx" href="https://github.com/Jetrohbu/aw-cockpit-communaute/releases/latest/download/aw-cockpit-communaute-firefox.zip" data-i18n="dl_fx">Version Firefox</a>
+        <a class="btn btn-ghost" href="#versions" data-i18n="news">Nouveautés</a>
+      </div>
+      <div class="meta" id="meta" data-i18n="loading_version">Chargement de la dernière version…</div>
+      <div class="privacy-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span data-i18n="privacy_pill">Sans compte · aucune donnée envoyée · permission unique : réglages locaux</span>
+      </div>
+    </div>
+
+    <div class="shot" id="apercu">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true" data-shot="verre" data-i18n="tab_glass">Verre</button>
+        <button class="tab" role="tab" aria-selected="false" data-shot="hud" data-i18n="tab_hud">HUD</button>
+        <button class="tab" role="tab" aria-selected="false" data-shot="carte" data-i18n="tab_map">Carte 3D</button>
+      </div>
+      <div class="frame"><img id="shot" alt="Aperçu : Verre" src="aw-cockpit-communaute/shot-verre.jpg"><span class="ph" id="shot-ph" hidden data-i18n="shot_soon">Aperçu bientôt disponible</span></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="kicker" data-i18n="feat_kicker">Ce que ça change</div>
+    <h2 data-i18n="feat_h2">Tout le jeu, rhabillé</h2>
+    <div class="grid">
+      <div class="card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.8 1.7-1.6 0-.5-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1.1 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5c0-4.1-4-7.6-9-7.6z" stroke-linejoin="round"/></svg><h3 data-i18n="c1_h">3 apparences</h3><p data-i18n="c1_p">Verre translucide, HUD aux filets cyan ou Classique, fidèle aux couleurs du jeu. Couleur d'accent au choix, appliquée partout.</p></div>
+      <div class="card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 9h18M8 5v14" /></svg><h3 data-i18n="c2_h">Pages du jeu</h3><p data-i18n="c2_p">Onglets, tableaux, News, rapports de combat, boutons, fenêtres, barre et filtres de la carte suivent l'apparence.</p></div>
+      <div class="card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 14h18" stroke-linecap="round"/><path d="M5 14V10M9 14V8M13 14V11M17 14V6" stroke-linecap="round"/><path d="M3 18h18" stroke-linecap="round" opacity=".5"/></svg><h3 data-i18n="c3_h">Jauges graduées</h3><p data-i18n="c3_p">Les barres de progression deviennent des instruments : segments, néon, HUD… réglables pour les Planètes et la Science.</p></div>
+      <div class="card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-20 12 12)"/></svg><h3 data-i18n="c4_h">Carte en 3D</h3><p data-i18n="c4_p">La galaxie en trois dimensions, les territoires en 2D, et 7 styles d'icônes pour les systèmes.</p></div>
+      <div class="card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/></svg><h3 data-i18n="c5_h">Systèmes vivants</h3><p data-i18n="c5_p">Chaque système solaire en 3D avec ses planètes texturées, leur jour, leur nuit et leurs anneaux.</p></div>
+      <div class="card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="7" rx="1"/><rect x="3" y="13" width="8" height="7" rx="1"/><rect x="13" y="13" width="8" height="7" rx="1"/></svg><h3 data-i18n="c6_h">Planètes et Trade</h3><p data-i18n="c6_p">Plusieurs fiches de planète côte à côte, le temps avant le prochain niveau, et sur Trade : tiers, coût en PP et convertisseur PP ⇄ $.</p></div>
+    </div>
+  </section>
+
+  <section id="installer">
+    <div class="two">
+      <div>
+        <div class="kicker" data-i18n="inst_kicker">5 minutes</div>
+        <h2 data-i18n="inst_h2">Installer</h2>
+        <ol class="steps">
+          <li data-i18n="inst_1">Télécharge le ZIP de la dernière version et <b>décompresse-le</b> dans un dossier que tu gardes (ex. <code>Documents/AW-Cockpit</code>) : il contient <b>un dossier par navigateur</b> et un <code>LISEZ-MOI.txt</code>.</li>
+          <li data-i18n="inst_2">Ouvre <code>chrome://extensions</code> (Edge : <code>edge://extensions</code>, Brave et Opera : même principe).</li>
+          <li data-i18n="inst_3">Active le <b>Mode développeur</b> en haut à droite.</li>
+          <li data-i18n="inst_4">Clique <b>Charger l'extension non empaquetée</b> et choisis le dossier <code>AW-Cockpit-Chrome-Edge-Brave-Opera</code>.</li>
+          <li data-i18n="inst_5">Ouvre ou recharge AstroWars : le rail apparaît à droite. Réglages dans <b>Apparence</b>.</li>
+        </ol>
+        <p class="note" data-i18n="inst_note">Firefox (128 ou plus récent) : <code>about:debugging</code> → Ce Firefox → Charger un module complémentaire temporaire → choisir le <code>manifest.json</code> du dossier <code>AW-Cockpit-Firefox</code> (à refaire à chaque redémarrage de Firefox). Le bouton <b>Version Firefox</b> donne ce dossier seul.</p>
+      </div>
+      <div id="maj">
+        <div class="kicker" data-i18n="upd_kicker">Quand une version sort</div>
+        <h2 data-i18n="upd_h2">Mettre à jour</h2>
+        <ol class="steps">
+          <li data-i18n="upd_1b">L'extension te prévient : une carte <b>Nouvelle version</b> apparaît dans le jeu avec le bouton <b>Télécharger</b>. Tu peux aussi vérifier dans <b>À propos → Vérifier maintenant</b>.</li>
+          <li data-i18n="upd_2">Télécharge le nouveau ZIP et <b>remplace le contenu</b> de ton dossier par celui du ZIP.</li>
+          <li data-i18n="upd_3">Dans <code>chrome://extensions</code>, clique <b>↻ Recharger</b> sur AW Cockpit.</li>
+          <li data-i18n="upd_4">Rafraîchis les onglets du jeu avec <span class="kbd">Ctrl</span> + <span class="kbd">Maj</span> + <span class="kbd">R</span>. Tes réglages sont conservés.</li>
+        </ol>
+        <p class="note" data-i18n="upd_note2">Pour savoir qu'une version est sortie, l'extension lit une fois par jour le numéro de la dernière version publiée sur GitHub. C'est tout : aucune donnée n'est envoyée, et l'installation reste entre tes mains.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="confidentialite">
+    <div class="kicker" data-i18n="priv_kicker">Confiance</div>
+    <h2 data-i18n="priv_h2">Confidentialité</h2>
+    <div class="two">
+      <ul class="check">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="priv_1b"><b>Rien n'est envoyé.</b> Pas de statistiques, pas de pisteur : l'extension ne parle qu'au jeu, comme ton navigateur (la carte 3D lit ta page Flottes, la page Trade tes Planètes et l'historique des prix, l'alerte incoming ta page News). Seule autre lecture : le numéro de la dernière version sur GitHub, une fois par jour.</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="priv_2"><b>Pas de compte, pas de mot de passe.</b> Rien à créer, rien à saisir.</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="priv_3"><b>Une seule permission :</b> <code>storage</code>, pour mémoriser tes réglages sur ton ordinateur.</span></li>
+      </ul>
+      <ul class="check">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="priv_4"><b>Active uniquement sur astrowars.games.</b> Aucun autre site n'est touché.</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="priv_5"><b>Rien n'est automatisé.</b> Aucune action de jeu n'est déclenchée à ta place : conforme au règlement d'AstroWars.</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="priv_6b"><b>Code ouvert.</b> Les fichiers sources sont publiés sur GitHub et livrés non minifiés dans le ZIP (hormis la bibliothèque three.js) : chacun peut vérifier.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="kicker" data-i18n="faq_kicker">Aide</div>
+    <h2 data-i18n="faq_h2">Questions fréquentes</h2>
+    <div class="faq">
+      <details><summary data-i18n="faq1_q">Est-ce autorisé par le règlement d'AstroWars ?</summary><div class="ans" data-i18n="faq1_a"><p>L'extension change l'affichage et lit les pages du jeu que tu ouvres, comme ton navigateur. Elle ne joue <b>aucune action à ta place</b> et n'automatise rien : le règlement interdit l'automatisation et le multi-compte, et l'extension ne fait ni l'un ni l'autre.</p></div></details>
+      <details><summary data-i18n="faq2_q">Mes données sont-elles envoyées quelque part ?</summary><div class="ans" data-i18n="faq2_a"><p>Non. Il n'y a ni compte, ni statistiques, ni pisteur. Tes réglages restent dans ton navigateur. La seule requête hors du jeu est la lecture, une fois par jour, du numéro de la dernière version sur GitHub. Elle est anonyme et n'envoie rien.</p></div></details>
+      <details><summary data-i18n="faq3_q">Le rail n'apparaît pas dans le jeu</summary><div class="ans" data-i18n="faq3_a"><p>Vérifie que tu as choisi le dossier qui contient directement <code>manifest.json</code> (<code>AW-Cockpit-Chrome-Edge-Brave-Opera</code>), pas le dossier parent. Vérifie que l'extension est activée dans <code>chrome://extensions</code>, clique <b>↻</b>, puis <span class="kbd">Ctrl</span> + <span class="kbd">Maj</span> + <span class="kbd">R</span> sur l'onglet du jeu.</p><p>Le rail peut aussi avoir été masqué : une petite languette à droite de l'écran le fait revenir.</p></div></details>
+      <details><summary data-i18n="faq4_q">Comment savoir qu'une nouvelle version est sortie ?</summary><div class="ans" data-i18n="faq4_a"><p>Depuis la version 1.0.6, une carte <b>Nouvelle version</b> apparaît dans le jeu, au plus tard le lendemain de la sortie. Pour vérifier tout de suite : rail → <b>À propos</b> → <b>Vérifier maintenant</b>. Cette page affiche aussi toujours la dernière version.</p></div></details>
+      <details><summary data-i18n="faq5_q">J'ai perdu mes réglages après une mise à jour</summary><div class="ans" data-i18n="faq5_a"><p>Le navigateur rattache les réglages à l'emplacement du dossier de l'extension. Pour les garder, <b>remplace le contenu du même dossier</b> au lieu de charger un nouveau dossier ailleurs, puis clique <b>↻</b>.</p></div></details>
+      <details><summary data-i18n="faq6_q">Chrome affiche un avertissement sur le mode développeur</summary><div class="ans" data-i18n="faq6_a"><p>C'est normal pour une extension installée depuis un dossier et non depuis le Chrome Web Store. Tu peux fermer l'avertissement : l'extension continue de fonctionner.</p></div></details>
+      <details><summary data-i18n="faq7_q">Firefox : l'extension disparaît à chaque redémarrage</summary><div class="ans" data-i18n="faq7_a"><p>Firefox ne garde les modules chargés depuis <code>about:debugging</code> que jusqu'à sa fermeture. Il faut recharger le <code>manifest.json</code> du dossier <code>AW-Cockpit-Firefox</code> à chaque démarrage.</p></div></details>
+      <details><summary data-i18n="faq8_q">Puis-je l'utiliser avec l'extension AW de l'alliance ?</summary><div class="ans" data-i18n="faq8_a"><p>Active une seule des deux à la fois : elles habillent les mêmes pages et se gêneraient. Désactive l'autre dans la page des extensions.</p></div></details>
+      <details><summary data-i18n="faq9_q">Ça marche sur téléphone ?</summary><div class="ans" data-i18n="faq9_a"><p>Non : l'extension est prévue pour les navigateurs d'ordinateur (Chrome, Edge, Brave, Opera, Firefox).</p></div></details>
+      <details><summary data-i18n="faq10_q">Le jeu est plus lent avec l'extension</summary><div class="ans" data-i18n="faq10_a"><p>Coupe l'animation du fond (rail → <b>Apparence</b> → Fond) et ferme la carte 3D quand tu ne t'en sers pas. Si ça ne suffit pas, signale-le avec le formulaire ci-dessous en précisant la page concernée.</p></div></details>
+    </div>
+  </section>
+
+  <section id="bug">
+    <div class="bug">
+      <div>
+        <div class="kicker" data-i18n="bug_kicker">Un souci ?</div>
+        <h2 data-i18n="bug_h2">Signaler un bug</h2>
+        <p class="note" data-i18n="bug_intro">Décris ce qui se passe : le rapport s'ouvre sur GitHub, prêt à envoyer (compte GitHub gratuit). Sans compte, copie-le et envoie-le à la Team Holocron sur Discord.</p>
+        <p class="note" data-i18n="bug_tip">Depuis l'extension (rail → <b>À propos</b> → <b>Signaler un bug</b>), la version, l'apparence et la page du jeu sont remplies automatiquement.</p>
+        <a class="src-link" href="https://github.com/Jetrohbu/aw-cockpit-communaute/issues" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.4-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg>
+          <span data-i18n="bug_list">Rapports déjà ouverts</span>
+        </a>
+      </div>
+      <form class="form" id="bug-form" novalidate>
+        <div class="row">
+          <label class="field"><span data-i18n="bf_version">Version</span><input id="bf-version" type="text" maxlength="12" placeholder="1.0.6" autocomplete="off"></label>
+          <label class="field"><span data-i18n="bf_browser">Navigateur</span>
+            <select id="bf-browser"><option>Chrome</option><option>Edge</option><option>Brave</option><option>Opera</option><option>Firefox</option><option value="other" data-i18n="bf_other">Autre</option></select></label>
+        </div>
+        <div class="row">
+          <label class="field"><span data-i18n="bf_skin">Apparence</span>
+            <select id="bf-skin"><option value="glass" data-i18n="tab_glass">Verre</option><option value="hud">HUD</option><option value="classic" data-i18n="bf_classic">Classique</option></select></label>
+          <label class="field"><span data-i18n="bf_page">Page du jeu</span><input id="bf-page" type="text" maxlength="80" placeholder="/Game/Map" autocomplete="off"></label>
+        </div>
+        <label class="field"><span data-i18n="bf_what">Que se passe-t-il ? <i>*</i></span><textarea id="bf-what" maxlength="2000"></textarea></label>
+        <label class="field"><span data-i18n="bf_steps">Étapes pour reproduire</span><textarea id="bf-steps" maxlength="2000" placeholder="1. …&#10;2. …"></textarea></label>
+        <div class="actions">
+          <button type="submit" class="btn btn-primary btn-sm" id="bf-send">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.4-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg>
+            <span data-i18n="bf_send">Envoyer sur GitHub</span></button>
+          <button type="button" class="btn btn-ghost btn-sm" id="bf-copy" data-i18n="bf_copy">Copier le rapport</button>
+        </div>
+        <div class="msg" id="bf-msg" role="status"></div>
+      </form>
+    </div>
+  </section>
+
+  <section id="versions">
+    <div class="kicker" data-i18n="ver_kicker">Historique</div>
+    <h2 data-i18n="ver_h2">Versions</h2>
+    <div id="releases"><p class="note" data-i18n="loading">Chargement…</p></div>
+    <a class="src-link" href="https://github.com/Jetrohbu/aw-cockpit-communaute" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.4-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg>
+      <span data-i18n="src_link">Code source et toutes les versions sur GitHub</span>
+    </a>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span data-i18n="foot_1">AW Cockpit — Édition communauté. Extension non officielle, sans lien avec Mud Flat Games.</span>
+    <span data-i18n="foot_2">Textures de planètes : Solar System Scope (CC BY 4.0) · Polices : SIL OFL · three.js (MIT)</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var LANGS = ["fr", "en", "es", "de"];
+  var BASE = "aw-cockpit-communaute/";
+  var REPO = "Jetrohbu/aw-cockpit-communaute";
+  var GH = "https://github.com/" + REPO;
+
+  /* Français = texte du HTML (relu au chargement) ; ici les autres langues et les textes générés en JS. */
+  var I18N = {
+    fr: {
+      title: "AW Cockpit — Édition communauté",
+      desc: "Habillage d'AstroWars : skins HUD, Verre et Classique, jauges graduées, cartes 3D. Extension gratuite, sans compte, rien n'est envoyé.",
+      dl_ver: "Télécharger v{v}",
+      meta: "Version <b>{v}</b> · {d} · ZIP {s} · Chrome, Edge, Brave, Opera, Firefox",
+      meta_err: "Impossible de lire la dernière version pour l'instant.",
+      shot_alt: "Aperçu : ",
+      bf_need: "Décris le problème avant d'envoyer.",
+      bf_copied: "Rapport copié : colle-le sur Discord.",
+      bf_copy_fail: "Copie impossible : sélectionne le texte à la main.",
+      bf_opened: "Le rapport s'ouvre sur GitHub : vérifie-le puis clique « Create ».",
+      rep_version: "Version", rep_browser: "Navigateur", rep_skin: "Apparence", rep_page: "Page du jeu", rep_lang: "Langue",
+      rep_what: "Que se passe-t-il ?", rep_steps: "Étapes pour reproduire", rep_ua: "Navigateur (détail)"
+    },
+    en: {
+      title: "AW Cockpit — Community edition",
+      desc: "A new look for AstroWars: HUD, Glass and Classic skins, graduated gauges, 3D maps. Free extension, no account, nothing is sent.",
+      dl_ver: "Download v{v}",
+      meta: "Version <b>{v}</b> · {d} · ZIP {s} · Chrome, Edge, Brave, Opera, Firefox",
+      meta_err: "Can't read the latest version right now.",
+      shot_alt: "Preview: ",
+      bf_need: "Describe the problem before sending.",
+      bf_copied: "Report copied: paste it on Discord.",
+      bf_copy_fail: "Couldn't copy: select the text manually.",
+      bf_opened: "The report opens on GitHub: check it, then click “Create”.",
+      rep_version: "Version", rep_browser: "Browser", rep_skin: "Look", rep_page: "Game page", rep_lang: "Language",
+      rep_what: "What happens?", rep_steps: "Steps to reproduce", rep_ua: "Browser (details)",
+      brand_sub: "Community edition",
+      nav_preview: "Preview", nav_install: "Install", nav_update: "Update", nav_faq: "FAQ", nav_bug: "Bug", nav_versions: "Versions",
+      hero_kicker: "Extension for AstroWars",
+      hero_h1: "The game,<br>in <em>cockpit mode</em>",
+      hero_lead: "Three looks to choose from, graduated gauges, a space background and 3D maps. Free, no account, and nothing leaves your browser.",
+      dl: "Download", dl_fx: "Firefox version", news: "What's new",
+      loading_version: "Loading the latest version…",
+      privacy_pill: "No account · no data sent · one permission: local settings",
+      tab_glass: "Glass", tab_hud: "HUD", tab_map: "3D map", shot_soon: "Preview coming soon",
+      feat_kicker: "What it changes", feat_h2: "The whole game, restyled",
+      c1_h: "3 looks", c1_p: "Translucent Glass, HUD with cyan lines, or Classic, true to the game's colours. Pick an accent colour, applied everywhere.",
+      c2_h: "Game pages", c2_p: "Tabs, tables, News, battle reports, buttons, windows, the map bar and filters all follow the look.",
+      c3_h: "Graduated gauges", c3_p: "Progress bars become instruments: segments, neon, HUD… adjustable for Planets and Science.",
+      c4_h: "3D map", c4_p: "The galaxy in three dimensions, territories in 2D, and 7 icon styles for systems.",
+      c5_h: "Living systems", c5_p: "Every solar system in 3D with its textured planets, their day, their night and their rings.",
+      c6_h: "Planets and Trade", c6_p: "Several planet sheets side by side, the time until the next level, and on Trade: tiers, PP cost and a PP ⇄ $ converter.",
+      inst_kicker: "5 minutes", inst_h2: "Install",
+      inst_1: "Download the ZIP of the latest version and <b>unzip it</b> into a folder you keep (e.g. <code>Documents/AW-Cockpit</code>): it contains <b>one folder per browser</b> and a <code>LISEZ-MOI.txt</code> (readme).",
+      inst_2: "Open <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>, Brave and Opera: same idea).",
+      inst_3: "Turn on <b>Developer mode</b> at the top right.",
+      inst_4: "Click <b>Load unpacked</b> and choose the <code>AW-Cockpit-Chrome-Edge-Brave-Opera</code> folder.",
+      inst_5: "Open or reload AstroWars: the rail appears on the right. Settings are under <b>Look</b>.",
+      inst_note: "Firefox (128 or newer): <code>about:debugging</code> → This Firefox → Load Temporary Add-on → pick the <code>manifest.json</code> in the <code>AW-Cockpit-Firefox</code> folder (to redo every time Firefox restarts). The <b>Firefox version</b> button gives you that folder alone.",
+      upd_kicker: "When a new version is out", upd_h2: "Update",
+      upd_1b: "The extension lets you know: a <b>New version</b> card appears in the game with a <b>Download</b> button. You can also check under <b>About → Check now</b>.",
+      upd_2: "Download the new ZIP and <b>replace the contents</b> of your folder with the ZIP's.",
+      upd_3: "In <code>chrome://extensions</code>, click <b>↻ Reload</b> on AW Cockpit.",
+      upd_4: "Refresh the game tabs with <span class=\"kbd\">Ctrl</span> + <span class=\"kbd\">Shift</span> + <span class=\"kbd\">R</span>. Your settings are kept.",
+      upd_note2: "To know that a version is out, the extension reads the number of the latest version published on GitHub once a day. That's all: no data is sent, and installing stays in your hands.",
+      priv_kicker: "Trust", priv_h2: "Privacy",
+      priv_1b: "<b>Nothing is sent.</b> No analytics, no tracker: the extension only talks to the game, just like your browser (the 3D map reads your Fleets page, the Trade page your Planets and the price history, the incoming alert your News page). The only other read: the latest version number on GitHub, once a day.",
+      priv_2: "<b>No account, no password.</b> Nothing to create, nothing to type.",
+      priv_3: "<b>A single permission:</b> <code>storage</code>, to remember your settings on your computer.",
+      priv_4: "<b>Active only on astrowars.games.</b> No other site is touched.",
+      priv_5: "<b>Nothing is automated.</b> No game action is ever triggered for you: in line with the AstroWars rules.",
+      priv_6b: "<b>Open code.</b> The source files are published on GitHub and shipped unminified in the ZIP (except the three.js library): anyone can check.",
+      faq_kicker: "Help", faq_h2: "FAQ",
+      faq1_q: "Is it allowed by the AstroWars rules?",
+      faq1_a: "<p>The extension changes how things look and reads the game pages you open, just like your browser. It plays <b>no action for you</b> and automates nothing: the rules forbid automation and multi-accounting, and the extension does neither.</p>",
+      faq2_q: "Is my data sent anywhere?",
+      faq2_a: "<p>No. No account, no analytics, no tracker. Your settings stay in your browser. The only request outside the game reads the latest version number on GitHub once a day. It is anonymous and sends nothing.</p>",
+      faq3_q: "The rail doesn't show up in the game",
+      faq3_a: "<p>Make sure you picked the folder that directly contains <code>manifest.json</code> (<code>AW-Cockpit-Chrome-Edge-Brave-Opera</code>), not its parent folder. Check that the extension is enabled in <code>chrome://extensions</code>, click <b>↻</b>, then <span class=\"kbd\">Ctrl</span> + <span class=\"kbd\">Shift</span> + <span class=\"kbd\">R</span> on the game tab.</p><p>The rail may also have been hidden: a small tab on the right edge of the screen brings it back.</p>",
+      faq4_q: "How do I know a new version is out?",
+      faq4_a: "<p>Since version 1.0.6, a <b>New version</b> card appears in the game, at the latest the day after the release. To check right away: rail → <b>About</b> → <b>Check now</b>. This page also always shows the latest version.</p>",
+      faq5_q: "I lost my settings after an update",
+      faq5_a: "<p>The browser ties settings to the location of the extension folder. To keep them, <b>replace the contents of the same folder</b> instead of loading a new folder somewhere else, then click <b>↻</b>.</p>",
+      faq6_q: "Chrome shows a developer mode warning",
+      faq6_a: "<p>That's normal for an extension installed from a folder rather than the Chrome Web Store. You can close the warning: the extension keeps working.</p>",
+      faq7_q: "Firefox: the extension disappears after every restart",
+      faq7_a: "<p>Firefox only keeps add-ons loaded from <code>about:debugging</code> until it closes. Load the <code>manifest.json</code> from the <code>AW-Cockpit-Firefox</code> folder again after each start.</p>",
+      faq8_q: "Can I use it together with the alliance AW extension?",
+      faq8_a: "<p>Enable only one of them at a time: they restyle the same pages and would get in each other's way. Disable the other one on the extensions page.</p>",
+      faq9_q: "Does it work on a phone?",
+      faq9_a: "<p>No: the extension is made for desktop browsers (Chrome, Edge, Brave, Opera, Firefox).</p>",
+      faq10_q: "The game is slower with the extension",
+      faq10_a: "<p>Turn off the background animation (rail → <b>Look</b> → Background) and close the 3D map when you're not using it. If that's not enough, report it with the form below and say which page is affected.</p>",
+      bug_kicker: "A problem?", bug_h2: "Report a bug",
+      bug_intro: "Describe what happens: the report opens on GitHub, ready to send (free GitHub account). No account? Copy it and send it to Team Holocron on Discord.",
+      bug_tip: "From the extension (rail → <b>About</b> → <b>Report a bug</b>), the version, look and game page are filled in for you.",
+      bug_list: "Reports already open",
+      bf_version: "Version", bf_browser: "Browser", bf_other: "Other", bf_skin: "Look", bf_classic: "Classic", bf_page: "Game page",
+      bf_what: "What happens? <i>*</i>", bf_steps: "Steps to reproduce", bf_send: "Send on GitHub", bf_copy: "Copy the report",
+      ver_kicker: "History", ver_h2: "Versions", loading: "Loading…",
+      src_link: "Source code and every version on GitHub",
+      foot_1: "AW Cockpit — Community edition. Unofficial extension, not affiliated with Mud Flat Games.",
+      foot_2: "Planet textures: Solar System Scope (CC BY 4.0) · Fonts: SIL OFL · three.js (MIT)"
+    },
+    es: {
+      title: "AW Cockpit — Edición comunidad",
+      desc: "Nueva apariencia para AstroWars: estilos HUD, Cristal y Clásico, indicadores graduados, mapas 3D. Extensión gratuita, sin cuenta, no se envía nada.",
+      dl_ver: "Descargar v{v}",
+      meta: "Versión <b>{v}</b> · {d} · ZIP {s} · Chrome, Edge, Brave, Opera, Firefox",
+      meta_err: "No se puede leer la última versión por ahora.",
+      shot_alt: "Vista previa: ",
+      bf_need: "Describe el problema antes de enviar.",
+      bf_copied: "Informe copiado: pégalo en Discord.",
+      bf_copy_fail: "No se pudo copiar: selecciona el texto a mano.",
+      bf_opened: "El informe se abre en GitHub: revísalo y haz clic en «Create».",
+      rep_version: "Versión", rep_browser: "Navegador", rep_skin: "Apariencia", rep_page: "Página del juego", rep_lang: "Idioma",
+      rep_what: "¿Qué pasa?", rep_steps: "Pasos para reproducir", rep_ua: "Navegador (detalle)",
+      brand_sub: "Edición comunidad",
+      nav_preview: "Vista previa", nav_install: "Instalar", nav_update: "Actualizar", nav_faq: "FAQ", nav_bug: "Error", nav_versions: "Versiones",
+      hero_kicker: "Extensión para AstroWars",
+      hero_h1: "El juego,<br>en <em>modo cockpit</em>",
+      hero_lead: "Tres apariencias a elegir, indicadores graduados, un fondo espacial y mapas en 3D. Gratis, sin cuenta, y nada sale de tu navegador.",
+      dl: "Descargar", dl_fx: "Versión Firefox", news: "Novedades",
+      loading_version: "Cargando la última versión…",
+      privacy_pill: "Sin cuenta · ningún dato enviado · un único permiso: ajustes locales",
+      tab_glass: "Cristal", tab_hud: "HUD", tab_map: "Mapa 3D", shot_soon: "Vista previa próximamente",
+      feat_kicker: "Lo que cambia", feat_h2: "Todo el juego, renovado",
+      c1_h: "3 apariencias", c1_p: "Cristal translúcido, HUD con líneas cian o Clásico, fiel a los colores del juego. Color de acento a elegir, aplicado en todas partes.",
+      c2_h: "Páginas del juego", c2_p: "Pestañas, tablas, News, informes de combate, botones, ventanas, la barra y los filtros del mapa siguen la apariencia.",
+      c3_h: "Indicadores graduados", c3_p: "Las barras de progreso se convierten en instrumentos: segmentos, neón, HUD… ajustables para Planets y Science.",
+      c4_h: "Mapa en 3D", c4_p: "La galaxia en tres dimensiones, los territorios en 2D y 7 estilos de iconos para los sistemas.",
+      c5_h: "Sistemas vivos", c5_p: "Cada sistema solar en 3D con sus planetas texturizados, su día, su noche y sus anillos.",
+      c6_h: "Planetas y Trade", c6_p: "Varias fichas de planeta lado a lado, el tiempo hasta el próximo nivel y, en Trade: tiers, coste en PP y conversor PP ⇄ $.",
+      inst_kicker: "5 minutos", inst_h2: "Instalar",
+      inst_1: "Descarga el ZIP de la última versión y <b>descomprímelo</b> en una carpeta que conserves (p. ej. <code>Documents/AW-Cockpit</code>): contiene <b>una carpeta por navegador</b> y un <code>LISEZ-MOI.txt</code> (léeme).",
+      inst_2: "Abre <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>, Brave y Opera: igual).",
+      inst_3: "Activa el <b>Modo de desarrollador</b> arriba a la derecha.",
+      inst_4: "Haz clic en <b>Cargar descomprimida</b> y elige la carpeta <code>AW-Cockpit-Chrome-Edge-Brave-Opera</code>.",
+      inst_5: "Abre o recarga AstroWars: la barra aparece a la derecha. Ajustes en <b>Apariencia</b>.",
+      inst_note: "Firefox (128 o posterior): <code>about:debugging</code> → Este Firefox → Cargar complemento temporal → elige el <code>manifest.json</code> de la carpeta <code>AW-Cockpit-Firefox</code> (hay que repetirlo cada vez que se reinicia Firefox). El botón <b>Versión Firefox</b> da solo esa carpeta.",
+      upd_kicker: "Cuando sale una versión", upd_h2: "Actualizar",
+      upd_1b: "La extensión te avisa: aparece una tarjeta <b>Nueva versión</b> en el juego con el botón <b>Descargar</b>. También puedes comprobarlo en <b>Acerca de → Comprobar ahora</b>.",
+      upd_2: "Descarga el nuevo ZIP y <b>reemplaza el contenido</b> de tu carpeta por el del ZIP.",
+      upd_3: "En <code>chrome://extensions</code>, haz clic en <b>↻ Recargar</b> en AW Cockpit.",
+      upd_4: "Actualiza las pestañas del juego con <span class=\"kbd\">Ctrl</span> + <span class=\"kbd\">Mayús</span> + <span class=\"kbd\">R</span>. Tus ajustes se conservan.",
+      upd_note2: "Para saber que ha salido una versión, la extensión lee una vez al día el número de la última versión publicada en GitHub. Nada más: no se envía ningún dato y la instalación sigue en tus manos.",
+      priv_kicker: "Confianza", priv_h2: "Privacidad",
+      priv_1b: "<b>No se envía nada.</b> Sin estadísticas ni rastreadores: la extensión solo habla con el juego, como tu navegador (el mapa 3D lee tu página Fleets, la página Trade tus Planets y el historial de precios, la alerta de incoming tu página News). La única otra lectura: el número de la última versión en GitHub, una vez al día.",
+      priv_2: "<b>Sin cuenta ni contraseña.</b> Nada que crear, nada que escribir.",
+      priv_3: "<b>Un único permiso:</b> <code>storage</code>, para recordar tus ajustes en tu ordenador.",
+      priv_4: "<b>Activa solo en astrowars.games.</b> Ningún otro sitio se ve afectado.",
+      priv_5: "<b>Nada está automatizado.</b> Ninguna acción de juego se ejecuta por ti: conforme al reglamento de AstroWars.",
+      priv_6b: "<b>Código abierto.</b> Los archivos fuente están publicados en GitHub y se entregan sin minificar en el ZIP (salvo la biblioteca three.js): cualquiera puede comprobarlo.",
+      faq_kicker: "Ayuda", faq_h2: "Preguntas frecuentes",
+      faq1_q: "¿Está permitido por el reglamento de AstroWars?",
+      faq1_a: "<p>La extensión cambia la apariencia y lee las páginas del juego que abres, como tu navegador. No juega <b>ninguna acción por ti</b> ni automatiza nada: el reglamento prohíbe la automatización y las multicuentas, y la extensión no hace ni lo uno ni lo otro.</p>",
+      faq2_q: "¿Se envían mis datos a algún sitio?",
+      faq2_a: "<p>No. No hay cuenta, ni estadísticas, ni rastreadores. Tus ajustes se quedan en tu navegador. La única petición fuera del juego lee una vez al día el número de la última versión en GitHub. Es anónima y no envía nada.</p>",
+      faq3_q: "La barra no aparece en el juego",
+      faq3_a: "<p>Comprueba que elegiste la carpeta que contiene directamente <code>manifest.json</code> (<code>AW-Cockpit-Chrome-Edge-Brave-Opera</code>), no la carpeta superior. Comprueba que la extensión está activada en <code>chrome://extensions</code>, haz clic en <b>↻</b> y luego <span class=\"kbd\">Ctrl</span> + <span class=\"kbd\">Mayús</span> + <span class=\"kbd\">R</span> en la pestaña del juego.</p><p>También puede que la barra esté oculta: una pequeña pestaña en el borde derecho de la pantalla la hace volver.</p>",
+      faq4_q: "¿Cómo sé que ha salido una nueva versión?",
+      faq4_a: "<p>Desde la versión 1.0.6 aparece una tarjeta <b>Nueva versión</b> en el juego, como muy tarde al día siguiente de la publicación. Para comprobarlo ya: barra → <b>Acerca de</b> → <b>Comprobar ahora</b>. Esta página también muestra siempre la última versión.</p>",
+      faq5_q: "He perdido mis ajustes tras una actualización",
+      faq5_a: "<p>El navegador asocia los ajustes a la ubicación de la carpeta de la extensión. Para conservarlos, <b>reemplaza el contenido de la misma carpeta</b> en lugar de cargar una carpeta nueva en otro sitio, y haz clic en <b>↻</b>.</p>",
+      faq6_q: "Chrome muestra un aviso sobre el modo de desarrollador",
+      faq6_a: "<p>Es normal para una extensión instalada desde una carpeta y no desde Chrome Web Store. Puedes cerrar el aviso: la extensión sigue funcionando.</p>",
+      faq7_q: "Firefox: la extensión desaparece en cada reinicio",
+      faq7_a: "<p>Firefox solo conserva los complementos cargados desde <code>about:debugging</code> hasta que se cierra. Vuelve a cargar el <code>manifest.json</code> de la carpeta <code>AW-Cockpit-Firefox</code> en cada inicio.</p>",
+      faq8_q: "¿Puedo usarla junto con la extensión AW de la alianza?",
+      faq8_a: "<p>Activa solo una a la vez: las dos modifican las mismas páginas y se estorbarían. Desactiva la otra en la página de extensiones.</p>",
+      faq9_q: "¿Funciona en el móvil?",
+      faq9_a: "<p>No: la extensión está pensada para navegadores de ordenador (Chrome, Edge, Brave, Opera, Firefox).</p>",
+      faq10_q: "El juego va más lento con la extensión",
+      faq10_a: "<p>Desactiva la animación del fondo (barra → <b>Apariencia</b> → Fondo) y cierra el mapa 3D cuando no lo uses. Si no basta, infórmalo con el formulario de abajo indicando la página afectada.</p>",
+      bug_kicker: "¿Algún problema?", bug_h2: "Informar de un error",
+      bug_intro: "Describe lo que pasa: el informe se abre en GitHub, listo para enviar (cuenta de GitHub gratuita). ¿Sin cuenta? Cópialo y envíalo al Team Holocron en Discord.",
+      bug_tip: "Desde la extensión (barra → <b>Acerca de</b> → <b>Informar de un error</b>), la versión, la apariencia y la página del juego se rellenan solas.",
+      bug_list: "Informes ya abiertos",
+      bf_version: "Versión", bf_browser: "Navegador", bf_other: "Otro", bf_skin: "Apariencia", bf_classic: "Clásico", bf_page: "Página del juego",
+      bf_what: "¿Qué pasa? <i>*</i>", bf_steps: "Pasos para reproducir", bf_send: "Enviar en GitHub", bf_copy: "Copiar el informe",
+      ver_kicker: "Historial", ver_h2: "Versiones", loading: "Cargando…",
+      src_link: "Código fuente y todas las versiones en GitHub",
+      foot_1: "AW Cockpit — Edición comunidad. Extensión no oficial, sin relación con Mud Flat Games.",
+      foot_2: "Texturas de planetas: Solar System Scope (CC BY 4.0) · Fuentes: SIL OFL · three.js (MIT)"
+    },
+    de: {
+      title: "AW Cockpit — Community-Edition",
+      desc: "Ein neuer Look für AstroWars: HUD-, Glas- und Klassisch-Skins, skalierte Anzeigen, 3D-Karten. Kostenlose Erweiterung, ohne Konto, nichts wird gesendet.",
+      dl_ver: "Herunterladen v{v}",
+      meta: "Version <b>{v}</b> · {d} · ZIP {s} · Chrome, Edge, Brave, Opera, Firefox",
+      meta_err: "Die neueste Version kann gerade nicht gelesen werden.",
+      shot_alt: "Vorschau: ",
+      bf_need: "Beschreibe das Problem vor dem Senden.",
+      bf_copied: "Bericht kopiert: füge ihn auf Discord ein.",
+      bf_copy_fail: "Kopieren nicht möglich: markiere den Text von Hand.",
+      bf_opened: "Der Bericht öffnet sich auf GitHub: prüfe ihn und klicke auf „Create“.",
+      rep_version: "Version", rep_browser: "Browser", rep_skin: "Look", rep_page: "Spielseite", rep_lang: "Sprache",
+      rep_what: "Was passiert?", rep_steps: "Schritte zum Nachstellen", rep_ua: "Browser (Details)",
+      brand_sub: "Community-Edition",
+      nav_preview: "Vorschau", nav_install: "Installieren", nav_update: "Aktualisieren", nav_faq: "FAQ", nav_bug: "Fehler", nav_versions: "Versionen",
+      hero_kicker: "Erweiterung für AstroWars",
+      hero_h1: "Das Spiel<br>im <em>Cockpit-Modus</em>",
+      hero_lead: "Drei Looks zur Auswahl, skalierte Anzeigen, ein Weltraum-Hintergrund und 3D-Karten. Kostenlos, ohne Konto, und nichts verlässt deinen Browser.",
+      dl: "Herunterladen", dl_fx: "Firefox-Version", news: "Neuigkeiten",
+      loading_version: "Neueste Version wird geladen…",
+      privacy_pill: "Kein Konto · keine Daten gesendet · eine einzige Berechtigung: lokale Einstellungen",
+      tab_glass: "Glas", tab_hud: "HUD", tab_map: "3D-Karte", shot_soon: "Vorschau folgt in Kürze",
+      feat_kicker: "Was sich ändert", feat_h2: "Das ganze Spiel in neuem Look",
+      c1_h: "3 Looks", c1_p: "Durchscheinendes Glas, HUD mit Cyan-Linien oder Klassisch, getreu den Farben des Spiels. Akzentfarbe frei wählbar, überall angewendet.",
+      c2_h: "Spielseiten", c2_p: "Tabs, Tabellen, News, Kampfberichte, Buttons, Fenster sowie Leiste und Filter der Karte folgen dem Look.",
+      c3_h: "Skalierte Anzeigen", c3_p: "Fortschrittsbalken werden zu Instrumenten: Segmente, Neon, HUD… einstellbar für Planets und Science.",
+      c4_h: "3D-Karte", c4_p: "Die Galaxie in drei Dimensionen, Territorien in 2D und 7 Symbolstile für die Systeme.",
+      c5_h: "Lebendige Systeme", c5_p: "Jedes Sonnensystem in 3D mit seinen texturierten Planeten, ihrem Tag, ihrer Nacht und ihren Ringen.",
+      c6_h: "Planeten und Trade", c6_p: "Mehrere Planetenseiten nebeneinander, die Zeit bis zur nächsten Stufe und auf Trade: Tiers, PP-Kosten und ein PP ⇄ $-Umrechner.",
+      inst_kicker: "5 Minuten", inst_h2: "Installieren",
+      inst_1: "Lade das ZIP der neuesten Version herunter und <b>entpacke es</b> in einen Ordner, den du behältst (z. B. <code>Documents/AW-Cockpit</code>): Es enthält <b>einen Ordner pro Browser</b> und eine <code>LISEZ-MOI.txt</code> (Liesmich).",
+      inst_2: "Öffne <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>, Brave und Opera: genauso).",
+      inst_3: "Aktiviere oben rechts den <b>Entwicklermodus</b>.",
+      inst_4: "Klicke auf <b>Entpackte Erweiterung laden</b> und wähle den Ordner <code>AW-Cockpit-Chrome-Edge-Brave-Opera</code>.",
+      inst_5: "Öffne oder lade AstroWars neu: Die Leiste erscheint rechts. Einstellungen unter <b>Aussehen</b>.",
+      inst_note: "Firefox (128 oder neuer): <code>about:debugging</code> → Dieser Firefox → Temporäres Add-on laden → die <code>manifest.json</code> im Ordner <code>AW-Cockpit-Firefox</code> wählen (nach jedem Neustart von Firefox zu wiederholen). Der Button <b>Firefox-Version</b> liefert nur diesen Ordner.",
+      upd_kicker: "Wenn eine neue Version erscheint", upd_h2: "Aktualisieren",
+      upd_1b: "Die Erweiterung sagt dir Bescheid: Im Spiel erscheint eine Karte <b>Neue Version</b> mit dem Button <b>Herunterladen</b>. Du kannst auch unter <b>Über → Jetzt prüfen</b> nachsehen.",
+      upd_2: "Lade das neue ZIP herunter und <b>ersetze den Inhalt</b> deines Ordners durch den des ZIPs.",
+      upd_3: "Klicke in <code>chrome://extensions</code> bei AW Cockpit auf <b>↻ Neu laden</b>.",
+      upd_4: "Lade die Spiel-Tabs mit <span class=\"kbd\">Strg</span> + <span class=\"kbd\">Umschalt</span> + <span class=\"kbd\">R</span> neu. Deine Einstellungen bleiben erhalten.",
+      upd_note2: "Um zu wissen, dass eine Version erschienen ist, liest die Erweiterung einmal am Tag die Nummer der neuesten auf GitHub veröffentlichten Version. Das ist alles: Es werden keine Daten gesendet, und die Installation bleibt in deiner Hand.",
+      priv_kicker: "Vertrauen", priv_h2: "Datenschutz",
+      priv_1b: "<b>Nichts wird gesendet.</b> Keine Statistiken, kein Tracker: Die Erweiterung spricht nur mit dem Spiel, wie dein Browser (die 3D-Karte liest deine Fleets-Seite, die Trade-Seite deine Planets und den Preisverlauf, der Incoming-Alarm deine News-Seite). Einzige weitere Abfrage: die Nummer der neuesten Version auf GitHub, einmal am Tag.",
+      priv_2: "<b>Kein Konto, kein Passwort.</b> Nichts anzulegen, nichts einzugeben.",
+      priv_3: "<b>Eine einzige Berechtigung:</b> <code>storage</code>, um deine Einstellungen auf deinem Computer zu speichern.",
+      priv_4: "<b>Nur auf astrowars.games aktiv.</b> Keine andere Website wird verändert.",
+      priv_5: "<b>Nichts ist automatisiert.</b> Keine Spielaktion wird für dich ausgelöst: im Einklang mit den AstroWars-Regeln.",
+      priv_6b: "<b>Offener Code.</b> Die Quelldateien sind auf GitHub veröffentlicht und im ZIP nicht minifiziert enthalten (außer der Bibliothek three.js): Jeder kann es prüfen.",
+      faq_kicker: "Hilfe", faq_h2: "Häufige Fragen",
+      faq1_q: "Ist das nach den AstroWars-Regeln erlaubt?",
+      faq1_a: "<p>Die Erweiterung ändert die Darstellung und liest die Spielseiten, die du öffnest, wie dein Browser. Sie führt <b>keine Aktion für dich aus</b> und automatisiert nichts: Die Regeln verbieten Automatisierung und Mehrfachkonten, und die Erweiterung tut weder das eine noch das andere.</p>",
+      faq2_q: "Werden meine Daten irgendwohin gesendet?",
+      faq2_a: "<p>Nein. Kein Konto, keine Statistiken, kein Tracker. Deine Einstellungen bleiben in deinem Browser. Die einzige Anfrage außerhalb des Spiels liest einmal am Tag die Nummer der neuesten Version auf GitHub. Sie ist anonym und sendet nichts.</p>",
+      faq3_q: "Die Leiste erscheint nicht im Spiel",
+      faq3_a: "<p>Prüfe, dass du den Ordner gewählt hast, der direkt <code>manifest.json</code> enthält (<code>AW-Cockpit-Chrome-Edge-Brave-Opera</code>), nicht den übergeordneten Ordner. Prüfe, dass die Erweiterung in <code>chrome://extensions</code> aktiviert ist, klicke auf <b>↻</b> und dann <span class=\"kbd\">Strg</span> + <span class=\"kbd\">Umschalt</span> + <span class=\"kbd\">R</span> im Spiel-Tab.</p><p>Die Leiste kann auch ausgeblendet sein: Eine kleine Lasche am rechten Bildschirmrand holt sie zurück.</p>",
+      faq4_q: "Woher weiß ich, dass eine neue Version erschienen ist?",
+      faq4_a: "<p>Seit Version 1.0.6 erscheint im Spiel eine Karte <b>Neue Version</b>, spätestens am Tag nach der Veröffentlichung. Sofort prüfen: Leiste → <b>Über</b> → <b>Jetzt prüfen</b>. Diese Seite zeigt außerdem immer die neueste Version.</p>",
+      faq5_q: "Nach einem Update sind meine Einstellungen weg",
+      faq5_a: "<p>Der Browser verknüpft die Einstellungen mit dem Speicherort des Erweiterungsordners. Um sie zu behalten, <b>ersetze den Inhalt desselben Ordners</b>, statt einen neuen Ordner woanders zu laden, und klicke dann auf <b>↻</b>.</p>",
+      faq6_q: "Chrome zeigt eine Warnung zum Entwicklermodus",
+      faq6_a: "<p>Das ist normal für eine Erweiterung, die aus einem Ordner und nicht aus dem Chrome Web Store installiert wurde. Du kannst die Warnung schließen: Die Erweiterung funktioniert weiter.</p>",
+      faq7_q: "Firefox: Die Erweiterung verschwindet nach jedem Neustart",
+      faq7_a: "<p>Firefox behält über <code>about:debugging</code> geladene Add-ons nur bis zum Schließen. Lade die <code>manifest.json</code> aus dem Ordner <code>AW-Cockpit-Firefox</code> nach jedem Start erneut.</p>",
+      faq8_q: "Kann ich sie zusammen mit der AW-Erweiterung der Allianz nutzen?",
+      faq8_a: "<p>Aktiviere immer nur eine der beiden: Sie verändern dieselben Seiten und würden sich gegenseitig stören. Deaktiviere die andere auf der Erweiterungsseite.</p>",
+      faq9_q: "Funktioniert das auf dem Handy?",
+      faq9_a: "<p>Nein: Die Erweiterung ist für Desktop-Browser gedacht (Chrome, Edge, Brave, Opera, Firefox).</p>",
+      faq10_q: "Das Spiel ist mit der Erweiterung langsamer",
+      faq10_a: "<p>Schalte die Hintergrundanimation aus (Leiste → <b>Aussehen</b> → Hintergrund) und schließe die 3D-Karte, wenn du sie nicht brauchst. Reicht das nicht, melde es mit dem Formular unten und nenne die betroffene Seite.</p>",
+      bug_kicker: "Ein Problem?", bug_h2: "Fehler melden",
+      bug_intro: "Beschreibe, was passiert: Der Bericht öffnet sich auf GitHub, bereit zum Senden (kostenloses GitHub-Konto). Kein Konto? Kopiere ihn und schick ihn dem Team Holocron auf Discord.",
+      bug_tip: "Aus der Erweiterung heraus (Leiste → <b>Über</b> → <b>Fehler melden</b>) werden Version, Look und Spielseite automatisch ausgefüllt.",
+      bug_list: "Bereits offene Berichte",
+      bf_version: "Version", bf_browser: "Browser", bf_other: "Andere", bf_skin: "Look", bf_classic: "Klassisch", bf_page: "Spielseite",
+      bf_what: "Was passiert? <i>*</i>", bf_steps: "Schritte zum Nachstellen", bf_send: "Auf GitHub senden", bf_copy: "Bericht kopieren",
+      ver_kicker: "Verlauf", ver_h2: "Versionen", loading: "Wird geladen…",
+      src_link: "Quellcode und alle Versionen auf GitHub",
+      foot_1: "AW Cockpit — Community-Edition. Inoffizielle Erweiterung, nicht mit Mud Flat Games verbunden.",
+      foot_2: "Planetentexturen: Solar System Scope (CC BY 4.0) · Schriften: SIL OFL · three.js (MIT)"
+    }
+  };
+  document.querySelectorAll("[data-i18n]").forEach(function (el) {
+    var k = el.getAttribute("data-i18n");
+    if (!(k in I18N.fr)) I18N.fr[k] = el.innerHTML;
+  });
+
+  var lang = window.AWCC_LANG || "fr";
+  var info = null;   // { version, date, size, releases }
+  function t(k) { return (I18N[lang] && I18N[lang][k] != null) ? I18N[lang][k] : I18N.fr[k]; }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function sizeText(bytes, fallback) {
+    if (!bytes) return fallback ? (lang === "fr" ? fallback : String(fallback).replace("Mo", "MB")) : "";
+    var mb = (bytes / 1048576).toFixed(1);
+    return lang === "en" ? mb + " MB" : mb.replace(".", ",") + (lang === "fr" ? " Mo" : " MB");
+  }
+  function dateText(iso, fallback) {
+    if (!iso) return fallback || "";
+    try { return new Date(iso).toLocaleDateString({ fr: "fr-FR", en: "en-GB", es: "es-ES", de: "de-DE" }[lang]); } catch (e) { return fallback || ""; }
+  }
+
+  /* ── aperçus ── */
+  var shots = { hud: "shot-hud.jpg", verre: "shot-verre.jpg", carte: "shot-carte.jpg" };
+  var img = document.getElementById("shot"), ph = document.getElementById("shot-ph");
+  img.addEventListener("error", function () { img.hidden = true; ph.hidden = false; });
+  img.addEventListener("load", function () { img.hidden = false; ph.hidden = true; });
+  document.querySelectorAll(".tab").forEach(function (tb) {
+    tb.addEventListener("click", function () {
+      document.querySelectorAll(".tab").forEach(function (x) { x.setAttribute("aria-selected", String(x === tb)); });
+      img.alt = t("shot_alt") + tb.textContent;
+      img.src = BASE + shots[tb.dataset.shot];
+    });
+  });
+
+  function renderVersion() {
+    if (!info) return;
+    document.getElementById("dl-label").textContent = t("dl_ver").replace("{v}", info.version);
+    document.getElementById("meta").innerHTML = t("meta").replace("{v}", esc(info.version))
+      .replace("{d}", esc(dateText(info.date, info.dateText))).replace("{s}", esc(sizeText(info.size, info.sizeText)));
+    document.getElementById("releases").innerHTML = (info.releases || []).map(function (rel, i) {
+      var tr = (rel.i18n && rel.i18n[lang]) || rel;   // notes traduites si présentes, sinon français
+      return '<div class="rel' + (i === 0 ? " now" : "") + '"><h3>v' + esc(rel.version) + "<small>" + esc(rel.date) + "</small></h3>" +
+        "<h4>" + esc(tr.title) + "</h4><ul>" + (tr.points || []).map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ul></div>";
+    }).join("");
+    var bv = document.getElementById("bf-version");
+    if (!bv.value) bv.placeholder = info.version;
+  }
+
+  function apply(l) {
+    lang = LANGS.indexOf(l) >= 0 ? l : "fr";
+    document.documentElement.lang = lang;
+    document.title = t("title");
+    document.querySelector('meta[name="description"]').setAttribute("content", t("desc"));
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      var k = el.getAttribute("data-i18n");
+      if (info && (k === "dl" || k === "loading_version" || k === "loading")) return;   // remplis par renderVersion
+      el.innerHTML = t(k);
+    });
+    var sel = document.querySelector('.tab[aria-selected="true"]');
+    if (sel) img.alt = t("shot_alt") + sel.textContent;
+    document.querySelectorAll(".lang-switch button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.lang === lang)); });
+    renderVersion();
+    document.documentElement.classList.remove("i18n-pending");
+  }
+
+  function choose(l) {
+    try { localStorage.setItem("awcc_lang", l); } catch (e) {}
+    apply(l);
+    try { var u = new URL(location.href); if (u.searchParams.has("lang")) { u.searchParams.set("lang", l); history.replaceState(null, "", u); } } catch (e) {}
+  }
+
+  document.querySelectorAll(".lang-switch button").forEach(function (b) {
+    b.addEventListener("click", function () { choose(b.dataset.lang); });
+  });
+
+  /* ── choix de la langue à la première visite ── */
+  var gate = document.getElementById("lang-gate");
+  if (!window.AWCC_LANG) {
+    var nav = (navigator.languages && navigator.languages[0]) || navigator.language || "";
+    var guess = String(nav).slice(0, 2).toLowerCase();
+    if (LANGS.indexOf(guess) < 0) guess = "en";
+    var btns = gate.querySelectorAll(".gate-langs button");
+    var closeGate = function (l) { gate.hidden = true; document.body.style.overflow = ""; choose(l); };
+    btns.forEach(function (b) {
+      if (b.dataset.lang === guess) b.classList.add("suggested");
+      b.addEventListener("click", function () { closeGate(b.dataset.lang); });
+    });
+    document.body.style.overflow = "hidden";
+    gate.hidden = false;
+    gate.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeGate(guess);
+      if (e.key === "Tab") {   // garder le focus dans la fenêtre
+        var list = Array.prototype.slice.call(btns), i = list.indexOf(document.activeElement);
+        e.preventDefault();
+        list[(i + (e.shiftKey ? list.length - 1 : 1)) % list.length].focus();
+      }
+    });
+    (gate.querySelector(".suggested") || btns[0]).focus();
+    apply(guess);   // la page derrière est déjà dans la langue proposée
+  } else {
+    apply(lang);
+  }
+
+  /* ── dernière version : Release GitHub (source de vérité), repli sur le version.json du site ── */
+  function useLocal() {
+    return fetch(BASE + "version.json", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (v) {
+      info = { version: v.version, dateText: v.date, sizeText: v.size_bundle || v.size, releases: v.releases };
+      renderVersion();
+    });
+  }
+  fetch("https://api.github.com/repos/" + REPO + "/releases/latest", { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (rel) {
+      var tag = String(rel.tag_name || ""), version = tag.replace(/^v/i, "");
+      var bundle = (rel.assets || []).filter(function (a) { return a.name === "aw-cockpit-communaute.zip"; })[0];
+      return fetch("https://raw.githubusercontent.com/" + REPO + "/" + encodeURIComponent(tag) + "/site/aw-cockpit-communaute/version.json", { cache: "no-store" })
+        .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+        .then(function (vj) {
+          info = { version: version, date: rel.published_at, size: bundle && bundle.size, releases: (vj && vj.releases) || [] };
+          renderVersion();
+        });
+    })
+    .catch(function () { return useLocal(); })
+    .catch(function () { document.getElementById("meta").textContent = t("meta_err"); });
+
+  /* ── rapport de bug ── */
+  var q = new URLSearchParams(location.search);
+  var ua = navigator.userAgent;
+  var browser = /Firefox\//.test(ua) ? "Firefox" : /Edg\//.test(ua) ? "Edge" : /OPR\//.test(ua) ? "Opera" : navigator.brave ? "Brave" : /Chrome\//.test(ua) ? "Chrome" : "other";
+  var $ = function (id) { return document.getElementById(id); };
+  $("bf-browser").value = browser;
+  if (/^\d+\.\d+\.\d+$/.test(q.get("v") || "")) $("bf-version").value = q.get("v");
+  if (["glass", "hud", "classic"].indexOf(q.get("skin")) >= 0) $("bf-skin").value = q.get("skin");
+  if (q.get("page")) $("bf-page").value = String(q.get("page")).slice(0, 80);
+  if (location.hash === "#bug" && q.get("v")) setTimeout(function () { $("bf-what").focus({ preventScroll: true }); }, 400);
+
+  function report() {
+    var skinSel = $("bf-skin"), brSel = $("bf-browser");
+    var lines = [
+      "**" + t("rep_version") + "** : " + ($("bf-version").value.trim() || "?"),
+      "**" + t("rep_browser") + "** : " + brSel.options[brSel.selectedIndex].text,
+      "**" + t("rep_skin") + "** : " + skinSel.options[skinSel.selectedIndex].text,
+      "**" + t("rep_page") + "** : " + ($("bf-page").value.trim() || "?"),
+      "**" + t("rep_lang") + "** : " + lang,
+      "",
+      "### " + t("rep_what"),
+      $("bf-what").value.trim(),
+      ""
+    ];
+    if ($("bf-steps").value.trim()) lines.push("### " + t("rep_steps"), $("bf-steps").value.trim(), "");
+    lines.push("<details><summary>" + t("rep_ua") + "</summary>", "", "`" + ua + "`", "</details>");
+    return lines.join("\n");
+  }
+  function msg(text, kind) { var m = $("bf-msg"); m.textContent = text; m.className = "msg" + (kind ? " " + kind : ""); }
+  function ready() {
+    if ($("bf-what").value.trim()) return true;
+    msg(t("bf_need"), "bad"); $("bf-what").focus(); return false;
+  }
+  $("bug-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!ready()) return;
+    var what = $("bf-what").value.trim().replace(/\s+/g, " ");
+    var title = "[Bug] " + (what.length > 70 ? what.slice(0, 69) + "…" : what);
+    var url = GH + "/issues/new?labels=bug&title=" + encodeURIComponent(title) + "&body=" + encodeURIComponent(report());
+    window.open(url, "_blank", "noopener");
+    msg(t("bf_opened"), "ok");
+  });
+  $("bf-copy").addEventListener("click", function () {
+    if (!ready()) return;
+    var text = report();
+    var done = function () { msg(t("bf_copied"), "ok"); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { msg(t("bf_copy_fail"), "bad"); });
+    } else {
+      msg(t("bf_copy_fail"), "bad");
+    }
+  });
+})();
+</script>
+</body>
+</html>

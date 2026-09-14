@@ -1,0 +1,2868 @@
+/* ═══════════════════════════════════════════════════════════════
+   AW Cockpit v3 — shell de layout (rail + panneau unique)
+   Le moteur/contenu reste stylé par styles.css ; ce fichier ne
+   porte que le rail, le panneau hôte et la neutralisation du
+   positionnement flottant historique des panneaux dockés.
+   Tokens : hérite des variables thème existantes (--aw-*).
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Jetons du cockpit, calés PAR DÉFAUT sur le vocabulaire visuel du jeu.
+   Les surfaces, la police, la casse et les formes viennent des jetons --awg-*
+   (game-reskin.css, extraits de astrowars.css) : le cockpit ressemble donc au
+   jeu sans réglage à activer, et suit le reskin quand il est allumé.
+   SEUL l'accent reste piloté par --aw-turquoise, pour que le sélecteur
+   « Couleur d'accent » des Réglages continue de servir à quelque chose. */
+:root {
+  --awc-rail-w: 52px;
+  --awc-panel-w: 400px;
+  --awc-accent: var(--aw-turquoise, #2ad2d8);
+  --awc-text: var(--awg-text, #fff);
+  --awc-hull: var(--awg-panel-bg-2, #1e1e1e);      /* rail  ≈ .map-search-panel */
+  --awc-glass: var(--awg-panel-bg, #262626);       /* colonne ≈ .map-filter-panel */
+  --awc-head-bg: var(--awg-head-bg, #231E64);      /* bandeaux ≈ table.table th */
+  --awc-surface: var(--awg-lowlight, #2F2F2F);     /* cartes ≈ .lowlight */
+  --awc-field: var(--awg-cell-bg, #404040);        /* champs ≈ table.table td */
+  --awc-field-line: var(--awg-input-border, #6c757d);
+  --awc-hover: var(--awg-hover, #4a4a4a);
+  --awc-line: var(--awg-border, rgba(255, 255, 255, .12));
+  --awc-line-strong: rgba(255, 255, 255, .25);
+  --awc-dim: var(--awg-label, rgba(255, 255, 255, .55));
+  --awc-faint: var(--awg-faint, rgba(255, 255, 255, .38));
+  --awc-gold: var(--awg-gold, #ffd262);
+  /* Couleur des SURFACES PLEINES (chips actives, interrupteurs, barres de
+     progression). Valeur de repli seulement : sur les surfaces du cockpit,
+     le bloc « ACCENT DE L'OUTIL » (plus bas) la repose en gris neutre, ou
+     sur la couleur choisie dans « Couleur d'accent » le cas échéant. */
+  --awc-fill: var(--awg-accent, #5f8fc8);
+  --awc-radius: var(--awg-radius, 6px);
+  --awc-ok: #4ade80;
+  --awc-warn: #fbbf24;
+  --awc-danger: #f87171;
+  /* police du jeu : pile Bootstrap par défaut, aucune fonte maison */
+  --awc-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --awc-mono: var(--awc-font);
+}
+
+/* ── Poussée de la page du jeu ─────────────────────────────── */
+html.awc-on { margin-right: var(--awc-rail-w) !important; transition: margin-right .28s cubic-bezier(.4,0,.2,1); }
+html.awc-on.awc-open { margin-right: calc(var(--awc-rail-w) + var(--awc-panel-w)) !important; }
+@media (prefers-reduced-motion: reduce) { html.awc-on { transition: none; } }
+html.awc-resizing, html.awc-resizing #awc-panel { transition: none !important; }
+html.awc-resizing { user-select: none; }
+
+/* ── Anciennes languettes verticales : plus de raison d'être ── */
+html.awc-on .aw-vertical-btn { display: none !important; }
+html.awc-on #aw-collapse-standalone { display: none !important; }
+
+/* ── Panneaux gérés : jamais flottants — visibles uniquement dockés ── */
+html.awc-on #aw-overlay:not(.awc-docked),
+html.awc-on #aw-map-viewer:not(.awc-docked),
+html.awc-on #aw-fleet-viewer:not(.awc-docked),
+html.awc-on #aw-theme-panel:not(.awc-docked),
+html.awc-on #aw-calculator-panel:not(.awc-docked),
+html.awc-on #aw-maxlevel-panel:not(.awc-docked),
+html.awc-on #aw-optimizer-panel:not(.awc-docked),
+html.awc-on #aw-alliance-panel:not(.awc-docked) {
+  display: none !important;
+}
+
+/* ═══════════ RAIL ═══════════ */
+#awc-rail {
+  position: fixed; top: 0; right: 0; bottom: 0; width: var(--awc-rail-w);
+  z-index: 999991;
+  background: var(--awc-hull);
+  border-left: 1px solid var(--awc-line);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 8px 0; gap: 2px;
+  font-family: var(--awc-font);
+}
+#awc-rail .awc-logo {
+  width: 34px; height: 34px; margin-bottom: 8px;
+  display: grid; place-items: center; color: var(--awc-accent);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--awc-accent) 60%, transparent));
+}
+.awc-rail-btn {
+  width: 40px; height: 40px; border: 0; background: transparent; border-radius: 9px;
+  display: grid; place-items: center; color: var(--awc-dim); cursor: pointer;
+  position: relative; transition: background .15s, color .15s; padding: 0;
+}
+.awc-rail-btn:hover { background: color-mix(in srgb, var(--awc-accent) 9%, transparent); color: var(--awc-text); }
+.awc-rail-btn:focus-visible { outline: 1px solid var(--awc-accent); }
+.awc-rail-btn.awc-on { background: color-mix(in srgb, var(--awc-accent) 15%, transparent); color: var(--awc-accent); }
+.awc-rail-btn.awc-on::before {
+  content: ""; position: absolute; right: -6px; top: 8px; bottom: 8px; width: 2px;
+  background: var(--awc-accent); border-radius: 2px;
+  box-shadow: 0 0 8px var(--awc-accent);
+}
+.awc-rail-btn svg { width: 20px; height: 20px; }
+.awc-rail-btn .awc-bdg {
+  position: absolute; top: 3px; right: 3px; min-width: 14px; height: 14px; padding: 0 3px;
+  border-radius: 7px; background: var(--awc-danger); color: #180505;
+  font-family: var(--awc-mono); font-size: 9px; font-weight: 700;
+  display: grid; place-items: center;
+}
+.awc-rail-btn .awc-bdg:empty { display: none; }
+/* Buildings, tous rendus (Classique, ou Skin du jeu coupé) : seul l'EN COURS ressort.
+   building-lvl-up = niveau payable, pas forcément entamé → on annule le gras du jeu ;
+   aw-lvl-encours = entamé mais marqué « up » (planets-enhance.js) → jaune comme building-lvl-started.
+   En HUD/Verre + Skin du jeu, game-skins.css (!important) passe devant. */
+table.table td.building-lvl-up:not(.aw-lvl-encours) { font-weight: inherit; }
+table.table td.aw-lvl-encours { color: #FFF176; font-weight: bold; }
+.awc-rail-sep { width: 24px; height: 1px; background: var(--awc-line); margin: 6px 0; flex: none; }
+.awc-rail-spacer { flex: 1; }
+
+/* tooltip */
+.awc-rail-btn::after {
+  content: attr(data-tip); position: absolute; right: 50px; top: 50%; translate: 0 -50%;
+  background: var(--awc-glass); border: 1px solid var(--awc-line-strong); color: var(--awc-text);
+  padding: 4px 10px; border-radius: 6px; font-size: 12px; font-family: var(--awc-font);
+  white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 5;
+}
+.awc-rail-btn:hover::after { opacity: 1; }
+
+/* badge session */
+#awc-session .awc-st {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--awc-ok);
+  box-shadow: 0 0 7px var(--awc-ok); display: block;
+}
+#awc-session.awc-expired .awc-st {
+  background: var(--awc-danger); box-shadow: 0 0 7px var(--awc-danger);
+  animation: awc-pulse 1.4s infinite;
+}
+@keyframes awc-pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { #awc-session.awc-expired .awc-st { animation: none; } }
+
+/* ═══════════ PANNEAU HÔTE ═══════════ */
+#awc-panel {
+  position: fixed; top: 0; bottom: 0; right: var(--awc-rail-w); width: var(--awc-panel-w);
+  z-index: 999990;
+  background: var(--awc-glass);
+  border-left: 1px solid var(--awc-line-strong);
+  box-shadow: -18px 0 40px rgba(0, 0, 0, .45);
+  display: flex; flex-direction: column;
+  transform: translateX(calc(100% + var(--awc-rail-w)));
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+  font-family: var(--awc-font); color: var(--awc-text);
+}
+html.awc-open #awc-panel { transform: translateX(0); }
+@media (prefers-reduced-motion: reduce) { #awc-panel { transition: none; } }
+
+#awc-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px 10px; border-bottom: 1px solid var(--awc-line); flex: none;
+}
+#awc-title {
+  margin: 0; flex: 1; font-size: 14px; font-weight: 600;
+  letter-spacing: 1.6px; text-transform: uppercase; color: var(--awc-accent);
+}
+#awc-who { font-size: 11px; color: var(--awc-dim); text-align: right; line-height: 1.5; }
+#awc-who b { color: var(--awc-text); font-family: var(--awc-mono); font-weight: 600; }
+#awc-who .awc-ok-txt { color: var(--awc-ok); }
+#awc-who .awc-bad-txt { color: var(--awc-danger); }
+#awc-close, #awc-expand {
+  border: 0; background: none; color: var(--awc-dim); font-size: 15px;
+  padding: 4px 7px; border-radius: 6px; cursor: pointer;
+}
+#awc-close:hover, #awc-expand:hover { color: var(--awc-text); background: rgba(255, 255, 255, .06); }
+#awc-resize {
+  position: absolute; left: -3px; top: 0; bottom: 0; width: 7px;
+  cursor: ew-resize; z-index: 2; touch-action: none;
+}
+#awc-resize:hover, #awc-resize.awc-active {
+  background: color-mix(in srgb, var(--awc-accent) 35%, transparent);
+}
+
+#awc-body { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px; scrollbar-width: thin; }
+#awc-body::-webkit-scrollbar { width: 8px; }
+#awc-body::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--awc-accent) 20%, transparent); border-radius: 4px; }
+
+/* ═══════════ PANNEAUX DOCKÉS DANS LA COLONNE ════════════════
+   Les panneaux historiques sont des FENÊTRES flottantes : position fixed,
+   min-width 350→600 px, fond/bordure/halo/blur, en-tête (kicker + titre +
+   poignée de déplacement) et corps qui défile tout seul.
+   Rabattus dans la colonne du cockpit (320→820 px, 400 par défaut) ça donne
+   une fenêtre dans une fenêtre, et surtout ça DÉBORDE : le min-width des
+   panneaux dépasse la largeur utile de la colonne.
+   Ici on les rend à ce qu'ils doivent être une fois dockés : des SECTIONS de
+   la colonne. Plus de coquille propre, plus de largeur plancher, plus de
+   double défilement — c'est la colonne qui défile, et une seule fois.
+   (Le grand format #awc-wide garde la présentation en cartes : voir plus bas.)
+   ═══════════════════════════════════════════════════════════ */
+#awc-body .awc-docked {
+  position: static !important;
+  top: auto !important; right: auto !important; bottom: auto !important; left: auto !important;
+  /* min-width : LA cause des débordements horizontaux dans la colonne */
+  width: 100% !important; min-width: 0 !important; max-width: none !important;
+  height: auto !important; max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  opacity: 1 !important;
+  display: block !important;
+  visibility: visible !important;
+  z-index: auto !important;
+  /* coquille de fenêtre → rien : la colonne EST le cadre */
+  background: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  overflow: visible !important;
+  /* police du cockpit (certains panneaux imposent du Courier New) */
+  font-family: var(--awc-font) !important;
+  /* corps de texte aligné sur les cartes du cockpit — sans !important pour
+     que les règles internes des panneaux gardent la main quand elles fixent
+     une taille (titres, valeurs de résultat, etc.) */
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--awc-text);
+}
+/* plusieurs panneaux dans la même colonne (module Outils) : un filet les
+   sépare au lieu de deux cadres empilés */
+#awc-body .awc-docked + .awc-docked {
+  margin-top: 16px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid var(--awc-line) !important;
+}
+/* en-tête maison : le kicker répète le titre du shell → dehors ; le titre
+   devient un intertitre de colonne ; la poignée de déplacement n'a plus lieu
+   d'être ; les boutons d'action (Rafraîchir…) restent, alignés à droite */
+#awc-body .awc-docked [class$="__header"] {
+  display: flex !important; align-items: center; gap: 8px;
+  margin: 0 0 10px !important; padding: 0 0 6px !important;
+  border-bottom: 1px solid var(--awc-line) !important;
+  cursor: default !important;
+}
+#awc-body .awc-docked [class$="__header"] > *:first-child { flex: 1; min-width: 0; }
+#awc-body .awc-docked [class$="__kicker"] { display: none !important; }
+#awc-body .awc-docked [class$="__title"] {
+  font-size: 11px !important; font-weight: 600 !important; letter-spacing: 1.6px;
+  text-transform: uppercase; color: var(--awc-accent) !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* corps : c'est la colonne qui défile, pas chaque panneau (fini les
+   ascenseurs imbriqués et les hauteurs figées) */
+#awc-body .awc-docked [class$="__body"] {
+  overflow: visible !important; max-height: none !important; height: auto !important;
+  padding: 0 !important; margin: 0 !important; flex: none !important;
+}
+#awc-body .awc-docked select,
+#awc-body .awc-docked input,
+#awc-body .awc-docked button,
+#awc-body .awc-docked textarea { max-width: 100%; box-sizing: border-box; }
+#awc-body .awc-docked table { max-width: 100%; }
+/* barres de progression : width:100% en content-box + bordure 1px = 2 px de
+   trop, donc un liseré coupé au bord de la colonne */
+#awc-body .awc-docked .aw-progress { box-sizing: border-box; }
+/* l'état replié historique n'a plus de sens une fois docké */
+#awc-body .awc-docked.aw-retracted {
+  display: block !important; transform: none !important; opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* ── Outils : calculatrice + classement science en colonne étroite ── */
+/* onglets qui remplissent la largeur au lieu de déborder */
+#awc-body .awc-docked .aw-calc-tabs { gap: 6px; margin-bottom: 12px; }
+#awc-body .awc-docked .aw-calc-tab { flex: 1 1 0; min-width: 0; padding: 7px 6px; text-align: center; }
+#awc-body .awc-docked .aw-calc-group { margin-bottom: 11px; }
+#awc-body .awc-docked .aw-calc-label { font-size: 11px; }
+#awc-body .awc-docked .aw-calc-input { padding: 7px 9px; font-family: var(--awc-mono); font-size: 13px; }
+#awc-body .awc-docked .aw-calc-button { padding: 9px; font-size: 13px; }
+#awc-body .awc-docked .aw-calc-result { margin-top: 12px; padding: 11px 13px; }
+#awc-body .awc-docked .aw-calc-result-value { font-size: 20px; margin-bottom: 8px; font-family: var(--awc-mono); }
+#awc-body .awc-docked .aw-calc-result-details { font-size: 11px; }
+/* classement science : la colonne du niveau ne doit jamais écraser le nom */
+#awc-body .awc-docked .aw-science-rankings { margin-top: 8px; }
+#awc-body .awc-docked .aw-science-ranking-item { padding: 8px 10px; margin-bottom: 6px; gap: 8px; }
+#awc-body .awc-docked .aw-science-rank { font-size: 15px; min-width: 28px; }
+#awc-body .awc-docked .aw-science-player-info { margin-left: 0; min-width: 0; }
+#awc-body .awc-docked .aw-science-player-name { font-size: 13px; overflow-wrap: anywhere; }
+#awc-body .awc-docked .aw-science-level {
+  font-size: 15px; min-width: 0; white-space: nowrap; flex: none;
+  font-family: var(--awc-mono);
+}
+/* la note d'intro du classement : ton « méta » du cockpit */
+#awc-body .awc-docked .aw-note { font-size: 11px !important; color: var(--awc-dim) !important; }
+/* la carte dockée en grand */
+#awc-wide {
+  position: fixed; inset: 18px calc(var(--awc-rail-w) + 14px) 18px 18px;
+  z-index: 999992; display: none; flex-direction: column;
+  background: var(--awc-glass);
+  border: 1px solid var(--awc-line-strong); border-radius: 14px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .6);
+  overflow: hidden;
+}
+html.awc-wide-on #awc-wide { display: flex; }
+#awc-wide.awc-center {
+  inset: auto;
+  top: 50%; left: 50%; right: auto; bottom: auto;
+  transform: translate(-50%, -50%);
+  /* La fenêtre se cale sur SON CONTENU au lieu d'imposer 1160 px.
+     Les modules capent déjà leur colonne (720 px pour les ordres de vol,
+     880 pour les menaces) : à largeur fixe, tout le reste était de la marge
+     vide. `fit-content` fait la fenêtre à la mesure de ce qu'elle montre, et
+     le max-width protège les modules larges (tableaux, carte). */
+  width: fit-content;
+  min-width: min(520px, calc(100vw - 140px));
+  max-width: min(1160px, calc(100vw - 140px));
+  height: auto;
+  max-height: 86vh;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .6), 0 0 0 100vmax rgba(0, 0, 0, .55);
+}
+/* Sans cela, `fit-content` sur le parent fait remonter la largeur MAX-CONTENT
+   des cartes : le cap de colonne des modules ne servirait plus à rien. */
+#awc-wide.awc-center #awc-wide-body { min-width: 0; }
+#awc-wide.awc-center #awc-wide-body { padding: 16px 20px; }
+#awc-wide-head {
+  display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+  border-bottom: 1px solid var(--awc-line); flex: none;
+  font-family: var(--awc-font); color: var(--awc-accent);
+  font-size: 13px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600;
+}
+#awc-wide-head .awc-spacer { flex: 1; }
+#awc-wide-reduce {
+  border: 1px solid var(--awc-line); background: transparent; color: var(--awc-dim);
+  border-radius: 7px; padding: 4px 12px; cursor: pointer; font-family: var(--awc-font); font-size: 12px;
+}
+#awc-wide-reduce:hover { color: var(--awc-text); border-color: var(--awc-line-strong); }
+#awc-wide-close {
+  border: 1px solid var(--awc-line); background: transparent; color: var(--awc-dim);
+  border-radius: 7px; padding: 4px 12px; cursor: pointer; font-family: var(--awc-font); font-size: 12px;
+}
+#awc-wide-close:hover { color: var(--awc-text); border-color: var(--awc-line-strong); }
+#awc-wide-body { flex: 1; overflow: auto; padding: 10px; }
+#awc-wide-body .awc-docked {
+  position: static !important; inset: auto !important;
+  width: 100% !important; min-width: 0 !important; height: auto !important; max-height: none !important;
+  margin: 0 auto 14px auto !important; transform: none !important; display: block !important;
+  opacity: 1 !important; box-shadow: none !important;
+  max-width: 1100px !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+#awc-wide-body .awc-docked.aw-retracted { display: block !important; }
+#awc-wide-body #aw-map-viewer.awc-docked {
+  display: flex !important; flex-direction: column;
+  height: 100% !important; max-width: none !important; margin: 0 !important;
+  border: 0 !important; background: transparent !important;
+}
+#awc-wide-body .aw-map-viewer__body { flex: 1; }
+#awc-wide-body .awc-card, #awc-wide-body .awc-kicker, #awc-wide-body #awc-threats-wrap { max-width: 880px; margin-left: auto; margin-right: auto; }
+#awc-wide-body #awc-threats-wrap .awc-card { margin-left: 0; margin-right: 0; }
+
+/* ═══════════ Ajustements des éléments existants ═══════════ */
+/* bandeau culture du bas : retiré (demande utilisateur) */
+html.awc-on #aw-culture-banner { display: none !important; }
+
+/* headers des panneaux dockés : plus sobres (le titre est déjà dans le shell) */
+#awc-body .awc-docked .aw-header { cursor: default; }
+#awc-body #aw-overlay .aw-header__top { display: none !important; }
+
+/* ═══════════ Cartes cockpit (session / menaces) ═══════════ */
+.awc-card {
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid var(--awc-line); border-radius: 10px;
+  padding: 8px 10px; margin-bottom: 7px;
+  font-family: var(--awc-font); color: var(--awc-text); font-size: 12px;
+}
+.awc-card h3 { margin: 0 0 2px; font-size: 12.5px; font-weight: 600; letter-spacing: .4px; }
+.awc-card .awc-meta { font-size: 11px; color: var(--awc-dim); }
+.awc-card .awc-meta b { color: var(--awc-text); font-family: var(--awc-mono); font-weight: 600; }
+.awc-kicker {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: color-mix(in srgb, var(--awc-text) 38%, transparent);
+  margin: 11px 2px 6px; font-family: var(--awc-font);
+}
+.awc-kicker:first-child { margin-top: 2px; }
+.awc-threat { border-left: 3px solid var(--awc-danger); display: flex; align-items: center; gap: 10px; }
+.awc-threat.awc-mid { border-left-color: var(--awc-warn); }
+.awc-threat > div:first-child { flex: 1; min-width: 0; }
+.awc-threat .awc-eta { font-family: var(--awc-mono); font-size: 13.5px; font-weight: 700; color: var(--awc-danger); white-space: nowrap; }
+.awc-threat.awc-mid .awc-eta { color: var(--awc-warn); }
+.awc-empty { color: var(--awc-dim); font-size: 12px; text-align: center; padding: 12px 6px; font-family: var(--awc-font); }
+.awc-btn {
+  font-family: var(--awc-font); font-size: 12px; letter-spacing: .5px;
+  background: color-mix(in srgb, var(--awc-accent) 13%, transparent); color: var(--awc-accent);
+  border: 1px solid var(--awc-line-strong); border-radius: 7px; padding: 5px 11px; cursor: pointer;
+}
+.awc-btn:hover { background: color-mix(in srgb, var(--awc-accent) 24%, transparent); }
+.awc-btn.awc-danger { color: var(--awc-danger); border-color: rgba(248, 113, 113, .4); background: rgba(248, 113, 113, .08); }
+.awc-row { display: flex; align-items: center; gap: 10px; }
+.awc-row .awc-grow { flex: 1; min-width: 0; }
+
+/* toggle switch (réglage cockpit) */
+.awc-toggle {
+  position: relative; width: 36px; height: 20px; flex: none;
+  background: rgba(255, 255, 255, .12); border-radius: 20px; border: 0; cursor: pointer; padding: 0;
+}
+.awc-toggle::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+  border-radius: 50%; background: #adadad; transition: left .2s, background .2s;
+}
+.awc-toggle.awc-on { background: color-mix(in srgb, var(--awc-accent) 45%, transparent); }
+.awc-toggle.awc-on::after { left: 18px; background: var(--awc-accent); }
+
+/* ═══════════ Fiche joueur — reskin cockpit (surcouche pure CSS) ═══════════ */
+#aw-player-detail-modal .aw-modal-content {
+  background: rgba(30, 30, 30, 0.97) !important;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 45%, transparent) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65) !important;
+  max-width: 980px !important;
+  font-family: var(--awc-font) !important;
+}
+#aw-player-detail-modal .aw-modal-header {
+  background: none !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 18%, transparent) !important;
+  padding: 14px 20px !important;
+}
+#aw-player-detail-modal .aw-modal-header h3 {
+  font-family: var(--awc-font) !important;
+  font-size: 16px !important; font-weight: 600 !important;
+  letter-spacing: 2px !important; text-transform: uppercase !important;
+  color: var(--aw-turquoise, #2ad2d8) !important;
+  text-shadow: none !important;
+}
+#aw-player-detail-modal .aw-modal-close {
+  background: none !important; border: 0 !important;
+  color: color-mix(in srgb, var(--aw-text, #f0f0f0) 55%, transparent) !important;
+  font-size: 16px !important; border-radius: 6px !important; padding: 4px 8px !important;
+  box-shadow: none !important;
+}
+#aw-player-detail-modal .aw-modal-close:hover {
+  color: var(--aw-text, #f0f0f0) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+}
+#aw-player-detail-modal .aw-modal-body {
+  padding: 16px 20px 20px !important;
+  scrollbar-width: thin;
+  font-family: var(--awc-font) !important;
+}
+#aw-player-detail-modal .aw-modal-body::-webkit-scrollbar { width: 8px; }
+#aw-player-detail-modal .aw-modal-body::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 22%, transparent); border-radius: 4px;
+}
+
+/* méta (dernier scan, avertissements) → puces discrètes */
+#aw-player-detail-modal .aw-map-player-detail__subtitle {
+  display: inline-block !important;
+  font-family: var(--awc-mono) !important;
+  font-size: 11px !important; font-style: normal !important;
+  color: color-mix(in srgb, var(--aw-text, #f0f0f0) 60%, transparent) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px !important; padding: 3px 11px !important;
+  margin: 0 6px 10px 0 !important;
+}
+#aw-player-detail-modal .aw-map-player-detail__warning {
+  display: inline-block !important;
+  font-size: 11px !important;
+  color: #fbbf24 !important;
+  background: rgba(251, 191, 36, 0.08) !important;
+  border: 1px solid rgba(251, 191, 36, 0.35) !important;
+  border-radius: 20px !important; padding: 3px 11px !important;
+  margin: 0 6px 10px 0 !important;
+}
+
+/* tuiles de stats (Idle / Science / Culture / Level) */
+#aw-player-detail-modal .aw-map-player-detail__grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+  gap: 10px !important; margin: 4px 0 14px !important;
+}
+#aw-player-detail-modal .aw-map-player-detail__stat {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 16%, transparent) !important;
+  border-radius: 10px !important; padding: 10px 13px !important;
+  box-shadow: none !important;
+}
+#aw-player-detail-modal .aw-map-player-detail__stat-key {
+  font-size: 10px !important; letter-spacing: 1.6px !important; text-transform: uppercase !important;
+  color: color-mix(in srgb, var(--aw-text, #f0f0f0) 42%, transparent) !important;
+  font-weight: 600 !important;
+}
+#aw-player-detail-modal .aw-map-player-detail__stat-value {
+  font-family: var(--awc-mono) !important;
+  font-size: 20px !important; font-weight: 700 !important;
+  color: var(--aw-turquoise, #2ad2d8) !important;
+  margin-top: 2px !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* sections (Race Summary, Estimation, Intel, Flotte, Production) */
+#aw-player-detail-modal .aw-map-player-detail__intel {
+  background: rgba(255, 255, 255, 0.025) !important;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 14%, transparent) !important;
+  border-left: 3px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 55%, transparent) !important;
+  border-radius: 12px !important;
+  padding: 12px 15px !important; margin: 0 0 12px !important;
+  box-shadow: none !important;
+}
+#aw-player-detail-modal .aw-map-player-detail__intel-title {
+  font-family: var(--awc-font) !important;
+  font-size: 11px !important; font-weight: 600 !important;
+  letter-spacing: 1.8px !important; text-transform: uppercase !important;
+  color: var(--aw-turquoise, #2ad2d8) !important;
+  display: flex !important; align-items: center !important; gap: 8px !important;
+  background: none !important; border: 0 !important; padding: 0 !important;
+}
+#aw-player-detail-modal .aw-map-player-detail__intel-title.aw-collapsible { cursor: pointer; }
+#aw-player-detail-modal .aw-map-player-detail__intel-title.aw-collapsible:hover {
+  filter: brightness(1.25);
+}
+
+/* listes puces fines */
+#aw-player-detail-modal .aw-map-player-detail__intel-list {
+  list-style: none !important; margin: 9px 0 0 !important; padding: 0 !important;
+  font-size: 12.5px !important; line-height: 1.75 !important;
+  color: var(--aw-text, #f0f0f0) !important;
+}
+#aw-player-detail-modal .aw-map-player-detail__intel-list li {
+  position: relative; padding-left: 15px !important;
+}
+#aw-player-detail-modal .aw-map-player-detail__intel-list li::before {
+  content: "▸"; position: absolute; left: 0; top: 0;
+  color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 65%, transparent);
+  font-size: 10px; line-height: 2.2;
+}
+
+/* contenus internes : tableaux + textes */
+#aw-player-detail-modal .aw-modal-body table {
+  width: 100% !important; border-collapse: collapse !important; font-size: 12px !important;
+}
+#aw-player-detail-modal .aw-modal-body th {
+  font-size: 10px !important; letter-spacing: 1.4px !important; text-transform: uppercase !important;
+  color: color-mix(in srgb, var(--aw-text, #f0f0f0) 42%, transparent) !important;
+  text-align: left; padding: 5px 8px !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 20%, transparent) !important;
+}
+#aw-player-detail-modal .aw-modal-body td {
+  padding: 5px 8px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  font-family: var(--awc-mono) !important;
+  font-variant-numeric: tabular-nums;
+}
+#aw-player-detail-modal .aw-muted {
+  color: color-mix(in srgb, var(--aw-text, #f0f0f0) 45%, transparent) !important;
+  font-size: 12px !important;
+}
+
+/* boutons dans la fiche (historique, etc.) */
+#aw-player-detail-modal .aw-btn {
+  font-family: var(--awc-font) !important;
+  font-size: 12px !important; letter-spacing: 0.5px !important;
+  background: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 13%, transparent) !important;
+  color: var(--aw-turquoise, #2ad2d8) !important;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 40%, transparent) !important;
+  border-radius: 7px !important; padding: 6px 12px !important;
+  box-shadow: none !important; text-shadow: none !important;
+}
+#aw-player-detail-modal .aw-btn:hover {
+  background: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 24%, transparent) !important;
+}
+
+/* ── compact + ordre des sections ── */
+#aw-player-detail-modal .aw-modal-content { max-width: 900px !important; }
+#aw-player-detail-modal .aw-modal-header { padding: 10px 16px !important; }
+#aw-player-detail-modal .aw-modal-header h3 { font-size: 14px !important; }
+#aw-player-detail-modal .aw-modal-body { padding: 10px 14px 14px !important; display: flex !important; flex-direction: column !important; }
+#aw-player-detail-modal .aw-map-player-detail__subtitle,
+#aw-player-detail-modal .aw-map-player-detail__warning { order: -2; margin: 0 5px 6px 0 !important; padding: 2px 9px !important; font-size: 10px !important; align-self: flex-start; }
+#aw-player-detail-modal .aw-map-player-detail__grid { order: -1; grid-template-columns: repeat(4, 1fr) !important; gap: 7px !important; margin: 2px 0 8px !important; }
+#aw-player-detail-modal .aw-map-player-detail__stat { padding: 6px 10px !important; border-radius: 8px !important; }
+#aw-player-detail-modal .aw-map-player-detail__stat-key { font-size: 9px !important; letter-spacing: 1.2px !important; }
+#aw-player-detail-modal .aw-map-player-detail__stat-value { font-size: 15px !important; }
+#aw-player-detail-modal .aw-map-player-detail__intel { order: 10; padding: 8px 12px !important; margin: 0 0 7px !important; border-radius: 9px !important; }
+#aw-player-detail-modal .aw-map-player-detail__intel-title { font-size: 10px !important; letter-spacing: 1.5px !important; }
+#aw-player-detail-modal .aw-map-player-detail__intel-list { margin: 6px 0 0 !important; font-size: 11.5px !important; line-height: 1.55 !important; }
+#aw-player-detail-modal .aw-modal-body table { font-size: 11px !important; }
+#aw-player-detail-modal .aw-modal-body td { padding: 3px 6px !important; }
+#aw-player-detail-modal .aw-modal-body th { padding: 3px 6px !important; }
+#aw-player-detail-modal .aw-muted { font-size: 11px !important; }
+#aw-player-detail-modal .aw-map-player-detail__intel:has(.aw-fleet-state-content) { order: 1; }
+#aw-player-detail-modal .aw-map-player-detail__intel:has(.aw-cv-production-content) { order: 2; }
+#aw-player-detail-modal .aw-map-player-detail__intel:has(.aw-attack-time-section),
+#aw-player-detail-modal .aw-attack-time-section { order: 3; }
+#aw-player-detail-modal .aw-map-player-detail__intel:has(.aw-combat-summary-content) { order: 4; }
+#aw-player-detail-modal .aw-map-player-detail__intel:has(.aw-battle-reports-content) { order: 5; }
+#aw-player-detail-modal .aw-map-player-detail__intel.aw-race-estimation { order: 11; }
+#aw-player-detail-modal .aw-map-player-activity { order: 12; }
+#aw-player-detail-modal .aw-btn-history-modal { order: 13; align-self: flex-start; }
+#aw-player-detail-modal .aw-fleet-state-content,
+#aw-player-detail-modal .aw-cv-production-content,
+#aw-player-detail-modal .aw-race-estimation-content { font-size: 11.5px !important; }
+
+/* ── fiche joueur : densité +2 ── */
+#aw-player-detail-modal .aw-modal-content { max-width: 860px !important; }
+#aw-player-detail-modal .aw-modal-body { padding: 8px 12px 12px !important; gap: 0 !important; }
+#aw-player-detail-modal .aw-map-player-detail__grid { grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; margin: 2px 0 6px !important; }
+#aw-player-detail-modal .aw-map-player-detail__stat { padding: 5px 9px !important; border-radius: 7px !important; }
+#aw-player-detail-modal .aw-map-player-detail__stat-value { font-size: 14px !important; margin-top: 1px !important; }
+#aw-player-detail-modal .aw-map-player-detail__intel { padding: 7px 11px !important; margin: 0 0 6px !important; }
+#aw-player-detail-modal .aw-map-player-detail__intel-list { font-size: 11px !important; line-height: 1.45 !important; margin-top: 5px !important; }
+#aw-player-detail-modal .aw-map-player-detail__intel-list li { padding-left: 13px !important; }
+#aw-player-detail-modal .aw-modal-body table { font-size: 10.5px !important; }
+#aw-player-detail-modal .aw-modal-body td, #aw-player-detail-modal .aw-modal-body th { padding: 2px 6px !important; }
+#aw-player-detail-modal .aw-fleet-state-content, #aw-player-detail-modal .aw-cv-production-content,
+#aw-player-detail-modal .aw-race-estimation-content, #aw-player-detail-modal .aw-combat-summary-content { font-size: 11px !important; }
+#aw-player-detail-modal .aw-map-player-detail__subtitle, #aw-player-detail-modal .aw-map-player-detail__warning { font-size: 9px !important; padding: 2px 8px !important; margin-bottom: 4px !important; }
+
+/* ── modale historique : reskin cockpit + compact ── */
+#aw-player-history-modal .aw-modal-content {
+  background: rgba(30,30,30,0.97) !important;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise,var(--aw-turquoise, #2ad2d8)) 45%, transparent) !important;
+  border-radius: 14px !important; box-shadow: 0 24px 80px rgba(0,0,0,0.65) !important;
+  max-width: 860px !important; font-family: var(--awc-font) !important;
+}
+#aw-player-history-modal .aw-modal-header {
+  background: none !important; padding: 10px 16px !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--aw-turquoise,var(--aw-turquoise, #2ad2d8)) 18%, transparent) !important;
+}
+#aw-player-history-modal .aw-modal-header h3 {
+  font-family: var(--awc-font) !important; font-size: 14px !important;
+  font-weight: 600 !important; letter-spacing: 2px !important; text-transform: uppercase !important;
+  color: var(--aw-turquoise,var(--aw-turquoise, #2ad2d8)) !important; text-shadow: none !important;
+}
+#aw-player-history-modal .aw-modal-close {
+  background: none !important; border: 0 !important; box-shadow: none !important;
+  color: color-mix(in srgb, var(--aw-text,#f0f0f0) 55%, transparent) !important;
+  border-radius: 6px !important; padding: 4px 8px !important;
+}
+#aw-player-history-modal .aw-modal-close:hover { color: var(--aw-text,#f0f0f0) !important; background: rgba(255,255,255,0.07) !important; }
+#aw-player-history-modal .aw-modal-body { padding: 12px 16px 16px !important; }
+#aw-player-history-modal .aw-history-tabs { display: flex !important; gap: 6px !important; margin-bottom: 12px !important; }
+#aw-player-history-modal .aw-history-tab {
+  font-family: var(--awc-font) !important; font-size: 11px !important;
+  letter-spacing: 0.6px !important; padding: 5px 12px !important; border-radius: 7px !important;
+  background: rgba(255,255,255,0.04) !important; color: color-mix(in srgb, var(--aw-text,#f0f0f0) 60%, transparent) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important; box-shadow: none !important; text-shadow: none !important;
+}
+#aw-player-history-modal .aw-history-tab.active {
+  background: color-mix(in srgb, var(--aw-turquoise,var(--aw-turquoise, #2ad2d8)) 16%, transparent) !important;
+  color: var(--aw-turquoise,var(--aw-turquoise, #2ad2d8)) !important;
+  border-color: color-mix(in srgb, var(--aw-turquoise,var(--aw-turquoise, #2ad2d8)) 40%, transparent) !important;
+}
+#aw-player-history-modal .aw-idle-weekly-header h4,
+#aw-player-history-modal .aw-idle-header h4, #aw-player-history-modal .aw-week-header-info {
+  font-family: var(--awc-font) !important; font-size: 11px !important;
+  font-weight: 600 !important; letter-spacing: 1.4px !important; text-transform: uppercase !important;
+  color: var(--aw-turquoise,var(--aw-turquoise, #2ad2d8)) !important; margin: 0 0 3px !important;
+}
+#aw-player-history-modal .aw-idle-weekly-header p, #aw-player-history-modal .aw-idle-header p {
+  font-size: 11px !important; color: color-mix(in srgb, var(--aw-text,#f0f0f0) 50%, transparent) !important; margin: 0 0 10px !important;
+}
+#aw-player-history-modal table { width: 100% !important; border-collapse: collapse !important; font-size: 11px !important; }
+#aw-player-history-modal th {
+  font-size: 9.5px !important; letter-spacing: 1.2px !important; text-transform: uppercase !important;
+  color: color-mix(in srgb, var(--aw-text,#f0f0f0) 42%, transparent) !important; text-align: left !important;
+  padding: 4px 7px !important; background: none !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--aw-turquoise,var(--aw-turquoise, #2ad2d8)) 22%, transparent) !important;
+}
+#aw-player-history-modal td {
+  padding: 3px 7px !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+  font-family: var(--awc-mono) !important; font-variant-numeric: tabular-nums;
+}
+#aw-player-history-modal td:first-child { font-family: "Segoe UI",sans-serif !important; font-weight: 600 !important; }
+
+/* boutons retour : titre extensible pour garder ‹ Retour à gauche, ✕ à droite */
+#aw-player-detail-modal .aw-modal-header h3,
+#aw-player-history-modal .aw-modal-header h3 { flex: 1 1 auto !important; }
+
+/* bouton global « Tout scanner & synchroniser » (module Scans) */
+.awc-scan-all-btn {
+  width: 100%; padding: 11px 12px; margin: 0 0 12px;
+  font-family: var(--awc-font); font-size: 13px; font-weight: 700; letter-spacing: .5px;
+  color: #141414; background: var(--awc-accent);
+  border: 0; border-radius: 9px; cursor: pointer;
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--awc-accent) 30%, transparent);
+  transition: filter .15s;
+}
+.awc-scan-all-btn:hover { filter: brightness(1.08); }
+.awc-scan-all-btn:disabled { cursor: default; opacity: .85; }
+.awc-scan-all-btn.awc-running {
+  background: color-mix(in srgb, var(--awc-accent) 30%, transparent);
+  color: var(--awc-accent); box-shadow: none;
+  animation: awc-scan-pulse 1.2s ease-in-out infinite;
+}
+@keyframes awc-scan-pulse { 50% { opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .awc-scan-all-btn.awc-running { animation: none; } }
+
+/* ═══════════ Cartes scanner (module Scans, UI propre) ═══════════ */
+.awc-scan-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+.awc-scan-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  text-align: left; padding: 11px 13px; cursor: pointer;
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid var(--awc-line); border-radius: 11px;
+  color: var(--awc-text); font-family: var(--awc-font);
+  transition: background .15s, border-color .15s;
+}
+.awc-scan-card:hover {
+  background: color-mix(in srgb, var(--awc-accent) 10%, transparent);
+  border-color: var(--awc-line-strong);
+}
+.awc-scan-card:focus-visible { outline: 1px solid var(--awc-accent); }
+.awc-scan-ic { font-size: 18px; line-height: 1; margin-bottom: 2px; }
+.awc-scan-name { font-size: 13px; font-weight: 600; letter-spacing: .3px; }
+.awc-scan-sub { font-size: 10px; color: color-mix(in srgb, var(--awc-text) 42%, transparent); }
+.awc-scan-st {
+  font-size: 10.5px; color: var(--awc-dim); font-family: var(--awc-mono);
+  min-height: 13px; margin-top: 3px; word-break: break-word;
+}
+.awc-scan-card.awc-scan-busy {
+  border-color: var(--awc-accent);
+  background: color-mix(in srgb, var(--awc-accent) 12%, transparent);
+  animation: awc-scan-pulse 1s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   THÈME DU JEU (défaut). Le néon (glows + verre + Bahnschrift) ne
+   s'applique QUE si html.awc-neon est présent.
+   Ici on prend la palette RÉELLE d'astrowars.css via les jetons --awc-*
+   (eux-mêmes calés sur --awg-*) : police du jeu, surfaces du jeu, bandeaux
+   #231E64, champs #404040/#6c757d, casse normale, aucun halo.
+   L'accent (--aw-turquoise) reste celui choisi dans les Réglages.
+   ═══════════════════════════════════════════════════════════════════════ */
+html.awc-on:not(.awc-neon) #awc-rail,
+html.awc-on:not(.awc-neon) #awc-panel,
+html.awc-on:not(.awc-neon) #awc-wide,
+html.awc-on:not(.awc-neon) #awc-panel *,
+html.awc-on:not(.awc-neon) #awc-wide *,
+html.awc-on:not(.awc-neon) #awm-modal,
+html.awc-on:not(.awc-neon) #awm-modal *,
+html.awc-on:not(.awc-neon) #awm-bar,
+html.awc-on:not(.awc-neon) #awm-bar *,
+html.awc-on:not(.awc-neon) #awm-tip,
+html.awc-on:not(.awc-neon) #aw-player-detail-modal,
+html.awc-on:not(.awc-neon) #aw-player-detail-modal *,
+html.awc-on:not(.awc-neon) #aw-player-history-modal,
+html.awc-on:not(.awc-neon) #aw-player-history-modal * {
+  font-family: var(--awc-font) !important;
+  text-shadow: none !important;
+}
+/* aucun halo dans tout le cockpit */
+html.awc-on:not(.awc-neon) #awc-rail *,
+html.awc-on:not(.awc-neon) #awc-panel *,
+html.awc-on:not(.awc-neon) #awc-wide *,
+html.awc-on:not(.awc-neon) #awm-modal *,
+html.awc-on:not(.awc-neon) #aw-player-detail-modal *,
+html.awc-on:not(.awc-neon) #aw-player-history-modal * {
+  box-shadow: none !important;
+}
+html.awc-on:not(.awc-neon) #awc-rail .awc-logo { filter: none !important; }
+
+/* surfaces principales : noir plein, bordure turquoise discrète */
+html.awc-on:not(.awc-neon) #awc-rail   { background: var(--awc-hull) !important; border-left-color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 22%, transparent) !important; }
+html.awc-on:not(.awc-neon) #awc-panel  { background: var(--awc-glass) !important; border-left-color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 28%, transparent) !important; backdrop-filter: none !important; box-shadow: none !important; }
+html.awc-on:not(.awc-neon) #awc-wide,
+html.awc-on:not(.awc-neon) #awc-wide.awc-center { background: var(--awc-glass) !important; border-color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 28%, transparent) !important; box-shadow: 0 10px 40px rgba(0,0,0,.7) !important; }
+html.awc-on:not(.awc-neon) #awm-modal,
+html.awc-on:not(.awc-neon) #aw-player-detail-modal .aw-modal-content,
+html.awc-on:not(.awc-neon) #aw-player-history-modal .aw-modal-content {
+  background: var(--awc-glass) !important; border-color: var(--awc-line) !important;
+  box-shadow: 0 12px 48px rgba(0,0,0,.7) !important; border-radius: var(--awc-radius) !important;
+}
+/* #awm-bar : habillé par map-integrate.js sur le gabarit .map-toolbar du jeu — pas de surcharge ici */
+
+/* rail : barre active plate (pas de halo), pastille session plate */
+html.awc-on:not(.awc-neon) .awc-rail-btn.awc-on { background: var(--awc-hover) !important; color: var(--aw-turquoise, #2ad2d8) !important; }
+html.awc-on:not(.awc-neon) .awc-rail-btn.awc-on::before { box-shadow: none !important; background: var(--aw-turquoise, #2ad2d8) !important; }
+html.awc-on:not(.awc-neon) #awc-session .awc-st { box-shadow: none !important; }
+html.awc-on:not(.awc-neon) #awc-session.awc-expired .awc-st { box-shadow: none !important; }
+
+/* titres : majuscules discrètes et poids NORMAL, comme les bandeaux du jeu
+   (table.table th / div.head sont en font-weight: normal) */
+html.awc-on:not(.awc-neon) #awc-title,
+html.awc-on:not(.awc-neon) #awc-wide-head {
+  letter-spacing: .04em !important; text-transform: uppercase !important; font-weight: 400 !important;
+}
+html.awc-on:not(.awc-neon) .awc-kicker {
+  letter-spacing: .06em !important; text-transform: uppercase !important; font-weight: 400 !important;
+}
+
+/* cartes / cartes cockpit : fond gris-noir plat, radius 6px */
+html.awc-on:not(.awc-neon) .awc-card,
+html.awc-on:not(.awc-neon) .awc-scan-card {
+  background: var(--awc-surface) !important; border: 1px solid var(--awc-line) !important; border-radius: 4px !important;
+}
+html.awc-on:not(.awc-neon) .awc-threat { border-left-width: 3px !important; }
+
+/* boutons : plats, radius 4px (style du jeu) */
+html.awc-on:not(.awc-neon) .awc-btn,
+html.awc-on:not(.awc-neon) .awc-scan-all-btn,
+html.awc-on:not(.awc-neon) #awc-wide-close,
+html.awc-on:not(.awc-neon) #awc-wide-reduce,
+html.awc-on:not(.awc-neon) .awm-back-btn,
+html.awc-on:not(.awc-neon) #aw-player-detail-modal .aw-btn {
+  border-radius: 4px !important; box-shadow: none !important;
+}
+html.awc-on:not(.awc-neon) .awc-scan-all-btn { background: var(--aw-turquoise, #2ad2d8) !important; color: #141414 !important; }
+html.awc-on:not(.awc-neon) .awc-scan-note { color: #949494; font-size: 11px; margin: 8px 2px 6px; }
+html.awc-on:not(.awc-neon) .awc-scan-livestatus { color: #b0b0b0; font-family: var(--awc-mono); font-size: 11px; margin: 2px 2px 4px; min-height: 14px; }
+
+/* ── Panneaux Flotte & Alliance : reskin thème du jeu ── */
+html.awc-on:not(.awc-neon) #aw-fleet-viewer,
+html.awc-on:not(.awc-neon) #aw-alliance-panel {
+  background: transparent !important; border: 0 !important;
+}
+html.awc-on:not(.awc-neon) .aw-fleet-viewer__kicker,
+html.awc-on:not(.awc-neon) .aw-alliance-panel__kicker {
+  color: #767676 !important; font-size: 10px !important; letter-spacing: 1.4px !important; text-transform: uppercase !important;
+}
+html.awc-on:not(.awc-neon) .aw-fleet-viewer__title,
+html.awc-on:not(.awc-neon) .aw-alliance-panel__title {
+  color: var(--aw-turquoise, #2ad2d8) !important; font-size: 15px !important; font-weight: 700 !important;
+}
+html.awc-on:not(.awc-neon) .aw-fleet-viewer__header,
+html.awc-on:not(.awc-neon) .aw-alliance-panel__header {
+  border-bottom: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 18%, transparent) !important; padding-bottom: 8px !important; margin-bottom: 10px !important;
+}
+/* tuiles de stats flotte */
+html.awc-on:not(.awc-neon) .aw-fleet-stats { gap: 8px !important; }
+html.awc-on:not(.awc-neon) .aw-fleet-stat {
+  background: #1e1e1e !important; border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 16%, transparent) !important; border-radius: 6px !important; padding: 8px 10px !important;
+}
+html.awc-on:not(.awc-neon) .aw-fleet-stat-label { color: #949494 !important; font-size: 10px !important; text-transform: uppercase !important; letter-spacing: 1px !important; }
+html.awc-on:not(.awc-neon) .aw-fleet-stat-value { color: var(--aw-turquoise, #2ad2d8) !important; font-family: var(--awc-mono) !important; font-weight: 700 !important; }
+/* filtres */
+html.awc-on:not(.awc-neon) .aw-fleet-filters select,
+html.awc-on:not(.awc-neon) .aw-select {
+  background: #1e1e1e !important; color: #f0f0f0 !important; border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 25%, transparent) !important; border-radius: 4px !important;
+}
+/* listes / tables flotte + alliance : lignes plates denses */
+html.awc-on:not(.awc-neon) #aw-fleet-viewer table,
+html.awc-on:not(.awc-neon) #aw-alliance-panel table,
+html.awc-on:not(.awc-neon) .aw-alliance-recap-table table { width: 100% !important; border-collapse: collapse !important; }
+html.awc-on:not(.awc-neon) #aw-fleet-viewer th,
+html.awc-on:not(.awc-neon) #aw-alliance-panel th {
+  color: #767676 !important; font-size: 10px !important; text-transform: uppercase !important; letter-spacing: 1px !important;
+  text-align: left !important; padding: 5px 7px !important; background: transparent !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 22%, transparent) !important;
+}
+html.awc-on:not(.awc-neon) #aw-fleet-viewer td,
+html.awc-on:not(.awc-neon) #aw-alliance-panel td {
+  padding: 4px 7px !important; border-bottom: 1px solid rgba(255,255,255,.05) !important;
+  font-family: var(--awc-mono) !important; font-variant-numeric: tabular-nums;
+}
+html.awc-on:not(.awc-neon) .aw-fleet-list .aw-fleet-empty,
+html.awc-on:not(.awc-neon) .aw-alliance-recap-table { color: #949494 !important; }
+
+/* ── Flotte : vue liste-tuile (1 tuile/joueur ; 1 col en panneau, 2-3 en grand format) ── */
+.aw-fleet-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 7px;
+}
+.aw-fleet-tile {
+  background: #1e1e1e; border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 16%, transparent);
+  border-radius: 6px; padding: 8px 10px;
+}
+.aw-fleet-tile:hover { border-color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 45%, transparent); }
+.aw-fleet-tile-header { display: flex; align-items: baseline; gap: 7px; margin-bottom: 5px; }
+.aw-fleet-tile-header .aw-player-name-clickable {
+  color: #f0f0f0; font-size: 12.5px; font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.aw-fleet-tile-header .aw-fleet-alliance-tag { color: #949494; font-size: 10.5px; }
+.aw-fleet-tile-total {
+  margin-left: auto; color: var(--aw-turquoise, #2ad2d8); font-weight: 700; font-size: 12px;
+  font-family: var(--awc-mono); font-variant-numeric: tabular-nums;
+}
+.aw-fleet-tile-row { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; }
+.aw-fleet-tile-row + .aw-fleet-tile-row { border-top: 1px dashed color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 12%, transparent); }
+.aw-fleet-tile-badge { flex: 0 0 92px; font-size: 10.5px; font-weight: 700; white-space: nowrap; padding-top: 1px; }
+.aw-fleet-tile-badge.flying { color: #ff9f2a; }
+.aw-fleet-tile-badge.ground { color: #2dff88; }
+.aw-fleet-tile-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.aw-fleet-chip {
+  font-size: 10.5px; padding: 1px 6px; border-radius: 3px;
+  background: #131313; border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 18%, transparent); color: #f0f0f0;
+  font-family: var(--awc-mono); font-variant-numeric: tabular-nums;
+}
+.aw-fleet-chip b { color: var(--aw-turquoise, #2ad2d8); margin-right: 3px; }
+.aw-fleet-chip-cv { border-color: rgba(255, 90, 90, .45); background: rgba(255, 45, 45, .12); }
+.aw-fleet-chip-cv b { color: #ff7a7a; }
+.aw-fleet-chip-none { color: #767676; font-style: italic; border-style: dashed; }
+
+/* ═══════════ Zone « données récoltées » (module Scans) ═══════════ */
+.awc-data-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.awc-data-tile {
+  background: #1e1e1e; border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 16%, transparent);
+  border-radius: 6px; padding: 8px 9px; text-align: center;
+}
+.awc-data-tile b {
+  display: block; font-family: var(--awc-mono);
+  font-size: 17px; font-weight: 700; color: var(--aw-turquoise, #2ad2d8); font-variant-numeric: tabular-nums;
+}
+.awc-data-tile span {
+  font-size: 9px; color: #949494; text-transform: uppercase; letter-spacing: .5px;
+}
+
+/* ═══════════ Reste des panneaux : Calculatrice, Classement, Menaces ═══════════ */
+/* panneaux dockés : fond plat (pas de dégradé néon) */
+html.awc-on #aw-calculator-panel,
+html.awc-on #aw-maxlevel-panel,
+html.awc-on #aw-optimizer-panel {
+  background: transparent !important; border: 0 !important; box-shadow: none !important;
+}
+html.awc-on #aw-calculator-panel *,
+html.awc-on #aw-maxlevel-panel * { text-shadow: none !important; box-shadow: none !important; }
+/* kickers / titres */
+html.awc-on .aw-calculator-panel__kicker,
+html.awc-on .aw-maxlevel-panel__kicker {
+  color: #767676 !important; font-size: 10px !important; letter-spacing: 1.4px !important; text-transform: uppercase !important;
+}
+html.awc-on .aw-calculator-panel__title,
+html.awc-on .aw-maxlevel-panel__title {
+  color: var(--aw-turquoise, #2ad2d8) !important; font-size: 15px !important; font-weight: 700 !important;
+}
+html.awc-on .aw-calculator-panel__header,
+html.awc-on .aw-maxlevel-panel__header {
+  border-bottom: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 18%, transparent) !important; padding-bottom: 8px !important; margin-bottom: 10px !important;
+}
+/* onglets Science/Flotte */
+html.awc-on .aw-calc-tab {
+  background: #1e1e1e !important; border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 20%, transparent) !important;
+  color: #b0b0b0 !important; border-radius: 4px !important;
+}
+html.awc-on .aw-calc-tab.active { background: #14322f !important; color: var(--aw-turquoise, #2ad2d8) !important; border-color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 45%, transparent) !important; }
+/* champs de saisie */
+html.awc-on .aw-calc-input {
+  background: #1e1e1e !important; border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 25%, transparent) !important;
+  color: #f0f0f0 !important; border-radius: 4px !important;
+}
+html.awc-on .aw-calc-label { color: #b0b0b0 !important; }
+/* bouton calculer : turquoise plat */
+html.awc-on .aw-calc-button {
+  background: var(--aw-turquoise, #2ad2d8) !important; color: #141414 !important; border: 0 !important;
+  border-radius: 4px !important; font-weight: 700 !important;
+}
+html.awc-on .aw-calc-result {
+  background: #1e1e1e !important; border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 20%, transparent) !important; border-radius: 6px !important;
+}
+html.awc-on .aw-calc-result-value { color: var(--aw-turquoise, #2ad2d8) !important; }
+/* classement science : lignes plates */
+html.awc-on .aw-science-rankings { color: #b0b0b0 !important; }
+
+/* Menaces : cartes déjà en .awc-card (couvertes). Rien de plus. */
+
+/* dégradés néon résiduels (background-image longhand !important dans styles.css) */
+html.awc-on #aw-calculator-panel,
+html.awc-on #aw-maxlevel-panel,
+html.awc-on #aw-optimizer-panel,
+html.awc-on #aw-fleet-viewer,
+html.awc-on #aw-alliance-panel,
+html.awc-on .aw-calculator-panel__body,
+html.awc-on .aw-maxlevel-panel__body,
+html.awc-on .aw-calc-result,
+html.awc-on .aw-calc-tab { background-image: none !important; }
+html.awc-on .aw-calc-button { background-image: none !important; background-color: var(--aw-turquoise, #2ad2d8) !important; }
+html.awc-on .aw-calc-tab.active { background-image: none !important; background-color: #14322f !important; }
+
+/* ═══════════ Réglages : contrôles de thème (thème du jeu) ═══════════ */
+.awc-set-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 8px 2px; border-bottom: 1px solid rgba(255,255,255,.05);
+  font-family: var(--awc-font); color: var(--awc-text); font-size: 13px;
+}
+.awc-set-label { color: #dcdcdc; }
+.awc-swatches { display: flex; gap: 8px; margin: 4px 0 6px; flex-wrap: wrap; }
+.awc-swatch {
+  width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255,255,255,.15);
+  cursor: pointer; padding: 0; transition: transform .12s, border-color .12s;
+}
+.awc-swatch:hover { transform: scale(1.12); border-color: #fff; }
+.awc-select {
+  background: #1e1e1e !important; color: #f0f0f0 !important;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 28%, transparent) !important; border-radius: 4px !important;
+  font-family: var(--awc-font); font-size: 12px; padding: 4px 8px; max-width: 60%;
+}
+.awc-colorpick {
+  width: 42px; height: 26px; padding: 0; border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 30%, transparent);
+  border-radius: 4px; background: #1e1e1e; cursor: pointer;
+}
+/* ↺ « reprendre l'accent du thème », collé au sélecteur de couleur */
+.awc-chip-reset {
+  margin-left: 6px; width: 26px; height: 26px; flex: 0 0 auto; cursor: pointer;
+  background: #1e1e1e; color: #b0b0b0; border-radius: 4px; line-height: 1;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 30%, transparent);
+  font-family: var(--awc-font); font-size: 13px;
+}
+.awc-chip-reset:hover { color: var(--aw-turquoise, #2ad2d8); border-color: var(--aw-turquoise, #2ad2d8); }
+/* phrase d'aide sous un intertitre de Réglages */
+.awc-hint {
+  font-size: 11px; line-height: 1.5; color: var(--awc-dim);
+  margin: -4px 2px 6px; font-family: var(--awc-font);
+}
+/* conteneur couleurs d'alliances re-parenté : lisible en thème du jeu */
+html.awc-on #awc-body .awc-reparented,
+html.awc-on #awc-wide-body .awc-reparented {
+  max-height: 220px; overflow-y: auto; margin-top: 6px;
+}
+/* La pastille de tag PORTE la couleur choisie pour l'alliance (style inline) :
+   l'exclure de l'uniformisation, sinon toute la liste est de la même teinte et
+   on ne voit plus quelle couleur a quelle alliance. */
+/* liste des couleurs d'alliances dans la colonne étroite */
+html.awc-on #awc-body .aw-alliance-color-item {
+  display: flex; align-items: center; gap: 8px; min-width: 0;
+}
+html.awc-on #awc-body .aw-alliance-color-name { flex: 1 1 auto; min-width: 0; }
+html.awc-on #awc-body .aw-alliance-color-count { font-size: 10px; opacity: .7; }
+html.awc-on #awc-body .aw-alliance-color-controls { flex: none; display: flex; align-items: center; gap: 4px; }
+
+/* ═══════════ Analyse de défense d'une menace (module Menaces) ═══════════ */
+.awc-thr-btn {
+  margin-left: 8px; flex: 0 0 auto; cursor: pointer;
+  background: #131313; color: #b0b0b0;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 35%, transparent);
+  border-radius: 4px; font-size: 10.5px; padding: 3px 8px; white-space: nowrap;
+}
+.awc-thr-btn:hover { border-color: var(--aw-turquoise, #2ad2d8); color: #f0f0f0; }
+.awc-thr-open { border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; }
+.awc-thr-ana {
+  background: #181818;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 16%, transparent);
+  border-top: 0;
+  border-left: 3px solid var(--aw-turquoise, #2ad2d8);
+  border-radius: 0 0 6px 6px;
+  margin: -8px 0 10px; padding: 9px 11px;
+}
+.awc-ana-verdict {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline;
+  font-size: 11.5px; color: #d4d4d4; margin-bottom: 6px;
+}
+.awc-ana-wr { font-weight: 700; font-size: 13px; }
+.awc-ana-line { font-size: 11px; color: #d4d4d4; padding: 2px 0; }
+.awc-ana-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+.awc-ana-table th {
+  color: #767676; text-transform: uppercase; font-size: 9.5px; letter-spacing: .8px;
+  text-align: left; padding: 3px 6px;
+  border-bottom: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 22%, transparent);
+}
+.awc-ana-table td {
+  padding: 3px 6px; border-bottom: 1px solid rgba(255, 255, 255, .04);
+  color: #d4d4d4; font-family: var(--awc-mono); font-variant-numeric: tabular-nums;
+}
+.awc-ana-late td { opacity: .45; }
+.awc-ana-ok td:first-child { color: #2dff88; }
+
+/* ═══════════ Bloc « Qui utilise quoi » (module Alliance) ═══════════ */
+#awc-usage-wrap { margin-bottom: 12px; }
+.awc-usage-list { display: flex; flex-direction: column; gap: 6px; }
+.awc-usage-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: #1e1e1e;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 16%, transparent);
+  border-radius: 6px; padding: 7px 10px;
+}
+.awc-usage-who b { color: #f0f0f0; font-size: 12px; }
+.awc-usage-dev { color: #767676; font-size: 10px; margin-top: 1px; }
+.awc-usage-badges { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; }
+.awc-usage-badge {
+  font-size: 10.5px; color: #b0b0b0; background: #131313;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 18%, transparent);
+  border-radius: 4px; padding: 2px 7px; white-space: nowrap;
+}
+.awc-usage-badge i { font-style: normal; color: #767676; margin-left: 3px; }
+.awc-usage-badge.awc-fresh { border-color: rgba(45, 255, 136, .4); }
+.awc-usage-badge.awc-fresh i { color: #2dff88; }
+
+/* ═══════════ Barre de navigation du jeu : onglets stylés ═══════════ */
+/* Couvre la nav principale (News/Map/Planets/…) ET les sous-navs (table.navigation.sub-nav) */
+html.awc-on.awc-gameskin table.table.navigation {
+  border-collapse: separate !important;
+  border-spacing: 5px 0 !important;
+}
+html.awc-on.awc-gameskin table.table.navigation td {
+  background: linear-gradient(180deg, #222222, #171717) !important;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 18%, transparent) !important;
+  border-radius: 7px !important;
+  padding: 0 !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+  color: #b0b0b0 !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.4px !important;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+/* cellule sans lien (label de section des sous-navs) : padding porté par le td */
+html.awc-on.awc-gameskin table.table.navigation td:not(:has(a)) { padding: 10px 6px !important; }
+html.awc-on.awc-gameskin table.table.navigation td a {
+  display: block !important;
+  padding: 10px 6px !important;
+  color: inherit !important;
+  font: inherit !important;
+  letter-spacing: inherit !important;
+  text-decoration: none !important;
+}
+/* cellule à 2 liens (ⓘ info-tag + lien principal, ex. Spend all) : côte à côte */
+html.awc-on.awc-gameskin table.table.navigation td:has(a.info-tag) a {
+  display: inline-block !important;
+  padding: 10px 3px !important;
+  vertical-align: middle !important;
+}
+html.awc-on.awc-gameskin table.table.navigation td:hover:has(a) {
+  border-color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 55%, transparent) !important;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 14%, transparent), inset 0 0 12px color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 7%, transparent);
+  color: #f0f0f0 !important;
+}
+html.awc-on.awc-gameskin table.table.navigation td.highlight {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 24%, transparent), color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 6%, transparent)), #171717 !important;
+  border-color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 65%, transparent) !important;
+  box-shadow: inset 0 -2px 0 var(--aw-turquoise, #2ad2d8), 0 0 14px color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 18%, transparent);
+  color: var(--aw-turquoise, #2ad2d8) !important;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 45%, transparent);
+}
+html.awc-on.awc-gameskin table.table.navigation td.active {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 30%, transparent), color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 10%, transparent)), #171717 !important;
+  border-color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 50%, transparent) !important;
+  color: var(--aw-turquoise, #2ad2d8) !important;
+}
+
+/* ═══════════ Tableaux de contenu du jeu : thème sombre/teal ═══════════ */
+/* Validé sur Planets, News, Science, Fleets, Trade, Alliance, Players/Profile.
+   Les cellules .msg (corps des messages News) gardent le rendu du jeu. */
+html.awc-on.awc-gameskin table.table:not(.navigation) th,
+html.awc-on.awc-gameskin table.table:not(.navigation) tr.head td,
+html.awc-on.awc-gameskin div.head {
+  background: #181818 !important;
+  color: var(--aw-turquoise, #2ad2d8) !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  border-color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 28%, transparent) !important;
+  text-shadow: none !important;
+}
+html.awc-on.awc-gameskin table.table:not(.navigation) td:not(.msg) {
+  background: #1e1e1e !important;
+  color: #d4d4d4 !important;
+  border-color: rgba(255, 255, 255, .05) !important;
+  font-variant-numeric: tabular-nums;
+}
+html.awc-on.awc-gameskin table.table:not(.navigation) tr.owner td:not(.msg) { background: #212121 !important; }
+html.awc-on.awc-gameskin table.table.hover tbody tr:hover td:not(.msg) { background: #252525 !important; }
+html.awc-on.awc-gameskin table.table:not(.navigation) tfoot td {
+  background: #181818 !important;
+  color: #b0b0b0 !important;
+  font-weight: 700 !important;
+  border-top: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 28%, transparent) !important;
+}
+/* lignes sémantiques : couleurs conservées, rendu flat
+   (spécificité ≥ la règle tr.owner ci-dessus : une ligne owner peut aussi être friendly-siege) */
+html.awc-on.awc-gameskin table.table:not(.navigation) tr.friendly-siege td:not(.msg) { background: #12351f !important; color: #b8f0c6 !important; }
+html.awc-on.awc-gameskin table.table.hover tbody tr.friendly-siege:hover td:not(.msg) { background: #17422a !important; }
+html.awc-on.awc-gameskin table.table:not(.navigation) tr.siege td:not(.msg),
+html.awc-on.awc-gameskin table.table:not(.navigation) tr.alert td:not(.msg),
+html.awc-on.awc-gameskin table.table td.alert { background: #3a1515 !important; color: #ffd2d2 !important; }
+html.awc-on.awc-gameskin table.table tr.ranking-victory td { background: #34290d !important; color: #ffd700 !important; }
+/* Battle reports (Alliance) : cellules gagnant/perdant du jeu, re-colorées flat
+   (sélecteurs avec tbody tr = même spécificité que le hover, placés après → gagnent au survol) */
+html.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.bg-battle-victory {
+  background: #12351f !important; color: #b8f0c6 !important;
+}
+html.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.bg-battle-victory a { color: #7de8a0 !important; }
+html.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.bg-battle-lost {
+  background: #3a1515 !important; color: #ffd2d2 !important;
+}
+html.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.bg-battle-lost a { color: #ff9d9d !important; }
+/* Ligne active du jeu (tr.highlight : science en cours de recherche, etc.) : teinte accent + liseré */
+html.awc-on.awc-gameskin table.table:not(.navigation) tbody tr.highlight td:not(.msg) {
+  background: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 13%, #1e1e1e) !important;
+  color: #f0f0f0 !important;
+  box-shadow: inset 3px 0 0 var(--aw-turquoise, #2ad2d8);
+}
+html.awc-on.awc-gameskin table.table:not(.navigation) tbody tr.highlight td:not(.msg):not(:first-child) { box-shadow: none; }
+html.awc-on.awc-gameskin table.table:not(.navigation) tbody tr.highlight td a { color: var(--aw-turquoise, #2ad2d8) !important; }
+/* Buildings : seuls les niveaux EN COURS ressortent (jaune du jeu) ; « up » = simplement payable → neutre */
+html.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.building-lvl-started:not(.msg),
+html.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.aw-lvl-encours:not(.msg) { color: #FFF176 !important; font-weight: 700 !important; }
+html.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.building-lvl-finish:not(.msg) { color: #04be04 !important; font-weight: 700 !important; }
+html.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.building-lvl-up:not(.aw-lvl-encours):not(.msg) { font-weight: inherit !important; }
+/* barres de progression du jeu (.progress-bar statique + .progress-bar-timed animée) */
+html.awc-on.awc-gameskin .progress-bar,
+html.awc-on.awc-gameskin .progress-bar-timed {
+  background: #131313 !important;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 22%, transparent) !important;
+  border-radius: 4px !important;
+  overflow: hidden !important;
+}
+html.awc-on.awc-gameskin .progress-bar .progress,
+html.awc-on.awc-gameskin .progress-bar-timed .progress {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 55%, #0a0a0a), var(--aw-turquoise, #2ad2d8)) !important;
+  border-radius: 0 !important;
+}
+html.awc-on.awc-gameskin .progress-bar-timed .progress-text {
+  color: #f0f0f0 !important;
+  font-family: var(--awc-mono) !important;
+  font-size: 10px !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8) !important;
+}
+/* liens dans les tableaux */
+html.awc-on.awc-gameskin table.table:not(.navigation) a { color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 55%, #ffffff) !important; text-decoration: none !important; }
+html.awc-on.awc-gameskin table.table:not(.navigation) a:hover { color: #f0f0f0 !important; }
+/* boutons du jeu (.btn.btn-* : filtres News, Launch/Loop/BC/TT, modales…) — n'affecte pas les .aw-btn de l'extension */
+html.awc-on.awc-gameskin .btn.btn-primary {
+  background: #1e1e1e !important;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 35%, transparent) !important;
+  color: #b0b0b0 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+html.awc-on.awc-gameskin .btn.btn-primary:hover { border-color: var(--aw-turquoise, #2ad2d8) !important; color: #f0f0f0 !important; background: #252525 !important; }
+html.awc-on.awc-gameskin .btn.btn-primary.active {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 28%, transparent), color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 8%, transparent)), #171717 !important;
+  color: var(--aw-turquoise, #2ad2d8) !important;
+  border-color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 65%, transparent) !important;
+}
+html.awc-on.awc-gameskin .btn.btn-secondary {
+  background: #181818 !important;
+  border: 1px solid rgba(255, 255, 255, .15) !important;
+  color: #b0b0b0 !important;
+  border-radius: 4px !important;
+}
+html.awc-on.awc-gameskin .btn.btn-secondary:hover { border-color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 40%, transparent) !important; color: #f0f0f0 !important; }
+/* danger / success : le jeu ne les stylait pas → Bootstrap brut (rouge et vert
+   pleins) au milieu de boutons sombres. Même traitement que ci-dessus, teinte
+   sémantique conservée (Reset de l'auto produce, Save, etc.). */
+html.awc-on.awc-gameskin .btn.btn-danger,
+html.awc-on.awc-gameskin .btn.btn-success {
+  background: #1e1e1e !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+html.awc-on.awc-gameskin .btn.btn-danger {
+  border: 1px solid color-mix(in srgb, var(--awc-danger, #f87171) 45%, transparent) !important;
+  color: var(--awc-danger, #f87171) !important;
+}
+html.awc-on.awc-gameskin .btn.btn-danger:hover {
+  background: color-mix(in srgb, var(--awc-danger, #f87171) 16%, #1e1e1e) !important;
+  border-color: var(--awc-danger, #f87171) !important;
+}
+html.awc-on.awc-gameskin .btn.btn-success {
+  border: 1px solid color-mix(in srgb, var(--awc-ok, #4ade80) 45%, transparent) !important;
+  color: var(--awc-ok, #4ade80) !important;
+}
+html.awc-on.awc-gameskin .btn.btn-success:hover {
+  background: color-mix(in srgb, var(--awc-ok, #4ade80) 16%, #1e1e1e) !important;
+  border-color: var(--awc-ok, #4ade80) !important;
+}
+/* ── Barres de progression du jeu → JAUGES ───────────────────────────────────
+   Repris du système de l'UI 2026 (.a26-gauge) : rail fin, remplissage à plat,
+   graduations tous les 20 % — on lit une valeur sur une échelle au lieu d'une
+   barre de chargement. Le rail est le conteneur, le remplissage est le .progress
+   que le jeu anime (son width en ligne reste prioritaire : la barre en cours
+   continue de vivre).
+
+   Deux réglages, deux familles de classes sur <html> (Réglages → Affichage) :
+     .awc-gauge-on          → l'habillage s'applique (absente = barres d'origine)
+     .awc-gauge-<style>     → grad | neon | stripes | pulse | scan
+     .awc-gauge-h-<taille>  → fine | med | big
+   `:has(> .progress)` cible les rails DU JEU et rien d'autre : les panneaux de
+   l'extension n'ont pas cette structure. */
+html.awc-on.awc-gameskin.awc-gauge-on {
+  --awg-h: 5px;                 /* épaisseur, écrasée par .awc-gauge-h-* */
+  --awg-r: calc(var(--awg-h) / 2);
+  --awg-acc: var(--aw-turquoise, #2ad2d8);
+}
+/* Couleur par page : gauges.js pose data-awg-scope sur <html>, et les Réglages
+   posent --awg-c-planets / --awg-c-science en ligne. Non réglée = accent du
+   thème. Même chaîne de sélecteurs que ci-dessus, sinon moins spécifique donc
+   sans effet. */
+html.awc-on.awc-gameskin.awc-gauge-on[data-awg-scope="planets"] {
+  --awg-acc: var(--awg-c-planets, var(--aw-turquoise, #2ad2d8));
+}
+html.awc-on.awc-gameskin.awc-gauge-on[data-awg-scope="science"] {
+  --awg-acc: var(--awg-c-science, var(--aw-turquoise, #2ad2d8));
+}
+/* Même chaîne de sélecteurs que la déclaration par défaut ci-dessus : un simple
+   html.awc-gauge-h-big serait MOINS spécifique et n'écraserait jamais --awg-h. */
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-h-fine { --awg-h: 5px; }
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-h-med  { --awg-h: 9px; }
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-h-big  { --awg-h: 14px; }
+/* la jauge graduée reste un instrument : coins carrés quelle que soit l'épaisseur */
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-grad { --awg-r: 1px; }
+
+html.awc-on.awc-gameskin.awc-gauge-on .progress-bar:has(> .progress),
+html.awc-on.awc-gameskin.awc-gauge-on .aw-gauge {
+  position: relative;
+  height: var(--awg-h) !important;
+  min-height: var(--awg-h) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: var(--awg-r) !important;
+  /* Le creux doit être PLUS CLAIR que la rangée, sinon la partie non remplie
+     disparaît et on ne lit plus d'échelle (rôle de --a26-surface-3 en 2026).
+     Translucide : valable sur toutes les couleurs de rangée. */
+  background: color-mix(in srgb, var(--aw-text, #f0f0f0) 14%, transparent) !important;
+  overflow: hidden;
+}
+html.awc-on.awc-gameskin.awc-gauge-on .progress-bar:has(> .progress) > .progress,
+html.awc-on.awc-gameskin.awc-gauge-on .aw-gauge > .progress {
+  position: relative;
+  height: 100% !important;
+  min-height: 0 !important;
+  border-radius: var(--awg-r) !important;
+  background: var(--awg-acc) !important;
+  box-shadow: none !important;
+  transition: none !important;   /* le jeu réécrit width : pas de traîne */
+}
+/* graduations : 1 px tous les 20 %, par-dessus le remplissage */
+html.awc-on.awc-gameskin.awc-gauge-on .progress-bar:has(> .progress)::after,
+html.awc-on.awc-gameskin.awc-gauge-on .aw-gauge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: repeating-linear-gradient(90deg,
+    transparent 0 calc(20% - 1px), rgba(0, 0, 0, .62) calc(20% - 1px) 20%);
+}
+/* .progress-bar-timed : le texte vivait DANS la barre. Même disposition que les
+   jauges de l'UI 2026 — une ligne d'en-tête (valeur à gauche, temps à droite)
+   puis la jauge SOUS elle, sur toute la largeur. Côte à côte, il ne restait que
+   ~50 px de rail : illisible comme échelle. */
+html.awc-on.awc-gameskin.awc-gauge-on .progress-bar-timed.aw-gauged {
+  display: grid !important;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "val time" "gauge gauge";
+  align-items: center;
+  gap: 3px 8px;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+html.awc-on.awc-gameskin.awc-gauge-on .progress-bar-timed.aw-gauged > .aw-gauge { grid-area: gauge; }
+html.awc-on.awc-gameskin.awc-gauge-on .progress-bar-timed.aw-gauged > .progress-text { grid-area: val; text-align: left; }
+html.awc-on.awc-gameskin.awc-gauge-on .progress-bar-timed.aw-gauged > [data-aw-bartime] { grid-area: time; text-align: right; }
+html.awc-on.awc-gameskin.awc-gauge-on .progress-bar-timed.aw-gauged > .progress-text,
+html.awc-on.awc-gameskin.awc-gauge-on .progress-bar-timed.aw-gauged > [data-aw-bartime] {
+  position: static !important;
+  transform: none !important;
+  inset: auto !important;
+  white-space: nowrap;
+  font-size: 10.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-shadow: none !important;
+  color: color-mix(in srgb, var(--aw-text, #f0f0f0) 62%, transparent) !important;
+}
+html.awc-on.awc-gameskin.awc-gauge-on .progress-bar-timed.aw-gauged > [data-aw-bartime] {
+  color: var(--awg-acc) !important;
+}
+/* temps injecté à côté d'une jauge nue (fiche planète, Science) */
+html.awc-on.awc-gameskin.awc-gauge-on [data-aw-gtime] {
+  display: inline-block;
+  margin-left: 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--awg-acc);
+}
+
+/* ── Habillage commun aux styles « riches » (tout sauf grad) ─────────────────
+   Dégradé dans le remplissage, halo, liseré de tête : la pointe de lecture. */
+html.awc-on.awc-gameskin:is(.awc-gauge-neon, .awc-gauge-stripes, .awc-gauge-pulse, .awc-gauge-scan) .progress-bar:has(> .progress),
+html.awc-on.awc-gameskin:is(.awc-gauge-neon, .awc-gauge-stripes, .awc-gauge-pulse, .awc-gauge-scan) .aw-gauge {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awg-acc) 20%, transparent);
+}
+html.awc-on.awc-gameskin:is(.awc-gauge-neon, .awc-gauge-stripes, .awc-gauge-pulse, .awc-gauge-scan) .progress-bar:has(> .progress) > .progress,
+html.awc-on.awc-gameskin:is(.awc-gauge-neon, .awc-gauge-stripes, .awc-gauge-pulse, .awc-gauge-scan) .aw-gauge > .progress {
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--awg-acc) 42%, transparent), var(--awg-acc)) !important;
+  box-shadow: 0 0 7px color-mix(in srgb, var(--awg-acc) 55%, transparent);
+}
+html.awc-on.awc-gameskin:is(.awc-gauge-neon, .awc-gauge-stripes, .awc-gauge-pulse, .awc-gauge-scan) .progress-bar:has(> .progress) > .progress::after,
+html.awc-on.awc-gameskin:is(.awc-gauge-neon, .awc-gauge-stripes, .awc-gauge-pulse, .awc-gauge-scan) .aw-gauge > .progress::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; right: 0;
+  width: 2px;
+  z-index: 2;
+  background: color-mix(in srgb, #fff 80%, var(--awg-acc));
+  box-shadow: 0 0 7px var(--awg-acc);
+}
+/* graduations plus discrètes quand le remplissage est déjà habillé */
+html.awc-on.awc-gameskin:is(.awc-gauge-neon, .awc-gauge-stripes, .awc-gauge-pulse, .awc-gauge-scan) .progress-bar:has(> .progress)::after,
+html.awc-on.awc-gameskin:is(.awc-gauge-neon, .awc-gauge-stripes, .awc-gauge-pulse, .awc-gauge-scan) .aw-gauge::after {
+  background: repeating-linear-gradient(90deg,
+    transparent 0 calc(20% - 1px), rgba(0, 0, 0, .45) calc(20% - 1px) 20%);
+}
+
+/* ── Styles « look » : changent l'apparence de TOUTES les barres, pas
+   seulement la barre active (contrairement aux 4 animations néon). ────────── */
+
+/* segments : blocs LED — le rail et le remplissage sont découpés en 12 pavés */
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-segments { --awg-r: 2px; }
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-segments .progress-bar:has(> .progress)::after,
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-segments .aw-gauge::after {
+  background: repeating-linear-gradient(90deg,
+    transparent 0 calc(8.333% - 3px), rgba(4, 8, 16, .92) calc(8.333% - 3px) 8.333%);
+}
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-segments .progress-bar:has(> .progress) > .progress,
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-segments .aw-gauge > .progress {
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--awg-acc) 62%, transparent), var(--awg-acc)) !important;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--awg-acc) 40%, transparent) !important;
+}
+html.awc-on.awc-gameskin.awc-gauge-segments .progress-bar[data-aw-live] > .progress,
+html.awc-on.awc-gameskin.awc-gauge-segments .aw-gauge[data-aw-live] > .progress {
+  animation: awGaugePulse 1.9s ease-in-out infinite;
+}
+
+/* glass : pilule arrondie, remplissage bombé avec reflet — sans graduations */
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-glass { --awg-r: 999px; }
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-glass .progress-bar:has(> .progress),
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-glass .aw-gauge {
+  background: color-mix(in srgb, #000 45%, transparent) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, .65),
+    inset 0 0 0 1px color-mix(in srgb, var(--aw-text, #f0f0f0) 12%, transparent);
+}
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-glass .progress-bar:has(> .progress)::after,
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-glass .aw-gauge::after {
+  background: none;
+}
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-glass .progress-bar:has(> .progress) > .progress,
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-glass .aw-gauge > .progress {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, #fff 42%, var(--awg-acc)) 0%,
+    var(--awg-acc) 55%,
+    color-mix(in srgb, #000 22%, var(--awg-acc)) 100%) !important;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--awg-acc) 55%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, .45) !important;
+}
+html.awc-on.awc-gameskin.awc-gauge-glass .progress-bar[data-aw-live]::before,
+html.awc-on.awc-gameskin.awc-gauge-glass .aw-gauge[data-aw-live]::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 34%;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent,
+    color-mix(in srgb, #fff 45%, transparent), transparent);
+  animation: awGaugeSweep 2.8s ease-in-out infinite;
+}
+
+/* hud : contour fin façon viseur militaire, remplissage hachuré statique */
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-hud { --awg-r: 0px; }
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-hud .progress-bar:has(> .progress),
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-hud .aw-gauge {
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awg-acc) 55%, transparent);
+}
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-hud .progress-bar:has(> .progress)::after,
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-hud .aw-gauge::after {
+  background: repeating-linear-gradient(90deg,
+    transparent 0 calc(20% - 1px),
+    color-mix(in srgb, var(--awg-acc) 45%, transparent) calc(20% - 1px) 20%);
+}
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-hud .progress-bar:has(> .progress) > .progress,
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-hud .aw-gauge > .progress {
+  background: repeating-linear-gradient(45deg,
+    var(--awg-acc) 0 5px,
+    color-mix(in srgb, var(--awg-acc) 38%, transparent) 5px 10px) !important;
+  box-shadow: none !important;
+}
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-hud .progress-bar:has(> .progress) > .progress::after,
+html.awc-on.awc-gameskin.awc-gauge-on.awc-gauge-hud .aw-gauge > .progress::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; right: 0;
+  width: 2px;
+  z-index: 2;
+  background: color-mix(in srgb, #fff 80%, var(--awg-acc));
+  box-shadow: 0 0 7px var(--awg-acc);
+}
+html.awc-on.awc-gameskin.awc-gauge-hud .progress-bar[data-aw-live] > .progress,
+html.awc-on.awc-gameskin.awc-gauge-hud .aw-gauge[data-aw-live] > .progress {
+  /* 14.14px = période des hachures 45° (10px × √2) : boucle sans à-coup */
+  animation: awGaugeHud 0.9s linear infinite;
+}
+@keyframes awGaugeHud {
+  from { background-position: 0 0; }
+  to   { background-position: 14.14px 0; }
+}
+
+/* ── Animations ──────────────────────────────────────────────────────────────
+   Toutes réservées à [data-aw-live], posé par gauges.js sur la SEULE barre que
+   le jeu anime réellement — sinon la page entière scintille. */
+
+/* neon : un balayage lumineux traverse le rail */
+html.awc-on.awc-gameskin.awc-gauge-neon .progress-bar[data-aw-live]::before,
+html.awc-on.awc-gameskin.awc-gauge-neon .aw-gauge[data-aw-live]::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 34%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent,
+    color-mix(in srgb, #fff 45%, transparent), transparent);
+  animation: awGaugeSweep 2.8s ease-in-out infinite;
+}
+@keyframes awGaugeSweep {
+  0%        { transform: translateX(-110%); }
+  55%, 100% { transform: translateX(330%); }
+}
+
+/* stripes : hachures qui défilent DANS le remplissage (lecture de débit) */
+html.awc-on.awc-gameskin.awc-gauge-stripes .progress-bar[data-aw-live] > .progress,
+html.awc-on.awc-gameskin.awc-gauge-stripes .aw-gauge[data-aw-live] > .progress {
+  background-image:
+    repeating-linear-gradient(45deg,
+      color-mix(in srgb, #fff 22%, transparent) 0 6px, transparent 6px 12px),
+    linear-gradient(90deg, color-mix(in srgb, var(--awg-acc) 42%, transparent), var(--awg-acc)) !important;
+  background-size: 34px 100%, 100% 100%;
+  animation: awGaugeStripes 1.1s linear infinite;
+}
+@keyframes awGaugeStripes {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 34px 0, 0 0; }
+}
+
+/* pulse : le remplissage respire — halo et éclat, sans mouvement latéral */
+html.awc-on.awc-gameskin.awc-gauge-pulse .progress-bar[data-aw-live] > .progress,
+html.awc-on.awc-gameskin.awc-gauge-pulse .aw-gauge[data-aw-live] > .progress {
+  animation: awGaugePulse 1.9s ease-in-out infinite;
+}
+@keyframes awGaugePulse {
+  0%, 100% { filter: brightness(1);    box-shadow: 0 0 6px color-mix(in srgb, var(--awg-acc) 45%, transparent); }
+  50%      { filter: brightness(1.45); box-shadow: 0 0 16px color-mix(in srgb, var(--awg-acc) 85%, transparent); }
+}
+
+/* scan : un trait fin balaie le rail, façon radar */
+html.awc-on.awc-gameskin.awc-gauge-scan .progress-bar[data-aw-live]::before,
+html.awc-on.awc-gameskin.awc-gauge-scan .aw-gauge[data-aw-live]::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 12%;
+  min-width: 14px;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent,
+    color-mix(in srgb, #fff 30%, transparent) 62%,
+    color-mix(in srgb, #fff 92%, transparent));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--awg-acc) 70%, transparent);
+  animation: awGaugeScan 2.2s linear infinite;
+}
+@keyframes awGaugeScan {
+  0%   { transform: translateX(-20%); opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translateX(880%); opacity: 0; }
+}
+
+/* Le mouvement se coupe si le système en demande moins. */
+@media (prefers-reduced-motion: reduce) {
+  html.awc-on.awc-gameskin .progress-bar[data-aw-live]::before,
+  html.awc-on.awc-gameskin .aw-gauge[data-aw-live]::before { animation: none; display: none; }
+  html.awc-on.awc-gameskin .progress-bar[data-aw-live] > .progress,
+  html.awc-on.awc-gameskin .aw-gauge[data-aw-live] > .progress { animation: none; }
+}
+
+/* champs de formulaire du jeu (Bootstrap) */
+html.awc-on.awc-gameskin .form-control,
+html.awc-on.awc-gameskin .form-select {
+  background: #181818 !important;
+  color: #f0f0f0 !important;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 25%, transparent) !important;
+  border-radius: 4px !important;
+}
+
+/* logo AstroWars dans le rail (emblème, sans cercle, un peu plus grand) */
+/* Logo : l'asset est un carré 256×256 (emblème rond posé sur un fond
+   étoilé). On découpe au disque pour ne garder QUE le cercle — plus de
+   pourtour carré ni de liseré — et on l'agrandit un peu. */
+#awc-rail .awc-logo { width: 50px !important; height: 50px !important; margin-bottom: 6px; }
+#awc-rail .awc-logo img {
+  width: 50px; height: 50px; object-fit: contain; display: block;
+  border: 0; border-radius: 50%;
+  clip-path: circle(50% at 50% 50%); /* cercle inscrit : garde tout l'anneau, vire les 4 coins */
+}
+html.awc-on:not(.awc-neon) #awc-rail .awc-logo { filter: none !important; }
+
+/* calque de fond : logo AstroWars en filigrane derrière la page du jeu */
+html.awc-on body { background-color: transparent !important; }
+html.awc-on { background-color: #0a0a0a; }
+#awc-bg {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-repeat: no-repeat; background-position: center center;
+  background-size: cover;   /* couvre tout l'écran, une seule image (pas de coupure) */
+  opacity: 0.55;
+}
+
+/* boutons flottants de l'overlay flottes (carte) : décalés à gauche du rail (sinon cachés dessous).
+   Le bouton « Race ON/OFF » de map-race-overlay.js n'existe plus (overlay désactivé par défaut). */
+html.awc-on #awfo-toggle { right: 66px !important; }
+html.awc-on #awfo-panel { right: 66px !important; }
+
+/* image de fond désactivable (Réglages → Affichage) */
+html.awc-nobg #awc-bg { display: none !important; }
+
+/* ─────────────────────────────────────────────────────────────
+   Toast « quoi de neuf » — affiché une seule fois après une MàJ
+   ───────────────────────────────────────────────────────────── */
+.awc-toast {
+  position: fixed;
+  right: 66px;               /* dégage le rail (52px) */
+  bottom: 22px;
+  width: 330px;
+  max-width: calc(100vw - 96px);
+  z-index: 2147483000;
+  background: #131313;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 55%, transparent);
+  border-radius: 10px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+  color: #dcdcdc;
+  font-family: var(--awc-font);
+  padding: 14px 16px 15px;
+  transform: translateX(26px);
+  opacity: 0;
+  transition: transform 0.32s ease, opacity 0.32s ease;
+}
+.awc-toast.awc-toast-in { transform: none; opacity: 1; }
+.awc-toast-x {
+  position: absolute; top: 5px; right: 8px;
+  background: none; border: none; color: #8d8d8d;
+  font-size: 20px; line-height: 1; cursor: pointer; padding: 2px 6px;
+}
+.awc-toast-x:hover { color: #f0f0f0; }
+.awc-toast-badge {
+  display: inline-block; font-size: 10px; font-weight: bold; letter-spacing: 1px;
+  color: #141414; background: var(--aw-turquoise, #2ad2d8); border-radius: 3px;
+  padding: 2px 8px; margin-bottom: 9px;
+}
+.awc-toast-ver { font-size: 14px; font-weight: bold; color: #f0f0f0; margin-bottom: 7px; }
+.awc-toast-title { font-size: 12px; color: var(--aw-turquoise, #2ad2d8); margin-bottom: 6px; }
+.awc-toast-list {
+  margin: 0 0 12px; padding-left: 16px;
+  font-size: 11.5px; line-height: 1.5; color: #c2c2c2;
+}
+.awc-toast-list li { margin: 2px 0; }
+.awc-toast-actions { text-align: right; }
+.awc-toast-ok {
+  background: var(--aw-turquoise, #2ad2d8); color: #141414; border: none; border-radius: 6px;
+  padding: 7px 16px; font-size: 12px; font-weight: bold; cursor: pointer;
+}
+.awc-toast-ok:hover { background: #e6e6e6; }
+
+/* ─────────────────────────────────────────────────────────────
+   Historique des mises à jour — modal ouverte par « Découvrir »
+   ───────────────────────────────────────────────────────────── */
+#awc-uh-backdrop {
+  position: fixed; inset: 0; z-index: 2147483100;
+  background: rgba(3, 7, 10, 0.62);
+  display: flex; align-items: center; justify-content: center;
+}
+.awc-uh-card {
+  position: relative;
+  width: 460px; max-width: calc(100vw - 48px);
+  max-height: min(72vh, 640px);
+  display: flex; flex-direction: column;
+  background: #131313;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 55%, transparent);
+  border-radius: 10px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+  color: #dcdcdc;
+  font-family: var(--awc-font);
+  padding: 14px 16px 15px;
+}
+.awc-uh-body { overflow-y: auto; padding-right: 6px; }
+.awc-uh-item {
+  padding: 10px 0 12px;
+  border-bottom: 1px solid rgba(127, 143, 152, 0.18);
+}
+.awc-uh-item:last-child { border-bottom: none; }
+.awc-uh-ver { font-size: 13px; font-weight: bold; color: #f0f0f0; margin-bottom: 4px; }
+.awc-uh-cur {
+  font-size: 9px; font-weight: bold; letter-spacing: 0.5px; vertical-align: middle;
+  color: #141414; background: var(--aw-turquoise, #2ad2d8);
+  border-radius: 3px; padding: 1px 6px; margin-left: 6px;
+}
+.awc-uh-title { font-size: 12px; color: var(--aw-turquoise, #2ad2d8); margin-bottom: 5px; }
+.awc-uh-list {
+  margin: 0; padding-left: 16px;
+  font-size: 11.5px; line-height: 1.5; color: #c2c2c2;
+}
+.awc-uh-list li { margin: 2px 0; }
+.awc-uh-open {
+  display: block; width: 100%; margin-top: 14px;
+  background: none; border: 1px solid rgba(127, 143, 152, 0.35); border-radius: 6px;
+  padding: 7px 10px; font-size: 11.5px; color: #c2c2c2; cursor: pointer;
+  font-family: var(--awc-font); text-align: center;
+}
+.awc-uh-open:hover {
+  color: #f0f0f0;
+  border-color: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 55%, transparent);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Bannière de mise à jour (#aw-update-banner) — re-parentée vers
+   <body> par cockpit.js (elle vivait dans #aw-overlay, masqué par
+   le cockpit) et présentée en CARTE bas-droite cohérente avec le
+   toast, au lieu du bandeau pleine largeur en haut.
+   ───────────────────────────────────────────────────────────── */
+@keyframes awc-bannerin {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+html.awc-on #aw-update-banner {
+  position: fixed !important;
+  top: auto !important;
+  left: auto !important;
+  right: 66px !important;          /* dégage le rail (52px) */
+  bottom: 22px !important;
+  width: 330px;                    /* même gabarit que le toast */
+  max-width: calc(100vw - 96px);
+  box-sizing: border-box;
+  z-index: 2147482900;             /* juste SOUS le toast (…3000) */
+  background: #131313 !important;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 55%, transparent) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6) !important;
+  padding: 13px 14px !important;
+  color: #dcdcdc !important;
+  font-family: var(--awc-font) !important;
+  animation: awc-bannerin 0.32s ease-out !important;  /* remplace slideDown (pensé pour le haut) */
+}
+html.awc-on #aw-update-banner .aw-update-content {
+  display: flex !important;
+  flex-wrap: wrap !important;      /* texte pleine largeur, boutons dessous */
+  align-items: center !important;
+  gap: 8px 10px !important;
+}
+html.awc-on #aw-update-banner .aw-update-icon {
+  font-size: 15px !important;
+  animation: none !important;      /* stop la rotation infinie */
+}
+html.awc-on #aw-update-banner .aw-update-scroller {
+  flex: 1 1 240px !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+html.awc-on #aw-update-banner .aw-update-text {
+  display: block !important;
+  position: static !important;
+  white-space: normal !important;  /* la carte wrappe, pas de marquee */
+  animation: none !important;
+  transform: none !important;
+  padding: 0 !important;
+  font-size: 11.5px !important;
+  line-height: 1.5 !important;
+  color: #c2c2c2 !important;
+}
+html.awc-on #aw-update-banner .aw-update-text strong { color: var(--aw-turquoise, #2ad2d8) !important; }
+html.awc-on #aw-update-banner .aw-update-buttons {
+  display: flex !important;
+  gap: 6px !important;
+  align-items: center !important;
+  margin-left: auto !important;    /* alignés à droite de la carte */
+}
+html.awc-on #aw-update-banner .aw-update-buttons a,
+html.awc-on #aw-update-banner .aw-update-buttons button {
+  font-family: var(--awc-font) !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+  border-radius: 6px !important;
+  padding: 6px 13px !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+html.awc-on #aw-update-banner .aw-update-buttons a {
+  background: var(--aw-turquoise, #2ad2d8) !important;
+  color: #141414 !important;
+  border: none !important;
+}
+html.awc-on #aw-update-banner .aw-update-buttons a:hover { background: #e6e6e6 !important; }
+html.awc-on #aw-update-banner .aw-update-buttons button {
+  background: none !important;
+  color: #9e9e9e !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+html.awc-on #aw-update-banner .aw-update-buttons button:hover { color: #f0f0f0 !important; }
+
+/* version du tool en pied de rail */
+#awc-ver {
+  padding: 6px 0 10px;
+  text-align: center;
+  font-size: 9px;
+  letter-spacing: 0.4px;
+  color: #6a6a6a;
+  font-family: var(--awc-font);
+  user-select: none;
+  cursor: default;
+}
+
+/* ═══════════ Panneau Auto-Trade artefacts — injecté dans /Game/Trade ═══════════ */
+/* Aligné sur les boutons du jeu skinné (fond #121a20 / #0d1319, bordure et actif
+   dérivés de l'accent). AUCUNE couleur d'accent en dur : tout sort de
+   --aw-turquoise (l'accent choisi dans les Réglages, vert, rose, bleu…), sinon le
+   panneau reste bleu quand le reste du jeu ne l'est plus. Police : celle du jeu
+   (héritée, font-family: inherit). */
+#aw-artefact-ui {
+  box-sizing: border-box; margin: 14px 0 8px; overflow: hidden; border-radius: 6px;
+  background: #1e1e1e; font-family: inherit;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 22%, transparent);
+  --awt-line: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 30%, transparent);
+  --awt-line-soft: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 16%, transparent);
+  --awt-on-bg: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 18%, #171717);
+  --awt-on-line: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 65%, transparent);
+  --awt-txt: var(--aw-text, #f0f0f0);
+  --awt-dim: color-mix(in srgb, var(--aw-text, #f0f0f0) 58%, transparent);
+  --awt-ring: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 25%, transparent);
+}
+#aw-artefact-ui * { box-sizing: border-box; }
+#aw-artefact-ui .aw-tp-head { position: relative; text-align: center; padding: 7px 64px; background: #171717; color: var(--aw-turquoise, #2ad2d8); font-size: 13px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; border-bottom: 1px solid var(--awt-line-soft); }
+#aw-artefact-ui .aw-tp-tools { position: absolute; right: 7px; top: 50%; transform: translateY(-50%); display: flex; gap: 5px; }
+#aw-artefact-ui .aw-icon { width: 22px; height: 20px; display: inline-flex; align-items: center; justify-content: center; background: #1e1e1e; border: 1px solid var(--awt-line); color: var(--awt-txt); border-radius: 5px; cursor: pointer; font-size: 11px; }
+#aw-artefact-ui .aw-icon:hover { background: var(--awt-on-bg); border-color: var(--awt-on-line); color: var(--aw-turquoise, #2ad2d8); }
+#aw-artefact-ui .aw-tp-body { background: #1e1e1e; padding: 11px; display: flex; flex-direction: column; gap: 10px; }
+#aw-artefact-ui.aw-collapsed .aw-tp-body { display: none; }
+#aw-artefact-ui .aw-note { font-size: 10.5px; line-height: 1.5; color: var(--awt-dim); }
+#aw-artefact-ui .aw-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .7px; color: var(--awt-dim); margin-bottom: 4px; display: block; }
+#aw-artefact-ui .aw-field { display: flex; flex-direction: column; }
+#aw-artefact-ui .aw-two { display: flex; gap: 9px; }
+#aw-artefact-ui .aw-two > * { flex: 1; }
+/* segments façon onglets du jeu */
+#aw-artefact-ui .aw-seg { display: flex; width: 100%; background: #171717; border: 1px solid var(--awt-line-soft); border-radius: 6px; padding: 4px; gap: 5px; }
+#aw-artefact-ui .aw-seg button { flex: 1; background: #1e1e1e; border: 1px solid var(--awt-line); color: var(--awt-txt); padding: 6px 8px; font-family: inherit; font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; border-radius: 6px; cursor: pointer; transition: background .15s, border-color .15s; }
+#aw-artefact-ui .aw-seg button.on { background: var(--awt-on-bg); border-color: var(--awt-on-line); color: var(--aw-turquoise, #2ad2d8); }
+#aw-artefact-ui input[type=number] { width: 100%; background: #171717; border: 1px solid var(--awt-line); color: var(--awt-txt); border-radius: 6px; padding: 6px 9px; font-size: 12px; font-family: inherit; }
+#aw-artefact-ui input:focus { outline: none; border-color: var(--awt-on-line); box-shadow: 0 0 0 2px var(--awt-ring); }
+/* dropdown custom */
+#aw-artefact-ui .aw-dd { position: relative; }
+#aw-artefact-ui .aw-dd-btn { width: 100%; text-align: left; background: #171717; border: 1px solid var(--awt-line); color: var(--awt-txt); border-radius: 6px; padding: 6px 30px 6px 10px; font-size: 12px; font-family: inherit; cursor: pointer; position: relative; }
+#aw-artefact-ui .aw-dd-btn::after { content: "\25BE"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--aw-turquoise, #2ad2d8); font-size: 11px; }
+#aw-artefact-ui .aw-dd.open .aw-dd-btn { border-color: var(--awt-on-line); box-shadow: 0 0 0 2px var(--awt-ring); }
+#aw-artefact-ui .aw-dd-list { display: none; position: absolute; z-index: 50; left: 0; right: 0; top: calc(100% + 4px); max-height: 230px; overflow: auto; background: #171717; border: 1px solid var(--awt-line); border-radius: 6px; box-shadow: 0 12px 30px rgba(0,0,0,.55); padding: 3px; }
+#aw-artefact-ui .aw-dd.open .aw-dd-list { display: block; }
+#aw-artefact-ui .aw-opt { padding: 5px 9px; font-size: 12px; color: var(--awt-txt); border-radius: 5px; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; }
+#aw-artefact-ui .aw-opt:hover { background: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 14%, transparent); }
+#aw-artefact-ui .aw-opt.sel { background: var(--awt-on-bg); color: var(--aw-turquoise, #2ad2d8); }
+#aw-artefact-ui .aw-opt small { color: var(--awt-dim); font-size: 10px; }
+/* chips de temps */
+#aw-artefact-ui .aw-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+#aw-artefact-ui .aw-chip { background: #1e1e1e; border: 1px solid var(--awt-line); color: var(--awt-txt); border-radius: 6px; padding: 3px 10px; font-size: 11px; cursor: pointer; }
+#aw-artefact-ui .aw-chip:hover, #aw-artefact-ui .aw-chip.on { background: var(--awt-on-bg); color: var(--aw-turquoise, #2ad2d8); border-color: var(--awt-on-line); }
+#aw-artefact-ui input[type=datetime-local] { width: 100%; background: #171717; border: 1px solid var(--awt-line); color: var(--awt-txt); border-radius: 6px; padding: 6px 9px; font-size: 12px; font-family: inherit; color-scheme: dark; }
+#aw-artefact-ui .aw-check { display: flex; gap: 7px; align-items: center; font-size: 11px; color: var(--awt-dim); }
+#aw-artefact-ui .aw-check input { margin: 0; accent-color: var(--aw-turquoise, #2ad2d8); }
+#aw-artefact-ui .aw-submit { width: 100%; background: var(--awt-on-bg); color: var(--aw-turquoise, #2ad2d8); border: 1px solid var(--awt-on-line); border-radius: 6px; padding: 8px; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; cursor: pointer; transition: background .15s; }
+#aw-artefact-ui .aw-submit:hover { background: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 28%, #171717); }
+#aw-artefact-ui .aw-submit:disabled { opacity: .5; cursor: not-allowed; }
+#aw-artefact-ui .aw-sub { font-size: 10px; text-transform: uppercase; letter-spacing: .7px; color: var(--awt-dim); margin-top: 2px; border-top: 1px solid var(--awt-line-soft); padding-top: 8px; }
+#aw-artefact-ui .aw-msg { font-size: 11px; min-height: 13px; }
+#aw-artefact-ui .aw-msg.aw-err { color: var(--awc-danger, #f87171); }
+#aw-artefact-ui .aw-msg.aw-ok { color: var(--awc-ok, #4ade80); }
+#aw-artefact-ui .aw-list table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+#aw-artefact-ui .aw-list td { padding: 5px 6px; border-top: 1px solid var(--awt-line-soft); color: var(--awt-txt); vertical-align: top; }
+#aw-artefact-ui .aw-list td.aw-r { text-align: right; white-space: nowrap; }
+#aw-artefact-ui .aw-list .aw-desc { color: var(--awt-dim); font-size: 10.5px; margin-top: 2px; }
+#aw-artefact-ui .aw-desc.aw-e { color: var(--awc-danger, #f87171); }
+#aw-artefact-ui .aw-desc.aw-w { color: var(--awc-warn, #fbbf24); }
+#aw-artefact-ui .aw-badge { font-size: 10px; padding: 1px 6px; border: 1px solid; border-radius: 5px; white-space: nowrap; }
+#aw-artefact-ui .aw-del { margin-left: 6px; background: transparent; border: 1px solid color-mix(in srgb, var(--awc-danger, #f87171) 45%, transparent); color: var(--awc-danger, #f87171); border-radius: 5px; padding: 2px 7px; cursor: pointer; font-size: 11px; line-height: 1.3; }
+#aw-artefact-ui .aw-del:hover { background: color-mix(in srgb, var(--awc-danger, #f87171) 16%, transparent); border-color: var(--awc-danger, #f87171); }
+#aw-artefact-ui .aw-listbar { display: flex; justify-content: flex-end; margin-bottom: 4px; }
+#aw-artefact-ui .aw-clear { background: transparent; border: 1px solid color-mix(in srgb, var(--awc-danger, #f87171) 35%, transparent); color: var(--awc-danger, #f87171); border-radius: 5px; padding: 4px 10px; font-size: 11px; cursor: pointer; }
+#aw-artefact-ui .aw-clear:hover { background: color-mix(in srgb, var(--awc-danger, #f87171) 14%, transparent); border-color: var(--awc-danger, #f87171); }
+#aw-artefact-ui .aw-empty { color: var(--awt-dim); font-size: 11.5px; text-align: center; padding: 10px; }
+#aw-artefact-ui .aw-hide { display: none !important; }
+/* ═══════════ Reskin page Trade — « Galactic Exchange » (cartes) ═══════════ */
+.aw-tr-hidden { display: none !important; }
+#aw-trade-reskin {
+  box-sizing: border-box; margin: 0 0 14px; padding: 0;
+  font-family: var(--awc-font); color: #f0f0f0;
+}
+#aw-trade-reskin * { box-sizing: border-box; }
+#aw-trade-reskin .aw-tr-head {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 12px 14px; border: 1px solid rgba(255, 255, 255, .22); border-radius: 12px;
+  background: linear-gradient(120deg, #262626, #151515 60%);
+}
+#aw-trade-reskin .aw-tr-title { font-size: 16px; font-weight: 700; letter-spacing: .5px; color: #f5f5f5; }
+#aw-trade-reskin .aw-tr-title b { color: var(--aw-turquoise, #2ad2d8); }
+#aw-trade-reskin .aw-tr-title span { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #8a8a8a; margin-left: 4px; }
+#aw-trade-reskin .aw-tr-wallet { display: flex; gap: 10px; margin-left: auto; flex-wrap: wrap; }
+#aw-trade-reskin .aw-tr-w {
+  display: flex; flex-direction: column; padding: 6px 14px; border-radius: 10px;
+  background: rgba(0, 0, 0, .28); border: 1px solid rgba(255, 255, 255, .18); min-width: 96px;
+}
+#aw-trade-reskin .aw-tr-wlbl { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #8a8a8a; }
+#aw-trade-reskin .aw-tr-wval { font-size: 15px; font-weight: 700; color: var(--aw-turquoise, #2ad2d8); }
+#aw-trade-reskin .aw-tr-classic {
+  background: transparent; border: 1px solid rgba(255, 255, 255, .16); color: #adadad;
+  border-radius: 8px; padding: 6px 12px; font-size: 11px; cursor: pointer;
+}
+#aw-trade-reskin .aw-tr-classic:hover { border-color: var(--aw-turquoise, #2ad2d8); color: var(--aw-turquoise, #2ad2d8); }
+#aw-trade-reskin .aw-tr-bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 12px 2px 10px; }
+#aw-trade-reskin .aw-tr-tiers { display: flex; gap: 4px; background: #191919; border: 1px solid rgba(255, 255, 255, .2); border-radius: 9px; padding: 3px; }
+#aw-trade-reskin .aw-tr-tier-btn { background: transparent; border: 0; color: #adadad; padding: 6px 14px; font-size: 11px; font-weight: 700; letter-spacing: .5px; border-radius: 6px; cursor: pointer; }
+#aw-trade-reskin .aw-tr-tier-btn.on { background: var(--aw-turquoise, #2ad2d8); color: #141414; }
+#aw-trade-reskin .aw-tr-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+#aw-trade-reskin .aw-tr-fbtn { display: inline-flex; align-items: center; gap: 5px; background: #1e1e1e; border: 1px solid rgba(255, 255, 255, .1); color: #adadad; border-radius: 20px; padding: 5px 12px; font-size: 11px; cursor: pointer; }
+#aw-trade-reskin .aw-tr-fbtn:hover { border-color: rgba(255, 255, 255, .3); }
+#aw-trade-reskin .aw-tr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+#aw-trade-reskin .aw-tr-card {
+  background: linear-gradient(160deg, #232323, #181818); border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 12px; padding: 13px; display: flex; flex-direction: column; gap: 9px;
+  transition: transform .12s, border-color .12s, box-shadow .12s;
+}
+#aw-trade-reskin .aw-tr-card:hover { transform: translateY(-2px); border-color: rgba(255, 255, 255, .4); box-shadow: 0 10px 26px rgba(0, 0, 0, .45); }
+#aw-trade-reskin .aw-tr-cardtop { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+#aw-trade-reskin .aw-tr-name { font-size: 13.5px; font-weight: 700; color: #f5f5f5; line-height: 1.2; }
+#aw-trade-reskin .aw-tr-tier { font-size: 8.5px; letter-spacing: 1.5px; color: #8a8a8a; }
+#aw-trade-reskin .aw-tr-bonuses { display: flex; flex-wrap: wrap; gap: 5px; min-height: 22px; }
+#aw-trade-reskin .aw-tr-bo { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; padding: 2px 7px; border: 1px solid; border-radius: 20px; }
+#aw-trade-reskin .aw-tr-cardbot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; }
+#aw-trade-reskin .aw-tr-price { font-size: 13px; font-weight: 700; color: #ffe08a; white-space: nowrap; }
+#aw-trade-reskin .aw-tr-coin { color: #fbbf24; }
+#aw-trade-reskin .aw-tr-owned { font-size: 10px; color: #8a8a8a; font-weight: 600; }
+#aw-trade-reskin .aw-tr-buy {
+  background: linear-gradient(180deg, var(--aw-turquoise, #2ad2d8), #9a9a9a); color: #141414;
+  border: 0; border-radius: 8px; padding: 6px 16px; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+#aw-trade-reskin .aw-tr-buy:hover { filter: brightness(1.08); }
+#aw-trade-reskin .aw-tr-buy.aw-tr-arm { background: linear-gradient(180deg, #ff7a7a, #e04b4b); color: #fff; }
+#aw-trade-reskin .aw-tr-buy.aw-tr-off { opacity: .5; }
+#aw-trade-reskin .aw-tr-buy:disabled { opacity: .6; cursor: default; }
+#aw-trade-reskin .aw-tr-flash { font-size: 10.5px; min-height: 0; text-align: right; }
+#aw-trade-reskin .aw-tr-empty { grid-column: 1/-1; text-align: center; color: #6e6e6e; padding: 24px; font-size: 12px; }
+
+/* onglets Artifacts / Supply / Production */
+#aw-trade-reskin .aw-tr-tabs { display: flex; gap: 6px; margin: 12px 0 12px; border-bottom: 1px solid rgba(255, 255, 255, .07); }
+#aw-trade-reskin .aw-tr-tab { background: transparent; border: 0; border-bottom: 2px solid transparent; color: #adadad; padding: 9px 16px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+#aw-trade-reskin .aw-tr-tab:hover { color: #dedede; }
+#aw-trade-reskin .aw-tr-tab.on { color: var(--aw-turquoise, #2ad2d8); border-bottom-color: var(--aw-turquoise, #2ad2d8); }
+/* cartes artefacts : actions (vendre + buy) */
+#aw-trade-reskin .aw-tr-acts { display: flex; gap: 6px; align-items: center; }
+#aw-trade-reskin .aw-tr-sell {
+  background: transparent; border: 1px solid rgba(255, 255, 255, .2); color: #dcdcdc;
+  border-radius: 8px; padding: 6px 12px; font-size: 11.5px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+#aw-trade-reskin .aw-tr-sell:hover { border-color: var(--aw-turquoise, #2ad2d8); color: var(--aw-turquoise, #2ad2d8); }
+#aw-trade-reskin .aw-tr-sell.aw-tr-arm { background: linear-gradient(180deg, #ff7a7a, #e04b4b); color: #fff; border-color: transparent; }
+#aw-trade-reskin .aw-tr-sell.aw-tr-off { opacity: .5; }
+/* panneaux SU / PP */
+#aw-trade-reskin .aw-tr-panel { max-width: 620px; background: linear-gradient(160deg, #232323, #181818); border: 1px solid rgba(255, 255, 255, .16); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+#aw-trade-reskin .aw-tr-ptop { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+#aw-trade-reskin .aw-tr-pname { font-size: 15px; font-weight: 700; color: #f5f5f5; }
+#aw-trade-reskin .aw-tr-psub { font-size: 11.5px; color: #a0a0a0; margin-top: 3px; }
+#aw-trade-reskin .aw-tr-psub b { color: #ffe08a; }
+#aw-trade-reskin .aw-tr-gauge { position: relative; width: 160px; height: 22px; background: #141414; border: 1px solid rgba(255, 255, 255, .25); border-radius: 20px; overflow: hidden; }
+#aw-trade-reskin .aw-tr-gfill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--aw-turquoise, #2ad2d8), #9a9a9a); }
+#aw-trade-reskin .aw-tr-gauge span { position: relative; display: block; text-align: center; line-height: 22px; font-size: 11px; font-weight: 700; color: #f5f5f5; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
+#aw-trade-reskin .aw-tr-step { display: flex; align-items: center; gap: 8px; }
+#aw-trade-reskin .aw-tr-step button { width: 34px; height: 34px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, .3); background: #1e1e1e; color: var(--aw-turquoise, #2ad2d8); font-size: 18px; cursor: pointer; }
+#aw-trade-reskin .aw-tr-step button:hover { background: rgba(255, 255, 255, .12); }
+#aw-trade-reskin .aw-tr-step input { width: 110px; height: 34px; text-align: center; background: #1e1e1e; border: 1px solid rgba(255, 255, 255, .3); color: #f0f0f0; border-radius: 8px; font-size: 14px; font-weight: 700; }
+#aw-trade-reskin .aw-tr-max { width: auto !important; height: 34px; padding: 0 12px !important; font-size: 11px !important; font-weight: 600 !important; color: #adadad !important; }
+#aw-trade-reskin .aw-tr-cost { font-size: 12px; color: #a0a0a0; }
+#aw-trade-reskin .aw-tr-cost b { color: #ffe08a; }
+#aw-trade-reskin .aw-tr-acts2 { display: flex; gap: 10px; }
+#aw-trade-reskin .aw-tr-acts2 .aw-tr-buy, #aw-trade-reskin .aw-tr-acts2 .aw-tr-sell { padding: 9px 20px; font-size: 12.5px; }
+#aw-trade-reskin .aw-tr-status { font-size: 11.5px; min-height: 14px; color: #a0a0a0; }
+/* en-tête compact (mode « modifie le tableau des artefacts » seulement) */
+#aw-trade-reskin .aw-tr-head-slim { padding: 9px 13px; }
+#aw-trade-reskin .aw-tr-head-slim .aw-tr-title { font-size: 14px; }
+#aw-trade-reskin .aw-tr-bal { margin-left: auto; font-size: 12px; color: #a0a0a0; }
+#aw-trade-reskin .aw-tr-bal b { color: #ffe08a; font-weight: 700; }
+#aw-trade-reskin .aw-tr-sell:disabled { opacity: .55; cursor: default; }
+#aw-trade-reskin .aw-tr-buy[disabled] { pointer-events: none; }
+#aw-trade-reskin .aw-tr-sell[disabled] { pointer-events: none; }
+/* cartes ressources (Production Point / Supply Unit) */
+#aw-trade-reskin .aw-tr-resources { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin: 12px 0 4px; }
+#aw-trade-reskin .aw-tr-res { background: linear-gradient(160deg, #232323, #181818); border: 1px solid rgba(255, 255, 255, .18); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+#aw-trade-reskin .aw-tr-rhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+#aw-trade-reskin .aw-tr-rname { font-size: 14px; font-weight: 700; color: #f5f5f5; }
+#aw-trade-reskin .aw-tr-rprice { font-size: 13px; font-weight: 700; color: #ffe08a; }
+#aw-trade-reskin .aw-tr-rsub { font-size: 11px; color: #a0a0a0; }
+#aw-trade-reskin .aw-tr-rsub b { color: #dcdcdc; }
+#aw-trade-reskin .aw-tr-res .aw-tr-gauge { width: 100%; }
+#aw-trade-reskin .aw-tr-res .aw-tr-acts2 .aw-tr-buy, #aw-trade-reskin .aw-tr-res .aw-tr-acts2 .aw-tr-sell { flex: 1; text-align: center; }
+#aw-trade-reskin .aw-tr-res .aw-tr-acts2 { display: flex; gap: 8px; }
+/* en-têtes de section + carte info extra */
+#aw-trade-reskin .aw-tr-sec { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #8a8a8a; margin: 16px 2px 8px; border-bottom: 1px solid rgba(255, 255, 255, .06); padding-bottom: 5px; }
+#aw-trade-reskin .aw-tr-extra { font-size: 10px; color: #939393; }
+/* intégration du panneau Auto-Trade dans le reskin */
+#aw-trade-reskin .aw-tr-at { }
+#aw-trade-reskin .aw-tr-at #aw-artefact-ui { margin: 0; width: 100%; }
+
+/* menu radial des artefacts (inspiré codepen VLNMdr) */
+#aw-trade-reskin .aw-tr-radialwrap { position: relative; height: 235px; margin: 2px 0; }
+#aw-trade-reskin .aw-tr-radial { position: absolute; inset: 0; }
+#aw-trade-reskin .aw-tr-rmain {
+  position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); z-index: 100;
+  width: 74px; height: 74px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 50% 35%, #282828, #181818); border: 1px solid rgba(255, 255, 255, .4);
+  color: var(--aw-turquoise, #2ad2d8); font-size: 24px; cursor: pointer; box-shadow: 0 10px 26px rgba(0, 0, 0, .5);
+}
+#aw-trade-reskin .aw-tr-rmain:hover { border-color: var(--aw-turquoise, #2ad2d8); box-shadow: 0 0 0 4px rgba(255, 255, 255, .12), 0 10px 26px rgba(0, 0, 0, .5); }
+/* slots en rotation : éclosion en arc (méthode VLNMdr, géométrie centrée) */
+#aw-trade-reskin .aw-tr-slot {
+  position: absolute; top: 30%; left: 50%; width: 0; height: 0;
+  transform: rotate(var(--start, 180deg)); transition: transform .55s cubic-bezier(.2, .85, .25, 1);
+}
+#aw-trade-reskin .aw-tr-radial.open:not(.view-tier) .aw-tr-slot { transform: rotate(var(--target, 0deg)); }
+#aw-trade-reskin .aw-tr-ritem {
+  position: absolute; top: -118px; left: 0; margin: -31px; width: 62px; height: 62px; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  opacity: 0; pointer-events: none; cursor: pointer;
+  background: color-mix(in srgb, var(--fc, #2ad2d8) 16%, #181818); border: 1px solid var(--fc, #2ad2d8);
+  transition: opacity .3s ease .05s, box-shadow .15s;
+}
+#aw-trade-reskin .aw-tr-radial.open:not(.view-tier) .aw-tr-ritem { opacity: 1; pointer-events: auto; }
+/* orbite des paliers (drill-down famille → 3 paliers) */
+/* les couches ne doivent PAS intercepter les clics (sinon la couche du dessus bloque
+   les boutons du dessous) — seuls les boutons enfants restent cliquables */
+#aw-trade-reskin .aw-tr-famlayer, #aw-trade-reskin .aw-tr-tierlayer { position: absolute; inset: 0; pointer-events: none; }
+#aw-trade-reskin .aw-tr-radial.view-tier .aw-tr-tbuy, #aw-trade-reskin .aw-tr-radial.view-tier .aw-tr-tsell { pointer-events: auto; }
+#aw-trade-reskin .aw-tr-rmain.is-fam { border-color: var(--fc, #2ad2d8); color: var(--fc, #2ad2d8); box-shadow: 0 0 0 4px color-mix(in srgb, var(--fc, #2ad2d8) 22%, transparent), 0 10px 26px rgba(0, 0, 0, .5); }
+#aw-trade-reskin .aw-tr-rmain .aw-tr-back { position: absolute; bottom: 7px; left: 0; right: 0; text-align: center; font-size: 7.5px; letter-spacing: .5px; color: #adadad; font-weight: 700; }
+#aw-trade-reskin .aw-tr-tslot { position: absolute; top: 30%; left: 50%; width: 0; height: 0; transform: rotate(var(--start, 180deg)); transition: transform .5s cubic-bezier(.2, .85, .25, 1); }
+#aw-trade-reskin .aw-tr-radial.view-tier .aw-tr-tslot { transform: rotate(var(--target, 180deg)); }
+#aw-trade-reskin .aw-tr-tnode { position: absolute; top: -100px; left: 0; margin: -38px; width: 76px; height: 76px; opacity: 0; transition: opacity .3s ease .1s; }
+#aw-trade-reskin .aw-tr-radial.view-tier .aw-tr-tnode { opacity: 1; }
+#aw-trade-reskin .aw-tr-tbuy {
+  width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  border-radius: 50%; border: 1px solid var(--fc, #2ad2d8); background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--fc, #2ad2d8) 24%, #181818), #181818);
+  color: #f5f5f5; cursor: pointer; padding: 4px; text-align: center;
+}
+#aw-trade-reskin .aw-tr-tbuy:hover { filter: brightness(1.14); }
+#aw-trade-reskin .aw-tr-tbuy.arm { border-color: #ff7a7a; background: radial-gradient(circle at 50% 35%, #6b2222, #3a1414); }
+#aw-trade-reskin .aw-tr-tbuy.off { opacity: .5; cursor: default; }
+#aw-trade-reskin .aw-tr-tbuy[disabled] { pointer-events: none; }
+#aw-trade-reskin .aw-tr-tt { font-size: 10px; font-weight: 700; letter-spacing: .2px; }
+#aw-trade-reskin .aw-tr-tp { font-size: 10.5px; font-weight: 700; color: #ffe08a; }
+#aw-trade-reskin .aw-tr-tsell {
+  position: absolute; top: 1px; right: 1px; width: 24px; height: 20px; border-radius: 8px; z-index: 2;
+  background: #1e1e1e; border: 1px solid rgba(255, 107, 107, .5); color: #ff9a9a; font-size: 9.5px; font-weight: 700; cursor: pointer;
+}
+#aw-trade-reskin .aw-tr-tsell:hover { background: rgba(255, 107, 107, .15); }
+#aw-trade-reskin .aw-tr-tsell.arm { background: #6b2222; color: #fff; border-color: #ff7a7a; }
+#aw-trade-reskin .aw-tr-tsell[disabled] { pointer-events: none; opacity: .5; }
+/* ── « je ne sais quoi » : anneau d'orbite, rayons vers les tuiles, pulsation ── */
+#aw-trade-reskin .aw-tr-radial::before {
+  content: ""; position: absolute; top: 30%; left: 50%; width: 232px; height: 232px; transform: translate(-50%, -50%);
+  border: 1px dashed rgba(255, 255, 255, .16); border-radius: 50%; opacity: 0; transition: opacity .5s ease; pointer-events: none;
+}
+#aw-trade-reskin .aw-tr-radial.open::before, #aw-trade-reskin .aw-tr-radial.view-tier::before { opacity: 1; }
+#aw-trade-reskin .aw-tr-slot::before, #aw-trade-reskin .aw-tr-tslot::before {
+  content: ""; position: absolute; left: -1px; width: 2px; border-radius: 2px; pointer-events: none;
+  background: linear-gradient(to top, transparent, rgba(255, 255, 255, .5)); opacity: 0; transition: opacity .4s ease .12s;
+}
+#aw-trade-reskin .aw-tr-slot::before { top: -114px; height: 82px; }
+#aw-trade-reskin .aw-tr-tslot::before { top: -96px; height: 60px; }
+#aw-trade-reskin .aw-tr-radial.open:not(.view-tier) .aw-tr-slot::before,
+#aw-trade-reskin .aw-tr-radial.view-tier .aw-tr-tslot::before { opacity: 1; }
+@keyframes aw-tr-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .4), 0 10px 26px rgba(0, 0, 0, .5); }
+  70%, 100% { box-shadow: 0 0 0 13px rgba(255, 255, 255, 0), 0 10px 26px rgba(0, 0, 0, .5); }
+}
+#aw-trade-reskin .aw-tr-radial:not(.open):not(.view-tier) .aw-tr-rmain { animation: aw-tr-pulse 2.6s ease-out infinite; }
+#aw-trade-reskin .aw-tr-ritem:hover { filter: brightness(1.15); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fc, #2ad2d8) 35%, transparent); }
+#aw-trade-reskin .aw-tr-ritem.sel { box-shadow: 0 0 0 3px var(--fc, #2ad2d8); }
+#aw-trade-reskin .aw-tr-ritem i { font-size: 17px; color: var(--fc, #2ad2d8); }
+#aw-trade-reskin .aw-tr-ritem span { font-size: 7.5px; line-height: 1.05; color: #e4e4e4; text-align: center; max-width: 56px; overflow: hidden; }
+/* deux radials côte à côte (A éclosion / B cadran) pour comparaison */
+#aw-trade-reskin .aw-tr-radials { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0; }
+#aw-trade-reskin .aw-tr-radcol { flex: 1 1 260px; min-width: 250px; background: rgba(255, 255, 255, .02); border: 1px solid rgba(255, 255, 255, .06); border-radius: 12px; padding: 4px; }
+#aw-trade-reskin .aw-tr-radlbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #8a8a8a; text-align: center; padding: 5px 4px 2px; }
+/* 2e radial : cadran (knob) — technique .selector/.knob + --angle indicateur */
+#aw-trade-reskin .aw-tr-knob { --angle: -90deg; position: relative; height: 250px; }
+#aw-trade-reskin .aw-tr-knob ul { list-style: none; margin: 0; padding: 0; position: absolute; inset: 0; }
+#aw-trade-reskin .aw-tr-knob li { position: absolute; top: 50%; left: 50%; }
+#aw-trade-reskin .aw-tr-knob-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 35%, #282828, #181818); border: 1px solid rgba(255, 255, 255, .4); color: var(--aw-turquoise, #2ad2d8); font-size: 22px; cursor: pointer; box-shadow: 0 10px 26px rgba(0, 0, 0, .5); }
+#aw-trade-reskin .aw-tr-knob-ind { position: absolute; inset: 0; border-radius: 50%; transform: rotate(calc(var(--angle) + 90deg)); transition: transform .45s cubic-bezier(.2, .8, .2, 1); pointer-events: none; }
+#aw-trade-reskin .aw-tr-knob-ind::before { content: ""; position: absolute; top: 4px; left: 50%; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%; background: var(--aw-turquoise, #2ad2d8); box-shadow: 0 0 8px var(--aw-turquoise, #2ad2d8); }
+#aw-trade-reskin .aw-tr-kitem { position: absolute; top: 0; left: 0; width: 54px; height: 54px; margin: -27px; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; cursor: pointer; background: color-mix(in srgb, var(--fc, #2ad2d8) 16%, #181818); border: 1px solid var(--fc, #2ad2d8); color: var(--fc, #2ad2d8); font-size: 18px; transform: translate(-50%, -50%) scale(.4); transition: transform .45s cubic-bezier(.2, .85, .25, 1.1), opacity .3s ease; }
+#aw-trade-reskin .aw-tr-knob.active .aw-tr-kitem { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) rotate(var(--ang)) translateY(-92px) rotate(calc(-1 * var(--ang))) scale(1); }
+#aw-trade-reskin .aw-tr-kitem:hover { filter: brightness(1.15); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fc, #2ad2d8) 35%, transparent); }
+#aw-trade-reskin .aw-tr-kitem.sel { box-shadow: 0 0 0 3px var(--fc, #2ad2d8); }
+/* fiche détail de la famille sélectionnée */
+#aw-trade-reskin .aw-tr-detail { margin-top: 4px; }
+#aw-trade-reskin .aw-tr-detailhead { font-size: 15px; font-weight: 700; letter-spacing: .3px; margin: 4px 2px 10px; }
+#aw-trade-reskin .aw-tr-detailgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+#aw-trade-reskin .aw-tr-hint { text-align: center; color: #8a8a8a; font-size: 12px; padding: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+/* ── Barre d'état du scan (panneau Scans & Sync) ── */
+.awc-scan-bar-wrap { margin: 6px 2px 8px; }
+.awc-scan-bar-label {
+  color: #b0b0b0; font-family: var(--awc-mono);
+  font-size: 11px; margin-bottom: 4px; min-height: 13px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.awc-scan-bar-track {
+  height: 6px; border-radius: 4px; overflow: hidden;
+  background: rgba(127, 154, 160, .22);
+}
+.awc-scan-bar-fill {
+  height: 100%; width: 0%; border-radius: 4px;
+  background: #35d07f; transition: width .35s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SKIN ASTROWARS DU COCKPIT — actif par défaut
+   Les couleurs viennent déjà des jetons (:root en tête de fichier). Ce bloc
+   ne règle que ce qu'un jeton ne peut pas dire : les FORMES et la CASSE.
+   Références prises dans astrowars.css :
+     bandeau ......... table.table th / div.head : fond #231E64, texte blanc,
+                       poids NORMAL, centré — pas de gras à empattement large
+     intertitre ...... .map-search-group-header : .72rem, MAJ, ls .06em, 38 %
+     ligne de liste .. .map-search-result-item : #d0d0d0, survol #2c2c2c
+     carte / champ ... .lowlight #2F2F2F, td #404040, bordure #6c757d, r4
+     bouton .......... .form-control.dark : fond #404040, bord #6c757d, r4
+     lien ............ blanc, gras, souligné au survol seulement
+   Rayons : le jeu tourne à 4–6 px, le cockpit était à 10–14 px.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── coquilles ─────────────────────────────────────────────────────── */
+#awc-panel { border-radius: 0; }
+#awc-wide { border-radius: var(--awc-radius); }
+#awc-wide.awc-center { border-radius: var(--awc-radius); }
+
+/* ── bandeaux : ceux des tableaux du jeu ───────────────────────────── */
+#awc-head, #awc-wide-head {
+  background: var(--awc-head-bg);
+  border-bottom: 1px solid var(--awc-line);
+  padding: 8px 12px;
+}
+#awc-title, #awc-wide-title {
+  color: var(--awc-text);
+  font-weight: 400;
+  font-size: .8rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+#awc-who { font-size: .72rem; color: rgba(255, 255, 255, .55); }
+#awc-who b { font-family: var(--awc-font); font-weight: 700; color: var(--awc-text); }
+#awc-close, #awc-expand {
+  color: rgba(255, 255, 255, .45); font-size: .9rem; border-radius: 4px;
+}
+#awc-close:hover, #awc-expand:hover { color: #fff; background: rgba(255, 255, 255, .08); }
+
+/* ── intertitres : les en-têtes de groupe du jeu ───────────────────── */
+.awc-kicker {
+  font-size: .72rem; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--awc-faint); margin: 10px 2px 5px;
+}
+
+/* ── cartes ────────────────────────────────────────────────────────── */
+.awc-card {
+  background: var(--awc-surface);
+  border: 1px solid var(--awc-line);
+  border-radius: 4px;
+  font-size: .75rem;
+}
+.awc-card h3 { font-weight: 600; letter-spacing: 0; }
+.awc-card .awc-meta { font-size: .72rem; color: var(--awc-dim); }
+.awc-card .awc-meta b { font-family: var(--awc-font); }
+
+/* ── boutons : .form-control.dark du jeu ───────────────────────────── */
+.awc-btn, #awc-wide-reduce, #awc-wide-close {
+  background: var(--awc-field);
+  border: 1px solid var(--awc-field-line);
+  color: var(--awc-text);
+  border-radius: 4px;
+  font-family: var(--awc-font);
+  font-size: .8125rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  padding: 4px 10px;
+}
+.awc-btn:hover, #awc-wide-reduce:hover, #awc-wide-close:hover {
+  background: var(--awc-hover); color: var(--awc-text); border-color: var(--awc-field-line);
+}
+.awc-btn.awc-danger { color: #ffb4b4; border-color: rgba(248, 113, 113, .5); background: rgba(248, 113, 113, .12); }
+
+/* ── champs : même gabarit que les selects sombres du jeu ──────────── */
+.awc-select, .awc-number, .awc-colorpick, .awc-chip-reset {
+  background: var(--awc-field) !important;
+  color: var(--awc-text) !important;
+  border: 1px solid var(--awc-field-line) !important;
+  border-radius: 4px !important;
+  font-family: var(--awc-font);
+  font-size: .8125rem;
+}
+.awc-number {
+  width: 84px; padding: 3px 6px; text-align: right;
+  font-variant-numeric: tabular-nums; box-sizing: border-box;
+}
+.awc-number:focus, .awc-select:focus { outline: none; border-color: var(--awc-accent) !important; }
+.awc-colorpick { padding: 0; width: 42px; height: 26px; }
+.awc-chip-reset { color: rgba(255, 255, 255, .6) !important; }
+.awc-chip-reset:hover { color: var(--awc-text) !important; border-color: var(--awc-text) !important; }
+
+/* ── lignes de réglage ─────────────────────────────────────────────── */
+.awc-set-row {
+  padding: 6px 2px; font-size: .8125rem;
+  border-bottom: 1px solid rgba(255, 255, 255, .07);
+}
+.awc-set-label { color: #d0d0d0; }
+.awc-empty { font-size: .8125rem; color: var(--awc-dim); font-style: italic; }
+
+/* ── liens : ceux du jeu (blancs, gras, soulignés au survol) ───────── */
+#awc-body a:not(.awc-btn), #awc-wide-body a:not(.awc-btn) {
+  color: var(--awc-text); font-weight: 700; text-decoration: none;
+}
+#awc-body a:not(.awc-btn):hover, #awc-wide-body a:not(.awc-btn):hover { text-decoration: underline; }
+
+/* ── rail : mêmes arêtes que la barre d'outils de la carte ─────────── */
+#awc-rail { border-left: 1px solid var(--awc-line); }
+.awc-rail-btn { border-radius: 4px; }
+.awc-rail-sep { background: rgba(255, 255, 255, .15); }
+#awc-ver { font-family: var(--awc-font); font-size: .65rem; color: var(--awc-faint); }
+
+/* le conteneur de couleurs re-parenté suit le texte de liste du jeu */
+html.awc-on .awc-reparented *:not(.aw-alliance-color-badge) { color: #d0d0d0 !important; }
+
+/* ── Boutons d'action : plus de pavé cyan ───────────────────────────
+   Le jeu n'a aucun aplat néon : ses contrôles sont sombres et bordés
+   (#404040 / #6c757d). Les boutons « action principale » gardent bien
+   l'accent choisi dans les Réglages, mais en TEINTE sur un fond sombre —
+   plus en aplat saturé avec du texte foncé, qui jurait dès que le skin du
+   jeu est éteint. */
+html.awc-on:not(.awc-neon) .awc-scan-all-btn,
+html.awc-on:not(.awc-neon) .aw-calc-button,
+html.awc-on:not(.awc-neon) .awc-toast-ok,
+html.awc-on:not(.awc-neon) #aw-update-banner .aw-update-buttons a,
+html.awc-on:not(.awc-neon) #aw-trade-reskin .aw-tr-tier-btn.on {
+  background: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 22%, var(--awc-field)) !important;
+  background-image: none !important;
+  /* liseré teinté, PAS l'accent brut : un contour cyan vif sur fond sombre
+     ressort autant qu'un aplat */
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 38%, var(--awc-field-line)) !important;
+  color: var(--awc-text) !important;
+  border-radius: 4px !important;
+  font-weight: 600 !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+html.awc-on:not(.awc-neon) .awc-scan-all-btn:hover,
+html.awc-on:not(.awc-neon) .aw-calc-button:hover,
+html.awc-on:not(.awc-neon) .awc-toast-ok:hover,
+html.awc-on:not(.awc-neon) #aw-update-banner .aw-update-buttons a:hover,
+html.awc-on:not(.awc-neon) #aw-trade-reskin .aw-tr-tier-btn.on:hover {
+  background: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 34%, var(--awc-field)) !important;
+}
+
+/* ── Derniers aplats d'accent : pastilles de couleur et interrupteurs ──
+   Dans « Couleur par alliance », chaque pastille avait un liseré accent de
+   2 px + un halo au survol : sur une liste de 10 alliances ça faisait dix
+   cadres cyan. Et les interrupteurs peignaient l'accent en aplat.
+   Le jeu, lui, encadre ses champs en #6c757d et coche ses cases en #5f8fc8
+   (.map-filter-option input[type=checkbox] { accent-color: #5f8fc8 }). */
+html.awc-on:not(.awc-neon) .aw-alliance-color-picker,
+html.awc-on:not(.awc-neon) .awc-colorpick {
+  width: 42px !important; height: 26px !important;
+  border: 1px solid var(--awc-field-line) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+html.awc-on:not(.awc-neon) .aw-alliance-color-picker:hover,
+html.awc-on:not(.awc-neon) .awc-colorpick:hover {
+  transform: none !important; box-shadow: none !important;
+  border-color: var(--awc-text) !important;
+}
+/* ↺ « reprendre la couleur automatique » : un bouton du jeu, pas une alerte */
+html.awc-on:not(.awc-neon) .aw-alliance-color-reset {
+  background: var(--awc-field) !important;
+  border: 1px solid var(--awc-field-line) !important;
+  color: #d0d0d0 !important; border-radius: 4px !important;
+}
+html.awc-on:not(.awc-neon) .aw-alliance-color-reset:hover {
+  background: var(--awc-hover) !important; color: #fff !important; transform: none !important;
+}
+/* interrupteurs (Image de fond, Skin du jeu, overlay flottes…) */
+html.awc-on:not(.awc-neon) .awc-toggle.awc-on {
+  background: color-mix(in srgb, var(--awg-accent, #5f8fc8) 55%, transparent) !important;
+}
+html.awc-on:not(.awc-neon) .awc-toggle.awc-on::after {
+  background: var(--awg-accent, #5f8fc8) !important;
+}
+/* lignes de la liste : cadres teal + liseré cyan → ligne de liste du jeu
+   (.map-search-result-item : #d0d0d0, survol #2c2c2c, pas de cadre) */
+html.awc-on:not(.awc-neon) .aw-alliance-color-item {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--awc-line) !important;
+  border-radius: 0 !important;
+  padding: 6px 4px !important;
+}
+html.awc-on:not(.awc-neon) .aw-alliance-color-item:hover {
+  background: var(--awg-row-hover, #2c2c2c) !important;
+  border-color: var(--awc-line) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PLUS D'APLATS NÉON DANS L'OUTIL
+   Le cyan ne venait pas de « quelques boutons » mais d'une FAMILLE de
+   surfaces pleines, dispersée dans cinq fichiers : chips actives, onglets
+   actifs, interrupteurs, barres de progression, ascenseurs et quelques
+   survols. Toutes repeintes ici avec --awc-fill (le bleu que le jeu utilise
+   pour ses contrôles cochés), d'un coup et au même endroit.
+   Concerne : Prévisionnel (.awff-*), Auto produce (.awap-*), Outils,
+   Alliance, Flottes, Scans, Trade et les panneaux historiques.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* chips et onglets actifs */
+html.awc-on:not(.awc-neon) .awff-chip.on,
+html.awc-on:not(.awc-neon) .awap-chip.on,
+html.awc-on:not(.awc-neon) .aw-history-tab.active,
+html.awc-on:not(.awc-neon) .aw-tr-tier-btn.on {
+  background: var(--awc-fill) !important;
+  border-color: var(--awc-fill) !important;
+  color: #fff !important;
+}
+
+/* interrupteurs (tous gabarits confondus) */
+html.awc-on:not(.awc-neon) .awff-sw input:checked,
+html.awc-on:not(.awc-neon) .awap-sw input:checked,
+html.awc-on:not(.awc-neon) #aw-game-reskin-toggle:checked + .aw-reskin-slider,
+html.awc-on:not(.awc-neon) .aw-switch input:checked + .aw-switch-slider,
+html.awc-on:not(.awc-neon) .awfo-switch input:checked + span {
+  background: var(--awc-fill) !important;
+}
+html.awc-on:not(.awc-neon) .aw-switch-slider::after {
+  background: #fff !important; box-shadow: 0 1px 3px rgba(0,0,0,.45) !important;
+}
+
+/* barres de progression */
+html.awc-on:not(.awc-neon) .aw-progress-bar,
+html.awc-on:not(.awc-neon) .aw-progress-tiny,
+html.awc-on:not(.awc-neon) .awap-pg .bar > i {
+  background: var(--awc-fill) !important;
+  background-image: none !important;
+}
+
+/* ascenseurs : gris translucide, comme partout ailleurs dans le jeu */
+html.awc-on:not(.awc-neon) #awc-panel ::-webkit-scrollbar-thumb,
+html.awc-on:not(.awc-neon) #awc-wide ::-webkit-scrollbar-thumb,
+html.awc-on:not(.awc-neon) .awc-docked ::-webkit-scrollbar-thumb,
+html.awc-on:not(.awc-neon) .aw-theme-panel::-webkit-scrollbar-thumb,
+html.awc-on:not(.awc-neon) .aw-calculator-panel__body::-webkit-scrollbar-thumb,
+html.awc-on:not(.awc-neon) .aw-maxlevel-panel__body::-webkit-scrollbar-thumb,
+html.awc-on:not(.awc-neon) .aw-alliance-panel__body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .18) !important;
+}
+
+/* curseurs : piste remplie + poignée du Prévisionnel */
+html.awc-on:not(.awc-neon) .awff-days input[type=range] {
+  background: linear-gradient(90deg, var(--awc-fill) 0%, var(--awc-fill) var(--pct, 14%),
+              var(--awc-line-strong) var(--pct, 14%)) !important;
+}
+html.awc-on:not(.awc-neon) .awff-days input[type=range]::-webkit-slider-thumb {
+  background: var(--awc-fill) !important;
+}
+html.awc-on:not(.awc-neon) input[type=range] { accent-color: var(--awc-fill); }
+
+/* cases à cocher : sans accent-color déclaré, Chrome les peint en #0075ff —
+   le bleu le plus vif de tout le panneau (visible sur la liste des planètes
+   de l'Auto produce). On les cale sur les aplats de l'outil. */
+html.awc-on:not(.awc-neon) #awc-panel input[type=checkbox],
+html.awc-on:not(.awc-neon) #awc-panel input[type=radio],
+html.awc-on:not(.awc-neon) #awc-wide input[type=checkbox],
+html.awc-on:not(.awc-neon) #awc-wide input[type=radio],
+html.awc-on:not(.awc-neon) #awm-modal input[type=checkbox],
+html.awc-on:not(.awc-neon) .awc-docked input[type=checkbox],
+html.awc-on:not(.awc-neon) .awc-docked input[type=radio] {
+  accent-color: var(--awc-fill);
+}
+
+/* liserés de gauche des listes : repère utile, mais dans la palette du jeu */
+html.awc-on:not(.awc-neon) .aw-science-ranking-item,
+html.awc-on:not(.awc-neon) .aw-fleet-player-cell,
+html.awc-on:not(.awc-neon) .aw-week-header,
+html.awc-on:not(.awc-neon) .aw-stats-scanner-row {
+  border-left-color: var(--awc-fill) !important;
+}
+
+/* pastille de la carte : petit marqueur, même bleu que le reste */
+html.awc-on:not(.awc-neon) .aw-map-player-card__badge::before {
+  background: var(--awc-fill) !important;
+}
+
+/* survols qui basculaient en aplat accent → surlignage du jeu */
+html.awc-on:not(.awc-neon) .aw-opt-btn-scan:hover,
+html.awc-on:not(.awc-neon) .aw-modal-close:hover {
+  background: var(--awc-hover) !important;
+  color: var(--awc-text) !important;
+}
+
+/* ── Fonds teal des RUBRIQUES → surfaces du jeu ─────────────────────
+   Repérés en mesurant les fonds calculés de tous les panneaux dockés :
+   les rubriques du dashboard (.aw-section) étaient en rgba(10,40,52,.55)
+   et une douzaine de tuiles / champs / boutons en rgba(12,63,70,…).
+   À l'œil ça donne des blocs bleu-vert un peu partout dans l'outil.
+   On les ramène aux surfaces d'astrowars.css : .lowlight #2F2F2F pour les
+   blocs, td #404040 pour les tuiles et les champs, bord #6c757d. */
+html.awc-on:not(.awc-neon) .aw-section,
+html.awc-on:not(.awc-neon) .aw-fleet-stats,
+html.awc-on:not(.awc-neon) .aw-fleet-empty,
+html.awc-on:not(.awc-neon) .aw-culture-display,
+html.awc-on:not(.awc-neon) .aw-theme-presets,
+html.awc-on:not(.awc-neon) .aw-theme-color-label,
+html.awc-on:not(.awc-neon) .aw-theme-preview,
+html.awc-on:not(.awc-neon) .aw-data-preview,
+html.awc-on:not(.awc-neon) .aw-map-detail,
+html.awc-on:not(.awc-neon) .aw-calc-result,
+html.awc-on:not(.awc-neon) .aw-science-ranking-item,
+html.awc-on:not(.awc-neon) .aw-opt-result {
+  background: var(--awc-surface) !important;
+  background-image: none !important;
+  border-color: var(--awc-line) !important;
+}
+/* tuiles de stats et pastilles = cellules de tableau du jeu */
+html.awc-on:not(.awc-neon) .aw-fleet-stat,
+html.awc-on:not(.awc-neon) .aw-chip {
+  background: var(--awc-field) !important;
+  border-color: var(--awc-line) !important;
+}
+/* champs, listes déroulantes et leurs options */
+html.awc-on:not(.awc-neon) .aw-input,
+html.awc-on:not(.awc-neon) .aw-calc-input,
+html.awc-on:not(.awc-neon) #awc-panel option,
+html.awc-on:not(.awc-neon) #awc-wide option {
+  background: var(--awc-field) !important;
+  border-color: var(--awc-field-line) !important;
+  color: var(--awc-text) !important;
+}
+/* piste des barres de progression (le remplissage est déjà en --awc-fill) */
+html.awc-on:not(.awc-neon) .aw-progress { background: var(--awc-surface) !important; }
+/* petits boutons des panneaux historiques (Rafraîchir, Charger, Scan…) —
+   sauf ceux qu'on garde en action principale */
+html.awc-on:not(.awc-neon) .aw-btn:not(#aw-update-download):not(.aw-calc-button) {
+  background: var(--awc-field) !important;
+  background-image: none !important;
+  border: 1px solid var(--awc-field-line) !important;
+  color: var(--awc-text) !important;
+  border-radius: 4px !important;
+}
+html.awc-on:not(.awc-neon) .aw-btn:not(#aw-update-download):not(.aw-calc-button):hover {
+  background: var(--awc-hover) !important;
+}
+/* onglet actif de la calculatrice : le surlignage du jeu (.highlight #1F5857) */
+html.awc-on:not(.awc-neon) .aw-calc-tab.active { background-color: var(--awc-hover) !important; }
+
+/* ── Liserés cyan vifs → bordures du jeu ───────────────────────────
+   Mêmes mesures, côté BORDURES cette fois : les barres de progression
+   étaient cerclées de #35e0e5 sur toute la largeur, les champs et les
+   pastilles de couleur du thème en #2ad2d8. */
+html.awc-on:not(.awc-neon) .aw-progress,
+html.awc-on:not(.awc-neon) .aw-json,
+html.awc-on:not(.awc-neon) .aw-map-canvas,
+html.awc-on:not(.awc-neon) .aw-theme-preview-box {
+  border-color: var(--awc-line) !important;
+}
+html.awc-on:not(.awc-neon) .aw-select,
+html.awc-on:not(.awc-neon) .aw-select-sm,
+html.awc-on:not(.awc-neon) .aw-theme-color-input {
+  background: var(--awc-field) !important;
+  border-color: var(--awc-field-line) !important;
+  color: var(--awc-text) !important;
+}
+/* onglets de la calculatrice : cadre du jeu, actif = surlignage du jeu */
+html.awc-on:not(.awc-neon) .aw-calc-tab { border-color: var(--awc-field-line) !important; }
+html.awc-on:not(.awc-neon) .aw-calc-tab.active { border-color: var(--awc-hover) !important; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   ACCENT DE L'OUTIL : AUCUN. Gris neutre par défaut.
+   Après avoir traité un par un les aplats puis les bordures, il restait du
+   cyan partout — parce que la source, c'est l'ACCENT lui-même : des dizaines
+   de règles dans cinq fichiers écrivent var(--aw-turquoise), var(--awc-accent)
+   ou var(--awc-fill) pour des titres, des chiffres, des liserés, des chips.
+   Plutôt que de les réécrire, on redéfinit ces variables SUR les surfaces du
+   cockpit : tout ce qui est à l'intérieur suit, où que soit déclarée la règle.
+
+   Première tentative : les caler sur #5f8fc8, l'accent des cases à cocher du
+   jeu. Résultat — le cyan avait bien disparu, mais l'outil était devenu bleu
+   (fonds de cartes, interrupteurs, chiffres, boutons d'action). L'outil ne
+   porte donc plus AUCUNE teinte : gris clair pour les traits et les titres,
+   gris moyen pour les aplats. Il ne reste de couleur que le sémantique —
+   vert (succès), rouge (alerte), or (jalon) — et l'indigo #231E64 des
+   bandeaux, qui est littéralement celui des en-têtes de tableau du jeu.
+
+   Si l'utilisateur choisit une couleur dans « Couleur d'accent »,
+   reskin-early.js / content.js posent .awc-custom-accent sur <html> et ce
+   bloc se retire : son choix reprend la main.
+   ═══════════════════════════════════════════════════════════════════ */
+html.awc-on:not(.awc-neon):not(.awc-custom-accent) #awc-rail,
+html.awc-on:not(.awc-neon):not(.awc-custom-accent) #awc-panel,
+html.awc-on:not(.awc-neon):not(.awc-custom-accent) #awc-wide,
+html.awc-on:not(.awc-neon):not(.awc-custom-accent) #awm-modal,
+html.awc-on:not(.awc-neon):not(.awc-custom-accent) #awm-bar,
+html.awc-on:not(.awc-neon):not(.awc-custom-accent) #awm-tip,
+html.awc-on:not(.awc-neon):not(.awc-custom-accent) #aw-player-detail-modal,
+html.awc-on:not(.awc-neon):not(.awc-custom-accent) #aw-player-history-modal {
+  /* traits, titres, chiffres, liserés : texte clair du jeu, sans teinte */
+  --aw-turquoise: #d6d6d6;
+  --awc-accent: #d6d6d6;
+  /* aplats pleins (interrupteurs, chips actives, barres, curseurs) :
+     --awc-fill est calculé sur :root à partir de --awg-accent, donc il ne
+     suffit PAS de redéfinir --awg-accent ici — la valeur héritée resterait
+     celle de :root. On repose les deux. */
+  --awg-accent: #8a8a8a;
+  --awc-fill: #8a8a8a;
+}
+
+/* Survol : le jeu surligne ses lignes en teal (#1F5857). Sur un outil sans
+   accent, ce vert-bleu ressortait comme la seule couleur de l'interface (le
+   plus visible : l'onglet actif de la Calculatrice). Gris plus clair que le
+   champ (#404040) : l'état se lit toujours, sans teinte. Hors du :not() de
+   l'accent — un accent choisi par l'utilisateur ne rend pas le teal du jeu
+   souhaitable pour autant. */
+html.awc-on:not(.awc-neon) #awc-rail,
+html.awc-on:not(.awc-neon) #awc-panel,
+html.awc-on:not(.awc-neon) #awc-wide,
+html.awc-on:not(.awc-neon) #awm-modal,
+html.awc-on:not(.awc-neon) #awm-bar,
+html.awc-on:not(.awc-neon) #awm-tip,
+html.awc-on:not(.awc-neon) #aw-player-detail-modal,
+html.awc-on:not(.awc-neon) #aw-player-history-modal {
+  --awc-hover: #4a4a4a;
+  --awg-hover: #4a4a4a;
+  --awg-row-hover: #2c2c2c;
+  /* Jetons HISTORIQUES de styles.css : ils pilotent encore des dizaines de
+     règles des panneaux d'origine (63 × color:var(--aw-text), 15 bordures,
+     10 fonds). Tant qu'ils valaient #d9ffff / #35e0e5 / #0c3f46, chaque
+     panneau docké gardait son voile cyan par-dessus les surfaces du jeu.
+     Redéfinis ICI, donc uniquement dans le cockpit : le mode néon
+     (html.awc-neon) et les pages du jeu gardent les valeurs de :root. */
+  --aw-text: #f0f0f0;
+  --aw-border: var(--awc-line);
+  --aw-bg: var(--awc-glass);
+  --aw-turquoise-dark: #2a2a2a;
+  /* Et les 390 rgba() cyan écrites en dur dans styles.css (fonds de tableaux,
+     survols de lignes, liserés d'en-tête, pistes d'ascenseur, chips…). Elles
+     passent désormais par ces trois canaux, chacune gardant sa valeur
+     d'origine EN REPLI : hors du cockpit — et en mode néon, où ce bloc ne
+     s'applique pas — les variables sont absentes et le cyan revient intact.
+     Trois familles : accent (#35e0e5/#2ad2d8/#66f0f4), surfaces sombres
+     (#0c3f46 et les navy), texte pâle (#d9ffff). */
+  --aw-accent-rgb: 214, 214, 214;
+  --aw-deep-rgb: 30, 30, 30;
+  --aw-text-rgb: 240, 240, 240;
+  /* Même mécanique pour les 61 hex cyan de styles.css : trois niveaux de
+     texte et les fonds navy. Repli = valeur d'origine, donc néon intact. */
+  --aw-txt1: #f0f0f0;
+  --aw-txt2: #b0b0b0;
+  --aw-txt3: #949494;
+  --aw-surf: #1e1e1e;
+}
+
+/* Auto produce / Prévisionnel : leur bouton principal est un aplat d'accent
+   avec texte sombre. Même traitement que les autres actions principales. */
+html.awc-on:not(.awc-neon) .awap-btn:not(.ghost):not(.dg),
+html.awc-on:not(.awc-neon) .awff-btn:not(.ghost):not(.dg) {
+  background: color-mix(in srgb, var(--awc-accent) 30%, var(--awc-field)) !important;
+  border: 1px solid color-mix(in srgb, var(--awc-accent) 45%, var(--awc-field-line)) !important;
+  color: var(--awc-text) !important;
+  border-radius: 4px !important;
+}
+html.awc-on:not(.awc-neon) .awap-btn:not(.ghost):not(.dg):hover,
+html.awc-on:not(.awc-neon) .awff-btn:not(.ghost):not(.dg):hover {
+  background: color-mix(in srgb, var(--awc-accent) 42%, var(--awc-field)) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DERNIERS LITTÉRAUX CYAN DE styles.css
+   Les jetons redéfinis plus haut règlent tout ce qui passe par une
+   variable. Restent une cinquantaine de couleurs écrites EN DUR dans
+   styles.css (#9ae5e9 sur les libellés d'interrupteur, #b7e7e9 sur les
+   en-têtes de la carte, #d7ffff sur les chips…). On ne touche pas
+   styles.css : c'est lui qui porte le thème néon. On les recouvre ici,
+   donc uniquement quand le thème du jeu est actif.
+   Trois niveaux, calés sur la hiérarchie de texte du jeu :
+   texte (#f0f0f0) · secondaire (#b0b0b0) · discret (#949494).
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* — texte principal (était #d7ffff / #e7ffff / #dff8fa) — */
+html.awc-on:not(.awc-neon) .aw-chip,
+html.awc-on:not(.awc-neon) .aw-alliance-chip,
+html.awc-on:not(.awc-neon) .aw-mobile-system-label,
+html.awc-on:not(.awc-neon) .aw-mobile-details-body,
+html.awc-on:not(.awc-neon) .aw-back-to-map,
+html.awc-on:not(.awc-neon) .aw-mobile-map-zoom-btn,
+html.awc-on:not(.awc-neon) .aw-map-alliance-count,
+html.awc-on:not(.awc-neon) .aw-map-player-card,
+html.awc-on:not(.awc-neon) .aw-map-player-detail__stat-value,
+html.awc-on:not(.awc-neon) .aw-map-player-detail__intel-list {
+  color: #f0f0f0 !important;
+}
+
+/* — texte secondaire (était #9ae5e9 / #b7e7e9 / #b6f6f8 / #66f0f4 / #8ef7fa /
+     #a5f3f6 / #a4f5f5 / #8de4e8) — */
+html.awc-on:not(.awc-neon) .aw-subtitle,
+html.awc-on:not(.awc-neon) .aw-send-feedback,
+html.awc-on:not(.awc-neon) .aw-switch-label,
+html.awc-on:not(.awc-neon) .aw-note,
+html.awc-on:not(.awc-neon) .aw-team-note,
+html.awc-on:not(.awc-neon) .aw-progress-text,
+html.awc-on:not(.awc-neon) .aw-modal__subtitle,
+html.awc-on:not(.awc-neon) .aw-modal__label,
+html.awc-on:not(.awc-neon) .aw-mobile-map-empty,
+html.awc-on:not(.awc-neon) .aw-mobile-map-zoom-value,
+html.awc-on:not(.awc-neon) .aw-mobile-details-header,
+html.awc-on:not(.awc-neon) .aw-mobile-details-table th,
+html.awc-on:not(.awc-neon) .aw-mobile-details-link a,
+html.awc-on:not(.awc-neon) .aw-chip.aw-chip-map,
+html.awc-on:not(.awc-neon) .aw-map-detail__coords,
+html.awc-on:not(.awc-neon) .aw-map-detail__meta,
+html.awc-on:not(.awc-neon) .aw-map-detail__table th,
+html.awc-on:not(.awc-neon) .aw-map-detail__players-header,
+html.awc-on:not(.awc-neon) .aw-map-player-card__badge,
+html.awc-on:not(.awc-neon) .aw-map-viewer__status,
+html.awc-on:not(.awc-neon) .aw-map-player-detail__intel-title,
+html.awc-on:not(.awc-neon) .aw-section.aw-collapsed .aw-section-title::after {
+  color: #b0b0b0 !important;
+}
+
+/* — texte discret (était #9ccbd0 / #a5cfd4 / #8ba3a6) — */
+html.awc-on:not(.awc-neon) .aw-muted,
+html.awc-on:not(.awc-neon) .aw-map-canvas__empty,
+html.awc-on:not(.awc-neon) .aw-map-player-card__meta,
+html.awc-on:not(.awc-neon) .aw-map-player-detail__subtitle,
+html.awc-on:not(.awc-neon) .aw-map-player-detail__stat-key {
+  color: #949494 !important;
+}
+
+/* — fonds navy écrits en dur (pistes, interrupteurs, boutons de la carte,
+     fenêtres modales, options de select) → surfaces du jeu — */
+html.awc-on:not(.awc-neon) .aw-progress,
+html.awc-on:not(.awc-neon) .aw-switch-slider {
+  background: #1e1e1e !important;
+  border-color: var(--awc-line) !important;
+}
+html.awc-on:not(.awc-neon) .aw-mobile-map-toggle,
+html.awc-on:not(.awc-neon) .aw-back-to-map,
+html.awc-on:not(.awc-neon) .aw-mobile-map-zoom-btn,
+html.awc-on:not(.awc-neon) .aw-theme-language-select option {
+  background: var(--awc-field) !important;
+  border-color: var(--awc-field-line) !important;
+}
+html.awc-on:not(.awc-neon) .aw-mobile-map-toggle:hover,
+html.awc-on:not(.awc-neon) .aw-mobile-map-zoom-btn:hover {
+  background: var(--awc-hover) !important;
+}
+html.awc-on:not(.awc-neon) .aw-modal__content {
+  background: var(--awc-glass) !important;
+  border-color: var(--awc-line) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TITRES DE BLOC EN BANDEAU INDIGO
+   Le cockpit avait deux traitements pour la même chose : les en-têtes de
+   panneau (#awc-head, #awc-wide-head — le bandeau « ALLIANCE ») portaient
+   l'indigo #231E64 des `table.table th` du jeu, tandis que les intertitres
+   et les titres de section restaient de simples labels gris posés sur le
+   fond. Tout passe en bandeau : même repère visuel partout.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* intertitres (« Données récoltées », « Classement », « Utilisation des tools ») */
+html.awc-on:not(.awc-neon) .awc-kicker {
+  background: var(--awc-head-bg) !important;
+  color: var(--awc-text) !important;
+  padding: 5px 10px !important;
+  border-radius: 4px !important;
+  margin: 14px 0 8px !important;
+  border: 1px solid var(--awc-line) !important;
+}
+html.awc-on:not(.awc-neon) .awc-kicker:first-child { margin-top: 2px !important; }
+/* en grand format le contenu est centré sur 880px : le bandeau suit */
+html.awc-on:not(.awc-neon) #awc-wide-body .awc-kicker { max-width: 880px; }
+
+/* titres de section des panneaux historiques (« Gestion des flottes »,
+   « Statistiques des scanners », « Sync mon profil »…) : c'est la LIGNE
+   entière qui devient le bandeau, bouton de repli compris. */
+html.awc-on:not(.awc-neon) .aw-section-header {
+  background: var(--awc-head-bg) !important;
+  border: 1px solid var(--awc-line) !important;
+  border-radius: 4px !important;
+  padding: 5px 10px !important;
+  margin-bottom: 8px !important;
+}
+html.awc-on:not(.awc-neon) .aw-section-title {
+  color: var(--awc-text) !important;
+  font-size: .78rem !important;
+  font-weight: 400 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+
+/* en-têtes des panneaux dockés (Calculatrice, Classement, Alliance, Flottes,
+   Thème) : ils empilent déjà kicker + titre, on les pose sur l'indigo. */
+html.awc-on:not(.awc-neon) .aw-calculator-panel__header,
+html.awc-on:not(.awc-neon) .aw-maxlevel-panel__header,
+html.awc-on:not(.awc-neon) .aw-alliance-panel__header,
+html.awc-on:not(.awc-neon) .aw-fleet-viewer__header,
+html.awc-on:not(.awc-neon) .aw-optimizer-panel__header,
+html.awc-on:not(.awc-neon) .aw-theme-panel__header {
+  background: var(--awc-head-bg) !important;
+  border: 1px solid var(--awc-line) !important;
+  border-radius: 4px !important;
+  padding: 6px 10px !important;
+  margin-bottom: 10px !important;
+}
+html.awc-on:not(.awc-neon) .aw-calculator-panel__kicker,
+html.awc-on:not(.awc-neon) .aw-maxlevel-panel__kicker,
+html.awc-on:not(.awc-neon) .aw-alliance-panel__kicker,
+html.awc-on:not(.awc-neon) .aw-fleet-viewer__kicker,
+html.awc-on:not(.awc-neon) .aw-optimizer-panel__kicker,
+html.awc-on:not(.awc-neon) .aw-theme-panel__kicker {
+  color: rgba(255, 255, 255, .55) !important;
+}
+html.awc-on:not(.awc-neon) .aw-calculator-panel__title,
+html.awc-on:not(.awc-neon) .aw-maxlevel-panel__title,
+html.awc-on:not(.awc-neon) .aw-alliance-panel__title,
+html.awc-on:not(.awc-neon) .aw-fleet-viewer__title,
+html.awc-on:not(.awc-neon) .aw-optimizer-panel__title,
+html.awc-on:not(.awc-neon) .aw-theme-panel__title {
+  color: var(--awc-text) !important;
+}
+
+/* titre des encadrés Auto produce (« Règle à appliquer ») : bandeau collé
+   en haut de la boîte, d'où les marges négatives = padding de .awap-box. */
+html.awc-on:not(.awc-neon) .awap-box .tt,
+html.awc-on:not(.awc-neon) .awff-box .tt {
+  background: var(--awc-head-bg) !important;
+  color: var(--awc-text) !important;
+  margin: -12px -14px 10px !important;
+  padding: 6px 12px !important;
+  border-radius: 9px 9px 0 0 !important;
+  border-bottom: 1px solid var(--awc-line) !important;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Fond animé (Réglages → Affichage → « Fond animé »)
+   ─────────────────────────────────────────────────────────────
+   Tout est en CSS pur : zéro asset supplémentaire, zéro timer JS.
+   Les couches d'étoiles sont des tuiles de radial-gradients que
+   l'on fait défiler avec translate3d → composité par le GPU, coût
+   CPU négligeable. Le pas de translation vaut EXACTEMENT une tuile
+   (360px / 260px) : sans ça, la boucle « saute » à chaque cycle.
+   Classes posées sur <html> par applyBgAnim() (cockpit.js) :
+     awc-bganim-stars | awc-bganim-drift | awc-bganim-full
+   Rien de posé = fond strictement statique (comportement d'avant).
+   ═════════════════════════════════════════════════════════════ */
+#awc-bg { --awc-star: #dbeeff; }
+html.awc-alert #awc-bg { --awc-star: #ffbdb0; }   /* alerte : poussière d'étoiles rougie */
+
+.awc-bg-stars {
+  position: absolute; left: 0; width: 100%;
+  display: none;                 /* activées par les classes awc-bganim-* */
+  background-repeat: repeat;
+  pointer-events: none;
+  will-change: transform;
+}
+html.awc-bganim-stars .awc-bg-stars,
+html.awc-bganim-full  .awc-bg-stars { display: block; }
+
+/* couche 1 : grosses étoiles, lentes (premier plan) */
+.awc-bg-s1 {
+  top: -360px; height: calc(100% + 720px);
+  background-size: 360px 360px;
+  opacity: 0.9;
+  background-image:
+    radial-gradient(1.7px 1.7px at  24px  38px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.3px 1.3px at 140px  96px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.5px 1.5px at 302px  52px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.2px 1.2px at  78px 188px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.8px 1.8px at 214px 236px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.3px 1.3px at 330px 300px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.4px 1.4px at  46px 318px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.1px 1.1px at 188px 140px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.2px 1.2px at 256px 180px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.6px 1.6px at 120px 282px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.1px 1.1px at 350px 214px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.2px 1.2px at  96px  20px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%);
+  animation: awc-bg-fall1 110s linear infinite;
+}
+/* couche 2 : poussière lointaine, plus rapide + scintillement */
+.awc-bg-s2 {
+  top: -260px; height: calc(100% + 520px);
+  background-size: 260px 260px;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(1px 1px at  18px  44px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1px 1px at  96px  12px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.1px 1.1px at 160px  88px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1px 1px at 232px  40px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1px 1px at  60px 130px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.1px 1.1px at 128px 190px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1px 1px at 206px 152px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1px 1px at  34px 220px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1px 1px at 170px 244px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%),
+    radial-gradient(1.1px 1.1px at 244px 210px, var(--awc-star) 0 45%, rgba(0,0,0,0) 100%);
+  animation: awc-bg-fall2 62s linear infinite, awc-bg-twinkle 7s ease-in-out infinite alternate;
+}
+/* alerte : le champ d'étoiles accélère (effet « on décroche ») */
+html.awc-alert .awc-bg-s1 { animation-duration: 34s; }
+html.awc-alert .awc-bg-s2 { animation-duration: 19s, 7s; }
+
+@keyframes awc-bg-fall1 { from { transform: translate3d(0,0,0); }    to { transform: translate3d(0,360px,0); } }
+@keyframes awc-bg-fall2 { from { transform: translate3d(0,0,0); }    to { transform: translate3d(0,260px,0); } }
+@keyframes awc-bg-twinkle { from { opacity: 0.32; } to { opacity: 0.62; } }
+
+/* respiration lente de la nébuleuse (l'image de fond elle-même) */
+html.awc-bganim-drift #awc-bg,
+html.awc-bganim-full  #awc-bg {
+  animation: awc-bg-breath 52s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes awc-bg-breath {
+  from { transform: scale(1)    translate3d(0, 0, 0); }
+  to   { transform: scale(1.07) translate3d(-1.2%, 0.9%, 0); }
+}
+
+/* accessibilité / batterie : plus aucune animation de fond */
+@media (prefers-reduced-motion: reduce) {
+  .awc-bg-stars, html.awc-bganim-drift #awc-bg, html.awc-bganim-full #awc-bg { animation: none !important; }
+  .awc-bg-stars { display: none !important; }
+}
+
+/* ═══════════ ASCENSEURS : tous les skins (ascenseurs_themes.py) ═══════════
+   Propriétés standard : Chrome ≥ 121 ignore ::-webkit-scrollbar dès qu'elles sont posées.
+   Largeur « thin » sur les fenêtres de l'extension ; couleur par skin, piste presque transparente. */
+html.awc-on :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awm-modal, #awm-bar, #awm-tip,
+  #aw-player-detail-modal, #aw-player-history-modal, #aw-overlay, #aw-theme-panel, #aw-calculator-panel,
+  #aw-maxlevel-panel, #aw-optimizer-panel, #aw-alliance-panel, #aw-fleet-viewer, #aw-tt-panel,
+  #awfo-panel, #awfo-detail, #awfo-bigboard-box, #aw-artefact-ui),
+html.awc-on :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awm-modal, #awm-bar, #awm-tip,
+  #aw-player-detail-modal, #aw-player-history-modal, #aw-overlay, #aw-theme-panel, #aw-calculator-panel,
+  #aw-maxlevel-panel, #aw-optimizer-panel, #aw-alliance-panel, #aw-fleet-viewer, #aw-tt-panel,
+  #awfo-panel, #awfo-detail, #awfo-bigboard-box, #aw-artefact-ui) *:not(.aw-map-viewer) {
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--awc-sb-thumb) var(--awc-sb-track) !important;
+}
+/* pages du jeu (fenêtre + blocs qui défilent) quand « Skin du jeu » est ON */
+html.awc-on.awc-gameskin, html.awc-on.awc-gameskin body *:not(.aw-map-viewer) {
+  scrollbar-color: var(--awc-sb-thumb) var(--awc-sb-track) !important;
+}
+/* teintes : Classique = gris translucide du jeu (accent en Néon), HUD = accent, Verre = blanc givré */
+html.awc-on {
+  --awc-sb-thumb: rgba(255, 255, 255, .34);
+  --awc-sb-track: rgba(255, 255, 255, .03);
+}
+html.awc-on.awc-neon {
+  --awc-sb-thumb: color-mix(in srgb, var(--aw-turquoise, #2ad2d8) 55%, transparent);
+  --awc-sb-track: rgba(0, 0, 0, .25);
+}
+html.awc-on.awc-skin-hud {
+  --awc-sb-thumb: color-mix(in srgb, var(--awsk-acc, #2ad2d8) 55%, transparent);
+  --awc-sb-track: color-mix(in srgb, var(--awsk-acc, #2ad2d8) 7%, transparent);
+}
+html.awc-on.awc-skin-glass {
+  --awc-sb-thumb: rgba(255, 255, 255, .38);
+  --awc-sb-track: rgba(255, 255, 255, .05);
+}

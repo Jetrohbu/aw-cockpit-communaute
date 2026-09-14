@@ -1,0 +1,914 @@
+/* ═══════════════════════════════════════════════════════════════════
+   COCKPIT — COMPOSANTS PARTAGÉS + SKINS « HUD » ET « VERRE »
+   Chargé après cockpit.css (manifest, document_start).
+   ───────────────────────────────────────────────────────────────────
+   html.awc-skin-hud   → cockpit technique : filets cyan, chanfreins,
+                         chiffres mono, lueur discrète (Rajdhani + JetBrains Mono)
+   html.awc-skin-glass → panneaux flottants en verre dépoli (Manrope)
+   aucune des deux     → « Classique » : rendu historique de cockpit.css
+
+   ⚠ SPÉCIFICITÉ. cockpit.css repose les jetons SUR les surfaces du cockpit
+   (« ACCENT DE L'OUTIL : AUCUN » : html.awc-on:not(.awc-neon):not(...)
+   #awc-panel = 1 id + 3 classes) et impose des bandeaux en !important
+   (html.awc-on:not(.awc-neon) .awc-kicker…). Pour passer devant sans
+   toucher cockpit.css, les blocs de jetons et les surcharges de ces règles
+   utilisent un préfixe renforcé : :root.awc-skin-X.awc-skin-X.awc-skin-X
+   (4 classes). Les composants neufs, eux, n'en ont pas besoin.
+
+   Les polices sont déclarées par reskin-early.js (assets/fonts/).
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ═══════════ 1. COMPOSANTS PARTAGÉS (tous skins, Classique compris) ═══════════ */
+
+/* action principale de la Vue d'ensemble */
+.awc-ov-action { display: flex; align-items: center; gap: 14px; margin: 2px 0 16px; }
+.awc-ov-meta { font-size: 11px; color: var(--awc-dim); line-height: 1.45; min-width: 0; }
+.awc-ov-meta b { display: block; color: var(--awc-text); font-family: var(--awc-mono); font-weight: 500; font-size: 12px; }
+.awc-ov-meta i { display: block; font-style: normal; color: var(--awc-faint); }
+
+.awc-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: none;
+  height: 38px; padding: 0 16px; border: 0; cursor: pointer; white-space: nowrap;
+  font: inherit; font-family: var(--awc-font); font-size: 13px; font-weight: 600;
+  color: var(--awc-text); background: var(--awc-field);
+  border: 1px solid var(--awc-field-line); border-radius: 4px;
+}
+.awc-primary:hover { background: var(--awc-hover); }
+.awc-primary:disabled { cursor: default; opacity: .75; }
+.awc-primary.awc-running { opacity: 1; }
+
+.awc-scan-livestatus:empty { display: none; }
+/* le statut de synchro (« Alliance : en attente ») n'a de sens que pendant un scan */
+#awc-scan-bar-wrap[style*="display: none"] + .awc-scan-livestatus { display: none; }
+.awc-scan-livestatus { font-size: 11px; color: var(--awc-dim); margin: -6px 2px 12px; }
+
+/* blocs : titre de section + contenu */
+.awc-blk { margin-bottom: 20px; }
+.awc-sec { display: flex; align-items: center; gap: 10px; margin: 0 2px 8px; }
+.awc-sec > span:first-child { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--awc-dim); }
+.awc-sec .awc-sec-meta { margin-left: auto; font-size: 11px; color: var(--awc-faint); white-space: nowrap; }
+
+.awc-box { border: 1px solid var(--awc-line); border-radius: 4px; background: var(--awc-surface); }
+
+/* ligne : libellé · valeur · âge · voyant de fraîcheur */
+.awc-line {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto 72px 10px; column-gap: 12px; align-items: center;
+  min-height: 40px; padding: 0 12px; border-top: 1px solid var(--awc-line); font-size: 13px;
+}
+.awc-box > .awc-line:first-child { border-top: 0; }
+.awc-line .awc-l { color: var(--awc-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.awc-line .awc-v { font-family: var(--awc-mono); font-variant-numeric: tabular-nums; color: var(--awc-text); white-space: nowrap; }
+.awc-line .awc-v small { font-family: var(--awc-font); font-size: 11px; color: var(--awc-dim); margin-left: 5px; }
+.awc-line .awc-age { font-family: var(--awc-mono); font-size: 11px; color: var(--awc-dim); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.awc-fresh { justify-self: end; width: 7px; height: 7px; border-radius: 50%; background: var(--awc-ok); }
+.awc-fresh.awc-warn { background: var(--awc-warn); }
+.awc-fresh.awc-old { background: rgba(255, 255, 255, .22); }
+.awc-line-flight { grid-template-columns: minmax(0, 1fr) auto 64px; }
+.awc-line-flight .awc-l { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.awc-line-flight .awc-l b { font-weight: 600; white-space: nowrap; }
+.awc-line-flight .awc-l svg { width: 12px; height: 12px; flex: none; color: var(--awc-faint); }
+.awc-line-flight .awc-l i { font-style: normal; color: var(--awc-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.awc-v.awc-v-dim { font-size: 11px; color: var(--awc-dim); }
+.awc-age.awc-age-hot { color: var(--awc-text); font-size: 12px; }
+
+/* état menaces : bouton-carte cliquable */
+.awc-ov-state {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 50px; padding: 0 14px; box-sizing: border-box;
+  border: 1px solid var(--awc-line); border-radius: 4px; background: var(--awc-surface);
+  font: inherit; font-family: var(--awc-font); font-size: 13px; color: var(--awc-text); cursor: pointer; text-align: left;
+}
+.awc-ov-state > svg { width: 18px; height: 18px; flex: none; }
+.awc-ov-state > svg:last-child { width: 14px; height: 14px; color: var(--awc-faint); margin-left: auto; }
+.awc-ov-state > span { flex: 1; min-width: 0; }
+.awc-ov-state em { font-style: normal; font-family: var(--awc-mono); font-size: 12px; color: var(--awc-dim); white-space: nowrap; }
+.awc-ov-state.awc-good { border-color: color-mix(in srgb, var(--awc-ok) 30%, transparent); background: color-mix(in srgb, var(--awc-ok) 6%, transparent); }
+.awc-ov-state.awc-good > svg:first-child { color: var(--awc-ok); }
+.awc-ov-state.awc-bad { border-color: color-mix(in srgb, var(--awc-danger) 45%, transparent); background: color-mix(in srgb, var(--awc-danger) 10%, transparent); }
+.awc-ov-state.awc-bad > svg:first-child { color: var(--awc-danger); }
+.awc-ov-state.awc-bad b { font-family: var(--awc-mono); color: var(--awc-danger); }
+.awc-ov-state:hover { filter: brightness(1.15); }
+
+/* segments (apparence, tris) */
+.awc-segs { display: inline-flex; align-items: center; gap: 2px; padding: 2px; border: 1px solid var(--awc-line); border-radius: 6px; }
+.awc-seg {
+  height: 28px; padding: 0 12px; border: 0; background: none; cursor: pointer; border-radius: 4px;
+  font: inherit; font-family: var(--awc-font); font-size: 12px; color: var(--awc-dim);
+}
+.awc-seg:hover { color: var(--awc-text); }
+.awc-seg.awc-on { color: var(--awc-text); background: var(--awc-hover); font-weight: 600; }
+.awc-skin-segs { margin: 2px 0 6px; }
+.awc-hint { font-size: 11px; color: var(--awc-faint); line-height: 1.45; margin: 4px 2px 8px; }
+.awc-btn-wide { display: block; width: 100%; text-align: left; margin-top: 6px; }
+
+/* en-tête : bouton recherche (même gabarit que Agrandir / Replier) */
+#awc-search, #awc-wide-search {
+  border: 0; background: none; color: var(--awc-dim); padding: 4px 6px; border-radius: 4px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+#awc-search:hover, #awc-wide-search:hover { color: var(--awc-text); background: rgba(255, 255, 255, .08); }
+#awc-head button svg, #awc-wide-head button svg { width: 15px; height: 15px; display: block; }
+#awc-expand, #awc-close { display: inline-flex; align-items: center; justify-content: center; }
+.awc-who-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--awc-ok); margin-right: 6px; vertical-align: 1px; }
+.awc-who-dot.awc-off { background: var(--awc-danger); }
+
+/* pied de colonne */
+#awc-foot {
+  display: flex; align-items: center; gap: 10px; flex: none; min-height: 40px; padding: 0 16px;
+  border-top: 1px solid var(--awc-line); font-family: var(--awc-font); font-size: 11px; color: var(--awc-dim);
+}
+#awc-foot .awc-foot-live { width: 7px; height: 7px; border-radius: 50%; background: var(--awc-ok); flex: none; }
+#awc-foot .awc-foot-live.awc-off { background: rgba(255, 255, 255, .25); }
+#awc-foot .awc-foot-txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#awc-foot .awc-foot-txt b { font-weight: 500; color: var(--awc-text); font-family: var(--awc-mono); }
+#awc-foot kbd {
+  font: inherit; font-family: var(--awc-mono); font-size: 10px; padding: 2px 6px; cursor: pointer;
+  border: 1px solid var(--awc-line-strong); border-radius: 4px; color: var(--awc-dim); background: none;
+}
+#awc-foot kbd:hover { color: var(--awc-text); }
+
+/* avatar de session (initiale du pseudo) : Classique = simple voyant */
+#awc-session .awc-me-ini { display: none; }
+
+/* ── module Alliance ── */
+.awc-ally-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 2px 0 8px; }
+.awc-ally-bar .awc-spacer { flex: 1; }
+.awc-btn-sm { padding: 3px 9px; font-size: 12px; }
+.awc-btn.awc-ghost { background: none; }
+.awc-ally-status:empty { display: none; }
+.awc-ally-status { font-size: 11px; color: var(--awc-dim); margin: 0 2px 8px; }
+.awc-ally-sum { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0 2px 10px; font-size: 11px; color: var(--awc-dim); }
+.awc-ally-sum b { font-family: var(--awc-mono); font-weight: 500; color: var(--awc-text); font-variant-numeric: tabular-nums; }
+.awc-mem { display: grid; grid-template-columns: minmax(0, 1fr) 72px; column-gap: 12px; align-items: center; min-height: 48px; padding: 5px 12px; border-top: 1px solid var(--awc-line); box-sizing: border-box; }
+.awc-box > .awc-mem:first-child { border-top: 0; }
+.awc-mem-main { min-width: 0; }
+.awc-mem-name { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--awc-text); white-space: nowrap; overflow: hidden; }
+.awc-mem-sub { font-family: var(--awc-mono); font-size: 10.5px; color: var(--awc-faint); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.awc-mem-sub b { font-weight: 400; color: var(--awc-dim); }
+.awc-mem-val { text-align: right; }
+.awc-mem-val b { font-family: var(--awc-mono); font-weight: 500; font-size: 13px; color: var(--awc-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.awc-mem-val small { font-size: 10px; color: var(--awc-faint); margin-left: 2px; }
+.awc-mem-bar { display: block; height: 2px; margin-top: 5px; background: rgba(255, 255, 255, .08); border-radius: 2px; overflow: hidden; }
+.awc-mem-bar i { display: block; height: 100%; background: var(--awc-accent); border-radius: 2px; }
+.awc-me-tag { font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--awc-accent) 16%, transparent); color: var(--awc-accent); }
+.awc-mem.awc-me { background: color-mix(in srgb, var(--awc-accent) 7%, transparent); }
+
+/* grand format : tableau complet */
+.awc-table-wrap { overflow-x: auto; border: 1px solid var(--awc-line); border-radius: 4px; }
+.awc-atable { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.awc-atable th { position: sticky; top: 0; z-index: 1; padding: 8px 10px; background: var(--awc-glass); color: var(--awc-dim); font-weight: 600; font-size: 11px; text-align: center; white-space: nowrap; border-bottom: 1px solid var(--awc-line-strong); }
+.awc-atable th.awc-sortable { cursor: pointer; }
+.awc-atable th.awc-sortable:hover, .awc-atable th.awc-on { color: var(--awc-text); }
+.awc-atable td { padding: 7px 10px; text-align: center; white-space: nowrap; border-bottom: 1px solid var(--awc-line); color: var(--awc-text); }
+.awc-atable td.awc-l { text-align: left; font-weight: 600; }
+.awc-atable tr:hover td { background: var(--awc-hover); }
+.awc-atable tr.awc-me td { background: color-mix(in srgb, var(--awc-accent) 8%, transparent); }
+.awc-atable .awc-pos { color: var(--awc-ok); }
+.awc-atable .awc-neg { color: var(--awc-danger); }
+
+/* outils de l'alliance (repliable) */
+.awc-ally-tools { margin-top: 14px; border-top: 1px solid var(--awc-line); }
+.awc-ally-tools > summary { list-style: none; display: flex; align-items: center; gap: 8px; padding: 10px 2px; cursor: pointer; font-size: 12px; color: var(--awc-dim); }
+.awc-ally-tools > summary::-webkit-details-marker { display: none; }
+.awc-ally-tools > summary b { font-family: var(--awc-mono); font-weight: 500; color: var(--awc-text); }
+.awc-ally-tools > summary span { flex: 1; min-width: 0; }
+.awc-ally-tools > summary svg { width: 14px; height: 14px; color: var(--awc-faint); transition: transform .2s; }
+.awc-ally-tools[open] > summary svg { transform: rotate(90deg); }
+
+/* ── historique des mises à jour : frise (tous skins) ── */
+#awc-uh-backdrop .awc-uh-card { width: 580px; max-height: min(80vh, 780px); padding: 0; overflow: hidden; color: var(--awc-text); font-family: var(--awc-font); }
+.awc-uh-head {
+  position: relative; flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; align-items: center;
+  padding: 16px 16px 14px 22px; border-bottom: 1px solid var(--awc-line);
+}
+.awc-uh-htitle { grid-column: 1; font-size: 16px; font-weight: 700; color: var(--awc-text); }
+.awc-uh-hsub { grid-column: 1; margin-top: 2px; font-size: 11px; color: var(--awc-dim); }
+.awc-uh-hsub b { font-family: var(--awc-mono); font-weight: 500; color: var(--awc-text); }
+#awc-uh-backdrop .awc-uh-x {
+  position: static; grid-column: 2; grid-row: 1 / 3; width: 30px; height: 30px; padding: 0;
+  display: flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--awc-dim); background: rgba(255, 255, 255, .05);
+}
+#awc-uh-backdrop .awc-uh-x:hover { color: var(--awc-text); background: rgba(255, 255, 255, .1); }
+.awc-uh-x svg, .awc-toast-x svg { width: 15px; height: 15px; display: block; }
+#awc-uh-backdrop .awc-uh-body { padding: 6px 22px 18px; }
+#awc-uh-backdrop .awc-uh-item { position: relative; padding: 12px 0 12px 24px; border-bottom: 0; }
+#awc-uh-backdrop .awc-uh-item::before { content: ""; position: absolute; left: 4px; top: 0; bottom: 0; width: 1px; background: var(--awc-line-strong); }
+#awc-uh-backdrop .awc-uh-item:first-child::before { top: 21px; }
+#awc-uh-backdrop .awc-uh-item:last-child::before { bottom: auto; height: 21px; }
+.awc-uh-row {
+  display: flex; align-items: center; gap: 8px; width: 100%; padding: 0; border: 0; background: none; cursor: pointer;
+  text-align: left; font: inherit; color: inherit;
+}
+.awc-uh-dot {
+  position: absolute; left: 0; top: 17px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--awc-glass); box-shadow: inset 0 0 0 2px var(--awc-line-strong);
+}
+.awc-uh-now .awc-uh-dot { background: var(--awc-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--awc-accent) 25%, transparent); }
+#awc-uh-backdrop .awc-uh-ver { margin: 0; font-family: var(--awc-mono); font-size: 13px; font-weight: 600; color: var(--awc-text); }
+#awc-uh-backdrop .awc-uh-cur {
+  margin: 0; padding: 1px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: .04em; vertical-align: 0;
+  color: var(--awc-accent-ink, #141414); background: var(--awc-accent);
+}
+.awc-uh-count { margin-left: auto; font-size: 11px; color: var(--awc-faint); white-space: nowrap; }
+.awc-uh-chev { display: inline-flex; width: 14px; height: 14px; color: var(--awc-faint); transform: rotate(90deg); transition: transform .2s; }
+.awc-uh-chev svg { width: 14px; height: 14px; }
+.awc-uh-closed .awc-uh-chev { transform: none; }
+.awc-uh-row:hover .awc-uh-chev, .awc-uh-row:hover .awc-uh-count { color: var(--awc-text); }
+#awc-uh-backdrop .awc-uh-title { margin: 6px 0; font-size: 13px; font-weight: 600; line-height: 1.4; color: var(--awc-text); }
+#awc-uh-backdrop .awc-uh-closed .awc-uh-title { margin-bottom: 0; font-size: 12px; font-weight: 500; color: var(--awc-dim); }
+#awc-uh-backdrop .awc-uh-closed .awc-uh-list { display: none; }
+#awc-uh-backdrop .awc-uh-list { margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.55; color: var(--awc-dim); }
+#awc-uh-backdrop .awc-uh-list li { margin: 3px 0; }
+#awc-uh-backdrop .awc-uh-list li::marker { color: var(--awc-faint); }
+
+/* toast « quoi de neuf » */
+#awc-update-toast { right: calc(var(--awc-rail-w) + 14px); width: 360px; }
+#awc-update-toast .awc-toast-ver b { font-family: var(--awc-mono); font-weight: 600; }
+.awc-toast-more { margin: -6px 0 12px 2px; font-size: 11px; color: var(--awc-dim); }
+html.awc-on #aw-update-banner { right: calc(var(--awc-rail-w) + 14px) !important; }
+
+/* ── palette « Aller à… » (Ctrl+K) ── */
+#awc-pal {
+  position: fixed; inset: 0; z-index: 2147483000;
+  background: rgba(0, 0, 0, .45);
+  display: flex; align-items: flex-start; justify-content: center; padding-top: 14vh;
+  font-family: var(--awc-font); color: var(--awc-text);
+}
+.awc-pal-card {
+  width: min(560px, calc(100vw - 40px)); max-height: 60vh; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--awc-glass); border: 1px solid var(--awc-line-strong); border-radius: 8px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
+}
+.awc-pal-in { display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 52px; border-bottom: 1px solid var(--awc-line); flex: none; }
+.awc-pal-in > svg { width: 17px; height: 17px; color: var(--awc-dim); flex: none; }
+.awc-pal-in input {
+  flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: none; box-shadow: none;
+  font: inherit; font-family: var(--awc-font); font-size: 15px; color: var(--awc-text);
+}
+.awc-pal-in input::placeholder { color: var(--awc-faint); }
+.awc-pal-in kbd { font: inherit; font-family: var(--awc-mono); font-size: 10px; padding: 2px 6px; border: 1px solid var(--awc-line-strong); border-radius: 4px; color: var(--awc-dim); }
+.awc-pal-list { overflow-y: auto; padding: 6px; scrollbar-width: thin; }
+.awc-pal-group { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--awc-faint); padding: 10px 10px 4px; }
+.awc-pal-item {
+  display: flex; align-items: center; gap: 12px; width: 100%; height: 38px; padding: 0 10px; box-sizing: border-box;
+  border: 0; background: none; cursor: pointer; border-radius: 6px; text-align: left;
+  font: inherit; font-family: var(--awc-font); font-size: 13px; color: var(--awc-text);
+}
+.awc-pal-item.awc-on, .awc-pal-item:hover { background: var(--awc-hover); }
+.awc-pal-ico { display: inline-flex; width: 18px; height: 18px; color: var(--awc-dim); flex: none; }
+.awc-pal-ico svg { width: 18px; height: 18px; }
+.awc-pal-item.awc-on .awc-pal-ico { color: var(--awc-accent); }
+.awc-pal-empty { padding: 18px; text-align: center; font-size: 12px; color: var(--awc-dim); }
+
+/* ═══════════ 2. JETONS DES SKINS ═══════════ */
+
+/* — au niveau de <html> : géométrie (poussée de la page) + polices — */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud {
+  --awc-rail-w: 56px !important;
+  --awc-font: "Rajdhani", "Segoe UI", system-ui, sans-serif !important;
+  --awc-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass {
+  --awc-rail-w: 76px !important;   /* rail flottant : 12 px de marge + 52 px + 12 px */
+  --awc-font: "Manrope", "Segoe UI", system-ui, sans-serif !important;
+  --awc-mono: "Manrope", "Segoe UI", system-ui, sans-serif !important;}
+
+/* — accent des skins, sur <html> (hérité partout : surfaces de l'outil ET pages du jeu).
+     Valeurs exactes du skin par défaut ; une couleur choisie dans « Couleur d'accent »
+     (html.awc-custom-accent + --aw-turquoise / --aw-turquoise-rgb écrits en ligne par le JS)
+     les remplace toutes. Calculées sur <html> : les surfaces peuvent redéfinir
+     --aw-turquoise sans créer de boucle. — */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud {
+  --awsk-acc: #2ad2d8 !important; --awsk-acc-rgb: 42, 210, 216 !important; --awsk-ink: #03181a !important;
+  --awsk-acc-hi: #7fe6ea !important; --awsk-acc-lite: #8ff0f3 !important; --awsk-acc-dark: #0b2a2e !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass {
+  --awsk-acc: #9aa2ff !important; --awsk-acc-rgb: 154, 162, 255 !important; --awsk-ink: #14163a !important;
+  --awsk-acc-lite: #c3c8ff !important; --awsk-acc-pale: #e9eaff !important; --awsk-acc-deep: #5a63d8 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-custom-accent,
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent {
+  --awsk-acc: var(--aw-turquoise) !important;
+  --awsk-acc-rgb: var(--aw-turquoise-rgb, 42, 210, 216) !important;
+  --awsk-acc-hi: color-mix(in srgb, var(--aw-turquoise) 57%, #fff) !important;
+  --awsk-acc-lite: color-mix(in srgb, var(--aw-turquoise) 55%, #fff) !important;
+  --awsk-acc-pale: color-mix(in srgb, var(--aw-turquoise) 22%, #fff) !important;
+  --awsk-acc-deep: color-mix(in srgb, var(--aw-turquoise) 62%, #000) !important;
+  --awsk-acc-dark: color-mix(in srgb, var(--aw-turquoise) 20%, #000) !important;
+  /* noir sur une couleur claire, blanc sur une foncée (clarté LCH ≷ 62) */
+  --awsk-ink: lch(from var(--aw-turquoise) calc((62 - l) * 100) 0 0) !important;}
+
+/* — sur les surfaces : couleurs (préfixe renforcé, cf. en-tête) — */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) {
+  --awc-accent: var(--awsk-acc) !important;
+  --aw-turquoise: var(--awsk-acc) !important;
+  --awc-accent-ink: var(--awsk-ink) !important;
+  --awc-text: #dfeef0 !important;
+  --awc-hull: #05080b !important;
+  --awc-glass: rgba(7, 11, 15, .95) !important;
+  --awc-head-bg: color-mix(in srgb, var(--awsk-acc) 8%, transparent) !important;
+  --awc-surface: rgba(255, 255, 255, .035) !important;
+  --awc-field: rgba(255, 255, 255, .05) !important;
+  --awc-field-line: color-mix(in srgb, var(--awsk-acc) 30%, transparent) !important;
+  --awc-hover: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important;
+  --awg-hover: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important;
+  --awg-row-hover: color-mix(in srgb, var(--awsk-acc) 6%, transparent) !important;
+  --awc-line: color-mix(in srgb, var(--awsk-acc) 12%, transparent) !important;
+  --awc-line-strong: color-mix(in srgb, var(--awsk-acc) 30%, transparent) !important;
+  --awc-dim: rgba(223, 238, 240, .52) !important;
+  --awc-faint: rgba(223, 238, 240, .36) !important;
+  --awc-fill: var(--awsk-acc) !important;
+  --awg-accent: var(--awsk-acc) !important;
+  --awc-ok: #45e0a2 !important;
+  --awc-warn: #f5b73d !important;
+  --awc-danger: #ff5d5d !important;
+  --aw-text: #dfeef0 !important;
+  --aw-accent-rgb: var(--awsk-acc-rgb) !important;
+  --aw-deep-rgb: 7, 11, 15 !important;
+  --aw-text-rgb: 223, 238, 240 !important;
+  --aw-txt1: #eafcfd !important;
+  --aw-txt2: rgba(223, 238, 240, .7) !important;
+  --aw-txt3: rgba(223, 238, 240, .5) !important;
+  --aw-surf: #070b0f !important;
+  --awc-glow: 0 0 10px color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important;
+  --awc-cham: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px) !important;
+  --awc-cham-s: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) {
+  --awc-accent: var(--awsk-acc) !important;
+  --aw-turquoise: var(--awsk-acc) !important;
+  --awc-accent-ink: var(--awsk-ink) !important;
+  --awc-text: #f1f1f6 !important;
+  --awc-hull: rgba(22, 24, 32, .55) !important;
+  --awc-glass: rgba(22, 24, 32, .58) !important;
+  --awc-head-bg: rgba(255, 255, 255, .06) !important;
+  --awc-surface: rgba(255, 255, 255, .055) !important;
+  --awc-field: rgba(255, 255, 255, .07) !important;
+  --awc-field-line: rgba(255, 255, 255, .14) !important;
+  --awc-hover: rgba(255, 255, 255, .1) !important;
+  --awg-hover: rgba(255, 255, 255, .1) !important;
+  --awg-row-hover: rgba(255, 255, 255, .06) !important;
+  --awc-line: rgba(255, 255, 255, .08) !important;
+  --awc-line-strong: rgba(255, 255, 255, .16) !important;
+  --awc-dim: rgba(255, 255, 255, .56) !important;
+  --awc-faint: rgba(255, 255, 255, .4) !important;
+  --awc-fill: var(--awsk-acc) !important;
+  --awg-accent: var(--awsk-acc) !important;
+  --awc-ok: #5fe3a1 !important;
+  --awc-warn: #ffc85c !important;
+  --awc-danger: #ff6b6b !important;
+  --aw-text: #f1f1f6 !important;
+  --aw-accent-rgb: var(--awsk-acc-rgb) !important;
+  --aw-deep-rgb: 22, 24, 32 !important;
+  --aw-text-rgb: 241, 241, 246 !important;
+  --aw-txt1: #ffffff !important;
+  --aw-txt2: rgba(255, 255, 255, .72) !important;
+  --aw-txt3: rgba(255, 255, 255, .5) !important;
+  --aw-surf: rgba(22, 24, 32, .8) !important;}
+/* (la couleur d'accent choisie passe par --awsk-acc, défini sur <html> plus haut) */
+
+/* typographie commune des surfaces */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner),
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) {
+  font-family: var(--awc-font) !important; color: var(--awc-text) !important; -webkit-font-smoothing: antialiased !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-body, #awc-wide-body) { font-size: 14px !important; font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-body, #awc-wide-body) { font-size: 13px !important; font-variant-numeric: tabular-nums !important;}
+
+/* ═══════════ 3. SKIN HUD ═══════════ */
+
+/* ── rail ── */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-rail {
+  background: var(--awc-hull) !important; border-left: 1px solid color-mix(in srgb, var(--awsk-acc) 22%, transparent) !important;
+  padding: 12px 0 10px !important; gap: 4px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-rail .awc-logo { width: 44px !important; height: 44px !important; margin: 0 0 10px !important; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .6)) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-rail .awc-logo img { width: 44px !important; height: 44px !important; display: block !important; border-radius: 0 !important; clip-path: none !important; object-fit: contain !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn{ width: 38px !important; height: 38px !important; border-radius: 0 !important; color: var(--awc-dim) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn svg{ width: 18px !important; height: 18px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn:hover{ background: color-mix(in srgb, var(--awsk-acc) 7%, transparent) !important; color: var(--awc-text) !important;}
+/* module actif : cadre chanfreiné dessiné par ::before (un clip-path sur le
+   bouton lui-même couperait aussi l'info-bulle ::after) */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn.awc-on{ background: none !important; color: var(--awc-accent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn.awc-on::before{
+  content: "" !important; position: absolute !important; inset: 0 !important; top: 0 !important; bottom: 0 !important; right: 0 !important; width: auto !important; border-radius: 0 !important; z-index: -1 !important;
+  background: color-mix(in srgb, var(--awc-accent) 11%, transparent) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awc-accent) 60%, transparent) !important;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn.awc-on svg{ filter: drop-shadow(0 0 5px color-mix(in srgb, var(--awc-accent) 70%, transparent)) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn{ isolation: isolate !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn .awc-bdg{
+  top: 2px !important; right: 2px !important; border-radius: 0 !important; font-family: var(--awc-mono) !important; font-weight: 500 !important; font-size: 10px !important;
+  background: var(--awc-danger) !important; color: #1a0505 !important;
+  clip-path: polygon(3px 0, 100% 0, 100% calc(100% - 3px), calc(100% - 3px) 100%, 0 100%, 0 3px) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn .awc-bdg.awc-bdg-ally{ background: var(--awc-warn) !important; color: #1a1205 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-sep{ width: 16px !important; background: color-mix(in srgb, var(--awc-accent) 30%, transparent) !important; margin: 8px 0 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn::after{
+  right: 48px !important; border-radius: 0 !important; background: #05080b !important; border: 1px solid color-mix(in srgb, var(--awc-accent) 40%, transparent) !important;
+  font-family: var(--awc-font) !important; font-size: 13px !important; font-weight: 600 !important; letter-spacing: .06em !important; text-transform: uppercase !important;}
+/* joueur : initiale chanfreinée + barre de liaison */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-session { width: 28px !important; height: 28px !important; margin-top: 6px !important; background: var(--awsk-acc-dark) !important; border-radius: 0 !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awc-accent) 50%, transparent) !important;
+  clip-path: polygon(6px 0, 100% 0, 100% 100%, 0 100%, 0 6px) !important; overflow: visible !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-session::after { display: none !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-session .awc-me-ini { display: block !important; font-size: 13px !important; font-weight: 700 !important; color: var(--awsk-acc-hi) !important; line-height: 1 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-session .awc-st { display: none !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-session.awc-expired { background: #2e0b0b !important; box-shadow: inset 0 0 0 1px rgba(255, 93, 93, .6) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-session.awc-expired .awc-me-ini { color: #ff9b9b !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-ver { margin-top: 8px !important; font-family: var(--awc-mono) !important; font-size: 10px !important; color: var(--awc-faint) !important;}
+
+/* ── colonne ── */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-panel {
+  background-color: var(--awc-glass) !important;
+  border-left: 1px solid color-mix(in srgb, var(--awsk-acc) 22%, transparent) !important;
+  box-shadow: -18px 0 40px rgba(0, 0, 0, .5) !important;
+  /* 4 équerres cyan dans les coins + trame horizontale très fine */
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 75%, transparent), color-mix(in srgb, var(--awsk-acc) 75%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 75%, transparent), color-mix(in srgb, var(--awsk-acc) 75%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 75%, transparent), color-mix(in srgb, var(--awsk-acc) 75%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 75%, transparent), color-mix(in srgb, var(--awsk-acc) 75%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 75%, transparent), color-mix(in srgb, var(--awsk-acc) 75%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 75%, transparent), color-mix(in srgb, var(--awsk-acc) 75%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 75%, transparent), color-mix(in srgb, var(--awsk-acc) 75%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 75%, transparent), color-mix(in srgb, var(--awsk-acc) 75%, transparent)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, .018) 0 1px, transparent 1px 3px) !important;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat !important;
+  background-size: 10px 1px, 1px 10px, 10px 1px, 1px 10px, 10px 1px, 1px 10px, 10px 1px, 1px 10px, auto !important;
+  background-position:
+    left 6px top 6px, left 6px top 6px,
+    right 6px top 6px, right 6px top 6px,
+    left 6px bottom 6px, left 6px bottom 6px,
+    right 6px bottom 6px, right 6px bottom 6px, 0 0 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-head {
+  display: grid !important; grid-template-columns: minmax(0, 1fr) auto auto auto !important; grid-template-rows: auto auto !important;
+  column-gap: 6px !important; row-gap: 2px !important; align-items: center !important;
+  min-height: 64px !important; padding: 0 14px 0 22px !important; box-sizing: border-box !important;
+  background: none !important; border-bottom: 1px solid color-mix(in srgb, var(--awsk-acc) 18%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-title {
+  grid-column: 1 !important; grid-row: 1 !important; align-self: end !important; margin: 0 !important;
+  font-family: var(--awc-font) !important; font-size: 16px !important; font-weight: 700 !important; letter-spacing: .14em !important; text-transform: uppercase !important;
+  color: #f2fdfe !important; text-shadow: 0 0 12px color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important;
+  white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-who {
+  grid-column: 1 !important; grid-row: 2 !important; align-self: start !important; text-align: left !important; line-height: 1.3 !important;
+  font-family: var(--awc-mono) !important; font-size: 10px !important; letter-spacing: .08em !important; text-transform: uppercase !important; color: var(--awc-dim) !important;
+  white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-who b { font-family: var(--awc-mono) !important; font-weight: 500 !important; color: var(--awc-dim) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-who-dot{ width: 8px !important; height: 2px !important; border-radius: 0 !important; vertical-align: 3px !important; box-shadow: 0 0 8px rgba(69, 224, 162, .9) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-who-dot.awc-off{ box-shadow: 0 0 8px rgba(255, 93, 93, .9) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-who .awc-ok-txt { color: var(--awc-dim) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-search { grid-column: 2 !important; grid-row: 1 / 3 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-expand { grid-column: 3 !important; grid-row: 1 / 3 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-close { grid-column: 4 !important; grid-row: 1 / 3 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-head button {
+  width: 30px !important; height: 30px !important; padding: 0 !important; border-radius: 0 !important; color: var(--awc-dim) !important;
+  background: rgba(255, 255, 255, .04) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-head button:hover { color: var(--awc-accent) !important; background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 50%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-body { padding: 18px 20px 14px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-body::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--awsk-acc) 22%, transparent) !important; border-radius: 0 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-foot {
+  min-height: 42px !important; padding: 0 22px !important; border-top: 1px solid color-mix(in srgb, var(--awsk-acc) 18%, transparent) !important;
+  font-family: var(--awc-mono) !important; font-size: 10px !important; letter-spacing: .08em !important; text-transform: uppercase !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-foot .awc-foot-live { width: 8px !important; height: 2px !important; border-radius: 0 !important; box-shadow: 0 0 8px rgba(69, 224, 162, .9) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-foot .awc-foot-live.awc-off { box-shadow: none !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-foot kbd { border-radius: 0 !important; border-color: color-mix(in srgb, var(--awsk-acc) 30%, transparent) !important; letter-spacing: .06em !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-resize:hover, :root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-resize.awc-active { background: color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important;}
+
+/* ── grand format ── */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-wide {
+  background: var(--awc-glass) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 30%, transparent) !important; border-radius: 0 !important;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .65), 0 0 0 100vmax rgba(0, 0, 0, .55) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-wide:not(.awc-center) { box-shadow: 0 30px 90px rgba(0, 0, 0, .65) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-wide-head {
+  min-height: 60px !important; padding: 0 14px 0 22px !important; gap: 8px !important; background: none !important; border-bottom: 1px solid color-mix(in srgb, var(--awsk-acc) 18%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-wide-title {
+  font-family: var(--awc-font) !important; font-size: 16px !important; font-weight: 700 !important; letter-spacing: .14em !important; text-transform: uppercase !important;
+  color: #f2fdfe !important; text-shadow: 0 0 12px color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-wide-head button {
+  height: 30px !important; padding: 0 12px !important; border-radius: 0 !important; border: 0 !important; cursor: pointer !important;
+  font-family: var(--awc-font) !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: .1em !important; text-transform: uppercase !important;
+  color: var(--awc-dim) !important; background: rgba(255, 255, 255, .04) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important;
+  display: inline-flex !important; align-items: center !important; gap: 6px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-wide-head #awc-wide-search { width: 30px !important; padding: 0 !important; justify-content: center !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-wide-head button:hover { color: var(--awc-accent) !important; background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 50%, transparent) !important;}
+
+/* ── composants ── */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-primary{
+  height: 38px !important; padding: 0 18px !important; border: 0 !important; border-radius: 0 !important;
+  font-family: var(--awc-font) !important; font-size: 14px !important; font-weight: 700 !important; letter-spacing: .12em !important; text-transform: uppercase !important;
+  color: var(--awc-accent-ink) !important; background: var(--awc-accent) !important;
+  clip-path: var(--awc-cham) !important; box-shadow: none !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-primary:hover{ background: color-mix(in srgb, var(--awc-accent) 85%, #fff) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-primary.awc-running{
+  color: var(--awc-accent) !important; background: color-mix(in srgb, var(--awc-accent) 12%, transparent) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awc-accent) 55%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-meta{ font-family: var(--awc-mono) !important; font-size: 10px !important; letter-spacing: .06em !important; text-transform: uppercase !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-meta b{ text-transform: none !important; letter-spacing: 0 !important; color: #f2fdfe !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-meta i{ text-transform: none !important; letter-spacing: 0 !important;}
+
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-sec > span:first-child{ font-size: 12px !important; font-weight: 700 !important; letter-spacing: .16em !important; color: color-mix(in srgb, var(--awc-accent) 88%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-sec::after{ content: "" !important; order: 2 !important; flex: 1 !important; height: 1px !important; background: linear-gradient(90deg, color-mix(in srgb, var(--awc-accent) 45%, transparent), transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-sec .awc-sec-meta{ order: 3 !important; margin-left: 0 !important; font-size: 11px !important; font-weight: 500 !important; letter-spacing: .04em !important;}
+
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-box{ border-radius: 0 !important; border-color: color-mix(in srgb, var(--awsk-acc) 12%, transparent) !important; background: rgba(255, 255, 255, .03) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-line{ min-height: 38px !important; font-size: 14px !important; font-weight: 500 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-line .awc-l{ letter-spacing: .03em !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-line .awc-v{ font-size: 13px !important; color: #f2fdfe !important; text-shadow: var(--awc-glow) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-line .awc-v small{ letter-spacing: .06em !important; text-transform: uppercase !important; text-shadow: none !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-fresh{ width: 10px !important; height: 2px !important; border-radius: 0 !important; box-shadow: 0 0 8px rgba(69, 224, 162, .8) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-fresh.awc-warn{ box-shadow: 0 0 8px rgba(245, 183, 61, .8) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-fresh.awc-old{ background: rgba(223, 238, 240, .3) !important; box-shadow: none !important;}
+
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-state{ border-radius: 0 !important; clip-path: var(--awc-cham) !important; border: 0 !important; min-height: 50px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-state.awc-good{ background: rgba(69, 224, 162, .06) !important; box-shadow: inset 0 0 0 1px rgba(69, 224, 162, .35) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-state.awc-bad{ background: rgba(255, 93, 93, .1) !important; box-shadow: inset 0 0 0 1px rgba(255, 93, 93, .55) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-state > span{ font-size: 14px !important; font-weight: 600 !important; letter-spacing: .06em !important; text-transform: uppercase !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-state.awc-good > svg:first-child{ filter: drop-shadow(0 0 6px rgba(69, 224, 162, .7)) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-state.awc-bad > svg:first-child{ filter: drop-shadow(0 0 6px rgba(255, 93, 93, .7)) !important;}
+
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-segs{ border: 0 !important; border-radius: 0 !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important; background: rgba(0, 0, 0, .25) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-seg{ border-radius: 0 !important; font-family: var(--awc-font) !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: .1em !important; text-transform: uppercase !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-seg.awc-on{ color: var(--awc-accent-ink) !important; background: var(--awc-accent) !important; clip-path: var(--awc-cham-s) !important;}
+
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-body .awc-docked, :root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-wide-body .awc-docked { font-size: 15px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-set-row{ font-size: 15px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-hint{ font-size: 12.5px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-card .awc-meta{ font-size: 12.5px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-empty{ font-size: 14px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-line-flight .awc-l b{ font-weight: 700 !important; letter-spacing: .03em !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-age.awc-age-hot{ color: #f2fdfe !important; text-shadow: var(--awc-glow) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-line-flight .awc-l svg{ color: color-mix(in srgb, var(--awc-accent) 60%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-scan-bar-label{ font-family: var(--awc-mono) !important; color: var(--awc-dim) !important; font-size: 10px !important; letter-spacing: .06em !important; text-transform: uppercase !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-scan-bar-track{ height: 3px !important; border-radius: 0 !important; background: color-mix(in srgb, var(--awsk-acc) 12%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-scan-bar-fill{ border-radius: 0 !important; background: var(--awc-accent) !important; box-shadow: 0 0 10px color-mix(in srgb, var(--awsk-acc) 70%, transparent) !important;}
+
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-pal { background: rgba(2, 6, 9, .6) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-card{ border-radius: 0 !important; border-color: color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important; background: rgba(5, 8, 11, .97) !important; box-shadow: 0 0 0 1px rgba(0, 0, 0, .6), 0 30px 90px rgba(0, 0, 0, .7), 0 0 40px color-mix(in srgb, var(--awsk-acc) 8%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-in{ border-bottom-color: color-mix(in srgb, var(--awsk-acc) 20%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-in input{ font-size: 17px !important; font-weight: 600 !important; letter-spacing: .04em !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-in kbd{ border-radius: 0 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-group{ color: color-mix(in srgb, var(--awc-accent) 80%, transparent) !important; letter-spacing: .16em !important; font-size: 11px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-item{ border-radius: 0 !important; font-size: 15px !important; font-weight: 600 !important; letter-spacing: .03em !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-item.awc-on{ background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important; box-shadow: inset 2px 0 0 var(--awc-accent) !important;}
+
+/* ── Alliance ── */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-mem{ min-height: 50px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-mem-name{ font-size: 15px !important; font-weight: 600 !important; letter-spacing: .03em !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-mem-val b{ color: #f2fdfe !important; text-shadow: var(--awc-glow) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-mem-bar{ border-radius: 0 !important; background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-mem-bar i{ border-radius: 0 !important; box-shadow: 0 0 6px color-mix(in srgb, var(--awsk-acc) 70%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-me-tag{ border-radius: 0 !important; font-family: var(--awc-font) !important; font-size: 10px !important; font-weight: 700 !important; letter-spacing: .14em !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awc-accent) 45%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-mem.awc-me{ box-shadow: inset 2px 0 0 var(--awc-accent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ally-sum{ font-family: var(--awc-mono) !important; font-size: 10px !important; letter-spacing: .06em !important; text-transform: uppercase !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ally-sum b{ text-shadow: var(--awc-glow) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-table-wrap{ border-radius: 0 !important; border-color: color-mix(in srgb, var(--awsk-acc) 18%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-atable{ font-size: 14px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-atable th{ font-family: var(--awc-font) !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: .12em !important; text-transform: uppercase !important; color: color-mix(in srgb, var(--awc-accent) 85%, transparent) !important; background: #070b0f !important; border-bottom-color: color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-atable td{ font-family: var(--awc-mono) !important; font-size: 12.5px !important; border-bottom-color: color-mix(in srgb, var(--awsk-acc) 7%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-atable td.awc-l{ font-family: var(--awc-font) !important; font-size: 14.5px !important; letter-spacing: .03em !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-atable tr.awc-me td:first-child{ box-shadow: inset 2px 0 0 var(--awc-accent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ally-tools{ border-top-color: color-mix(in srgb, var(--awsk-acc) 18%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ally-tools > summary{ font-family: var(--awc-mono) !important; font-size: 10px !important; letter-spacing: .08em !important; text-transform: uppercase !important;}
+
+/* ── historique, toast et bannière de MàJ ── */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-uh-backdrop { background: rgba(2, 6, 9, .7) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-uh-backdrop .awc-uh-card, #awc-update-toast, html.awc-on #aw-update-banner) {
+  border-radius: 0 !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important; color: #dfeef0 !important; font-family: var(--awc-font) !important;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .7), 0 0 40px color-mix(in srgb, var(--awsk-acc) 6%, transparent) !important;
+  background-color: rgba(5, 8, 11, .97) !important;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)), linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)), linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, .018) 0 1px, transparent 1px 3px) !important;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat !important;
+  background-size: 10px 1px, 1px 10px, 10px 1px, 1px 10px, auto !important;
+  background-position: left 5px top 5px, left 5px top 5px, right 5px bottom 5px, right 5px bottom 5px, 0 0 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-uh-head{ border-bottom-color: color-mix(in srgb, var(--awsk-acc) 20%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-uh-htitle{ font-size: 17px !important; letter-spacing: .14em !important; text-transform: uppercase !important; color: #f2fdfe !important; text-shadow: 0 0 12px color-mix(in srgb, var(--awsk-acc) 40%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-uh-hsub{ font-family: var(--awc-mono) !important; font-size: 10px !important; letter-spacing: .08em !important; text-transform: uppercase !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-uh-backdrop .awc-uh-x { border-radius: 0 !important; background: rgba(255, 255, 255, .04) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 20%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-uh-backdrop .awc-uh-x:hover { color: var(--awsk-acc) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-uh-backdrop .awc-uh-item::before { background: linear-gradient(180deg, color-mix(in srgb, var(--awsk-acc) 45%, transparent), color-mix(in srgb, var(--awsk-acc) 12%, transparent)) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-uh-dot{ width: 8px !important; height: 8px !important; left: 1px !important; border-radius: 0 !important; transform: rotate(45deg) !important; background: #05080b !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 60%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-uh-now .awc-uh-dot{ background: var(--awsk-acc) !important; box-shadow: 0 0 10px color-mix(in srgb, var(--awsk-acc) 90%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-uh-backdrop .awc-uh-ver { color: var(--awsk-acc) !important; text-shadow: 0 0 8px color-mix(in srgb, var(--awsk-acc) 40%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-uh-backdrop .awc-uh-cur { border-radius: 0 !important; font-family: var(--awc-font) !important; font-size: 11px !important; letter-spacing: .12em !important; text-transform: uppercase !important; clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-uh-count{ font-family: var(--awc-mono) !important; font-size: 10px !important; letter-spacing: .06em !important; text-transform: uppercase !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-uh-backdrop .awc-uh-title { font-size: 15px !important; font-weight: 700 !important; letter-spacing: .02em !important; color: #f2fdfe !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-uh-backdrop .awc-uh-closed .awc-uh-title { font-size: 14px !important; font-weight: 600 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-uh-backdrop .awc-uh-list { font-size: 14px !important; font-weight: 500 !important; line-height: 1.45 !important; color: rgba(223, 238, 240, .72) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-uh-backdrop .awc-uh-list li::marker { color: color-mix(in srgb, var(--awsk-acc) 70%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-uh-backdrop .awc-uh-body::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important;}
+
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-update-toast { padding: 16px 18px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-update-toast .awc-toast-x { color: rgba(223, 238, 240, .5) !important; top: 10px !important; right: 10px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-update-toast .awc-toast-x:hover { color: var(--awsk-acc) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-update-toast .awc-toast-badge {
+  border-radius: 0 !important; font-family: var(--awc-font) !important; font-size: 11px !important; font-weight: 700 !important; letter-spacing: .16em !important; text-transform: uppercase !important;
+  color: var(--awsk-ink) !important; background: var(--awsk-acc) !important; padding: 2px 9px !important; clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-update-toast .awc-toast-ver { font-size: 17px !important; font-weight: 700 !important; letter-spacing: .06em !important; color: #f2fdfe !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-update-toast .awc-toast-ver b { color: var(--awsk-acc) !important; text-shadow: 0 0 8px color-mix(in srgb, var(--awsk-acc) 50%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-update-toast .awc-toast-title { font-size: 15px !important; font-weight: 700 !important; color: #dfeef0 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-update-toast .awc-toast-list { font-size: 13.5px !important; font-weight: 500 !important; line-height: 1.4 !important; color: rgba(223, 238, 240, .72) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-update-toast .awc-toast-more { font-family: var(--awc-mono) !important; font-size: 10px !important; letter-spacing: .06em !important; text-transform: uppercase !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-update-toast .awc-toast-ok {
+  border-radius: 0 !important; font-family: var(--awc-font) !important; font-size: 13px !important; font-weight: 700 !important; letter-spacing: .12em !important; text-transform: uppercase !important;
+  color: var(--awsk-ink) !important; background: var(--awsk-acc) !important; padding: 8px 18px !important; clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud #awc-update-toast .awc-toast-ok:hover { background: var(--awsk-acc-hi) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-update-banner .aw-update-text { font-family: var(--awc-font) !important; font-size: 13px !important; color: rgba(223, 238, 240, .75) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-update-banner .aw-update-buttons a { border-radius: 0 !important; font-family: var(--awc-font) !important; letter-spacing: .1em !important; text-transform: uppercase !important; background: var(--awsk-acc) !important; color: #03181a !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-update-banner .aw-update-buttons button { border-radius: 0 !important; font-family: var(--awc-font) !important; letter-spacing: .1em !important; text-transform: uppercase !important; border-color: color-mix(in srgb, var(--awsk-acc) 30%, transparent) !important;}
+
+/* ── contenus historiques dans les surfaces HUD (préfixe renforcé) ── */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-kicker{
+  background: none !important; border: 0 !important; border-radius: 0 !important;
+  padding: 0 !important; margin: 18px 2px 8px !important;
+  display: flex !important; align-items: center !important; gap: 10px !important;
+  font-family: var(--awc-font) !important; font-size: 12px !important; font-weight: 700 !important;
+  letter-spacing: .16em !important; text-transform: uppercase !important;
+  color: color-mix(in srgb, var(--awc-accent) 88%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-kicker::after{
+  content: "" !important; flex: 1 !important; min-width: 12px !important; height: 1px !important;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--awc-accent) 45%, transparent), transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-kicker:first-child{ margin-top: 2px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) :is(.aw-section-header, .aw-calculator-panel__header, .aw-maxlevel-panel__header,
+  .aw-alliance-panel__header, .aw-fleet-viewer__header, .aw-optimizer-panel__header, .aw-theme-panel__header){
+  background: none !important; border: 0 !important; border-bottom: 1px solid color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important;
+  border-radius: 0 !important; padding: 0 0 6px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) :is(.aw-section-title, .aw-calculator-panel__title, .aw-maxlevel-panel__title,
+  .aw-alliance-panel__title, .aw-fleet-viewer__title, .aw-optimizer-panel__title, .aw-theme-panel__title){
+  font-family: var(--awc-font) !important; font-size: 13px !important; font-weight: 700 !important;
+  letter-spacing: .14em !important; text-transform: uppercase !important; color: var(--awc-accent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) :is(.awap-box .tt, .awff-box .tt){
+  background: none !important; border-radius: 0 !important; border-bottom: 1px solid color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important;
+  color: var(--awc-accent) !important; letter-spacing: .12em !important; text-transform: uppercase !important; font-weight: 700 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-card{ border-radius: 0 !important; background: rgba(255, 255, 255, .03) !important; border-color: color-mix(in srgb, var(--awsk-acc) 14%, transparent) !important; font-size: 13px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-card h3{ font-size: 14px !important; letter-spacing: .04em !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) :is(.awc-btn, .aw-btn, .awap-btn, .awff-btn){
+  border-radius: 0 !important; font-family: var(--awc-font) !important; font-weight: 700 !important;
+  letter-spacing: .08em !important; text-transform: uppercase !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-btn{
+  background: rgba(255, 255, 255, .04) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important; color: var(--awc-text) !important;
+  font-size: 12px !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-btn:hover{ background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important; border-color: color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important; color: var(--awc-accent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-btn.awc-danger{ color: #ff9b9b !important; border-color: rgba(255, 93, 93, .45) !important; background: rgba(255, 93, 93, .07) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) :is(.awc-select, .awc-number, .awc-chip-reset, .aw-input, .aw-select, .aw-calc-input){
+  border-radius: 0 !important; background: rgba(0, 0, 0, .3) !important; border-color: color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important;
+  font-family: var(--awc-mono) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-toggle{ border-radius: 0 !important; background: rgba(255, 255, 255, .08) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 22%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-toggle::after{ border-radius: 0 !important; background: rgba(223, 238, 240, .5) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-toggle.awc-on{ background: color-mix(in srgb, var(--awc-accent) 22%, transparent) !important; box-shadow: inset 0 0 0 1px var(--awc-accent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-toggle.awc-on::after{ background: var(--awc-accent) !important; box-shadow: 0 0 8px color-mix(in srgb, var(--awc-accent) 80%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-set-row{ border-bottom-color: color-mix(in srgb, var(--awsk-acc) 8%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-set-label{ color: var(--awc-text) !important; letter-spacing: .03em !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-empty{ font-style: normal !important; letter-spacing: .04em !important;}
+/* tableaux des panneaux historiques */
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-body, #awc-wide-body) table th {
+  background: color-mix(in srgb, var(--awsk-acc) 6%, transparent) !important; color: color-mix(in srgb, var(--awc-accent) 85%, transparent) !important;
+  font-family: var(--awc-font) !important; font-weight: 700 !important; letter-spacing: .1em !important; text-transform: uppercase !important;
+  border-color: color-mix(in srgb, var(--awsk-acc) 15%, transparent) !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud :is(#awc-body, #awc-wide-body) table td {
+  border-color: color-mix(in srgb, var(--awsk-acc) 8%, transparent) !important; font-variant-numeric: tabular-nums !important;}
+
+/* ═══════════ 4. SKIN VERRE ═══════════ */
+
+/* ── rail flottant : l'élément garde toute la largeur (les autres scripts
+      lisent rail.offsetWidth pour s'arrêter à son bord) ; la pastille de
+      verre est dessinée par ::before, avec 12 px de marge ── */
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-rail {
+  background: none !important; border: 0 !important; box-shadow: none !important;
+  padding: 22px 0 !important; gap: 4px !important; pointer-events: none !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-rail > * { pointer-events: auto !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-rail::before {
+  content: "" !important; position: absolute !important; inset: 12px !important; z-index: -1 !important; border-radius: 16px !important;
+  background: rgba(22, 24, 32, .55) !important;
+  border: 1px solid rgba(255, 255, 255, .13) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 20px 50px rgba(0, 0, 0, .45) !important;
+  backdrop-filter: blur(22px) saturate(1.4) !important; -webkit-backdrop-filter: blur(22px) saturate(1.4) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-rail .awc-logo { width: 44px !important; height: 44px !important; margin: 0 0 8px !important; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .55)) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-rail .awc-logo img { width: 44px !important; height: 44px !important; display: block !important; border-radius: 0 !important; clip-path: none !important; object-fit: contain !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn{ width: 36px !important; height: 36px !important; border-radius: 10px !important; color: rgba(255, 255, 255, .6) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn svg{ width: 18px !important; height: 18px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn:hover{ background: rgba(255, 255, 255, .08) !important; color: #fff !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn.awc-on{ background: rgba(255, 255, 255, .14) !important; color: #fff !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn.awc-on::before{ display: none !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn .awc-bdg{ top: 1px !important; right: 1px !important; min-width: 15px !important; height: 15px !important; border-radius: 8px !important; font-family: var(--awc-font) !important; font-weight: 700 !important; font-size: 10px !important; background: var(--awc-danger) !important; color: #fff !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn .awc-bdg.awc-bdg-ally{ background: var(--awc-warn) !important; color: #1a1205 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-sep{ width: 0 !important; height: 0 !important; background: none !important; margin: 6px 0 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn::after{
+  right: 58px !important; border-radius: 8px !important; background: rgba(22, 24, 32, .92) !important; border: 1px solid rgba(255, 255, 255, .14) !important;
+  font-family: var(--awc-font) !important; font-size: 12px !important; font-weight: 600 !important; box-shadow: 0 8px 24px rgba(0, 0, 0, .4) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-session { width: 30px !important; height: 30px !important; margin-top: 6px !important; border-radius: 50% !important; background: linear-gradient(135deg, var(--awsk-acc), var(--awsk-acc-deep)) !important; overflow: visible !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-session::after { display: none !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-session .awc-me-ini { display: block !important; font-size: 12px !important; font-weight: 700 !important; color: #fff !important; line-height: 1 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-session .awc-st {
+  position: absolute !important; right: -1px !important; bottom: -1px !important; width: 10px !important; height: 10px !important; border-radius: 50% !important;
+  background: var(--awc-ok) !important; border: 2px solid #1c1e2a !important; box-shadow: none !important; box-sizing: border-box !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-session.awc-expired .awc-st { background: var(--awc-danger) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-ver { margin-top: 8px !important; font-family: var(--awc-font) !important; font-size: 10px !important; font-weight: 600 !important; color: rgba(255, 255, 255, .35) !important;}
+
+/* ── colonne flottante ── */
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-open { margin-right: calc(var(--awc-rail-w) + var(--awc-panel-w) + 12px) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-panel {
+  top: 12px !important; bottom: 12px !important; right: var(--awc-rail-w) !important;
+  border-radius: 18px !important; overflow: hidden !important;
+  background: var(--awc-glass) !important;
+  border: 1px solid rgba(255, 255, 255, .13) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 20px 50px rgba(0, 0, 0, .45) !important;
+  backdrop-filter: blur(22px) saturate(1.4) !important; -webkit-backdrop-filter: blur(22px) saturate(1.4) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-head {
+  display: grid !important; grid-template-columns: minmax(0, 1fr) auto auto auto !important; grid-template-rows: auto auto !important;
+  column-gap: 6px !important; row-gap: 2px !important; align-items: center !important;
+  min-height: 64px !important; padding: 0 14px 0 20px !important; box-sizing: border-box !important; background: none !important; border-bottom: 0 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-title {
+  grid-column: 1 !important; grid-row: 1 !important; align-self: end !important; margin: 0 !important;
+  font-family: var(--awc-font) !important; font-size: 17px !important; font-weight: 700 !important; letter-spacing: -.02em !important; text-transform: none !important; color: #fff !important;
+  white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-who {
+  grid-column: 1 !important; grid-row: 2 !important; align-self: start !important; text-align: left !important; line-height: 1.3 !important;
+  font-family: var(--awc-font) !important; font-size: 12px !important; font-weight: 500 !important; color: var(--awc-dim) !important;
+  white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-who b { font-family: var(--awc-font) !important; font-weight: 600 !important; color: var(--awc-dim) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-who .awc-ok-txt { color: var(--awc-dim) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-who-dot{ width: 7px !important; height: 7px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-search { grid-column: 2 !important; grid-row: 1 / 3 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-expand { grid-column: 3 !important; grid-row: 1 / 3 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-close { grid-column: 4 !important; grid-row: 1 / 3 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-head button { width: 30px !important; height: 30px !important; padding: 0 !important; border-radius: 8px !important; color: var(--awc-dim) !important; background: rgba(255, 255, 255, .06) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-head button:hover { color: #fff !important; background: rgba(255, 255, 255, .12) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-body { padding: 6px 16px 14px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18) !important; border-radius: 8px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-foot { min-height: 44px !important; padding: 0 20px !important; border-top: 1px solid rgba(255, 255, 255, .08) !important; font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-foot kbd { border: 0 !important; background: rgba(255, 255, 255, .08) !important; border-radius: 5px !important; font-family: var(--awc-font) !important; font-weight: 600 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-resize:hover, :root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-resize.awc-active { background: rgba(255, 255, 255, .18) !important;}
+
+/* ── grand format ── */
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-wide {
+  background: var(--awc-glass) !important; border: 1px solid rgba(255, 255, 255, .13) !important; border-radius: 18px !important;
+  backdrop-filter: blur(22px) saturate(1.4) !important; -webkit-backdrop-filter: blur(22px) saturate(1.4) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 30px 80px rgba(0, 0, 0, .55), 0 0 0 100vmax rgba(0, 0, 0, .4) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-wide:not(.awc-center) { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 30px 80px rgba(0, 0, 0, .55) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-wide.awc-center { border-radius: 18px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-wide-head { min-height: 60px !important; padding: 0 14px 0 20px !important; gap: 8px !important; background: none !important; border-bottom: 1px solid rgba(255, 255, 255, .08) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-wide-title { font-family: var(--awc-font) !important; font-size: 17px !important; font-weight: 700 !important; letter-spacing: -.02em !important; text-transform: none !important; color: #fff !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-wide-head button {
+  height: 30px !important; padding: 0 12px !important; border: 0 !important; border-radius: 8px !important; cursor: pointer !important;
+  font-family: var(--awc-font) !important; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0 !important; color: var(--awc-dim) !important; background: rgba(255, 255, 255, .06) !important;
+  display: inline-flex !important; align-items: center !important; gap: 6px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-wide-head #awc-wide-search { width: 30px !important; padding: 0 !important; justify-content: center !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-wide-head button:hover { color: #fff !important; background: rgba(255, 255, 255, .12) !important;}
+
+/* ── composants ── */
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-action{ padding: 11px 12px !important; border-radius: 12px !important; background: rgba(255, 255, 255, .055) !important; border: 1px solid rgba(255, 255, 255, .08) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07) !important; margin-top: 6px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-primary{ border: 0 !important; border-radius: 10px !important; background: #fff !important; color: #14163a !important; font-weight: 700 !important; box-shadow: 0 6px 18px rgba(0, 0, 0, .25) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-primary:hover{ background: var(--awsk-acc-pale) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-primary.awc-running{ background: rgba(255, 255, 255, .14) !important; color: #fff !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-meta{ font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-meta b{ font-family: var(--awc-font) !important; font-weight: 700 !important; color: #fff !important; font-size: 12px !important;}
+
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-sec{ margin: 0 2px 8px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-sec > span:first-child{ font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; color: var(--awc-dim) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-sec .awc-sec-meta{ font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-blk{ margin-bottom: 18px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-box{ border-radius: 12px !important; border-color: rgba(255, 255, 255, .08) !important; background: rgba(255, 255, 255, .055) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07) !important; padding: 2px 0 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-line{ min-height: 42px !important; border-top-color: rgba(255, 255, 255, .06) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-line .awc-l{ font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-line .awc-v{ font-weight: 700 !important; color: #fff !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-line .awc-v small{ font-weight: 500 !important; font-size: 12px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-line .awc-age{ font-family: var(--awc-font) !important; font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-fresh{ box-shadow: 0 0 0 3px rgba(95, 227, 161, .15) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-fresh.awc-warn{ box-shadow: 0 0 0 3px rgba(255, 200, 92, .15) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-fresh.awc-old{ box-shadow: none !important;}
+
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-state{ border-radius: 12px !important; font-weight: 600 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-state.awc-good{ background: rgba(95, 227, 161, .08) !important; border-color: rgba(95, 227, 161, .22) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-state.awc-bad{ background: rgba(255, 107, 107, .12) !important; border-color: rgba(255, 107, 107, .35) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ov-state em{ font-family: var(--awc-font) !important; font-weight: 600 !important;}
+
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-segs{ padding: 3px !important; border-radius: 10px !important; border-color: rgba(255, 255, 255, .06) !important; background: rgba(0, 0, 0, .25) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-seg{ border-radius: 8px !important; font-weight: 600 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-seg.awc-on{ background: rgba(255, 255, 255, .16) !important; color: #fff !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14) !important;}
+
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-scan-bar-label{ color: var(--awc-dim) !important; font-family: var(--awc-font) !important; font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-scan-bar-track{ height: 4px !important; border-radius: 4px !important; background: rgba(255, 255, 255, .1) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-scan-bar-fill{ border-radius: 4px !important; background: #fff !important;}
+
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-pal { background: rgba(8, 9, 14, .35) !important; backdrop-filter: blur(3px) !important; -webkit-backdrop-filter: blur(3px) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-card{
+  border-radius: 16px !important; background: rgba(22, 24, 32, .72) !important; border-color: rgba(255, 255, 255, .14) !important;
+  backdrop-filter: blur(28px) saturate(1.4) !important; -webkit-backdrop-filter: blur(28px) saturate(1.4) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 30px 80px rgba(0, 0, 0, .55) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-in{ height: 56px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-in input{ font-size: 16px !important; font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-in kbd{ border: 0 !important; background: rgba(255, 255, 255, .08) !important; border-radius: 5px !important; font-family: var(--awc-font) !important; font-weight: 600 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-group{ letter-spacing: 0 !important; text-transform: none !important; font-size: 11px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-item{ border-radius: 8px !important; font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-item.awc-on{ background: rgba(255, 255, 255, .12) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-item.awc-on .awc-pal-ico{ color: #fff !important;}
+
+/* ── Alliance ── */
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-mem{ min-height: 50px !important; border-top-color: rgba(255, 255, 255, .06) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-mem-name{ font-weight: 600 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-mem-sub{ font-family: var(--awc-font) !important; font-size: 11px !important; font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-mem-val b{ font-family: var(--awc-font) !important; font-weight: 700 !important; color: #fff !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-mem-bar{ height: 3px !important; border-radius: 3px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-mem-bar i{ background: linear-gradient(90deg, var(--awsk-acc-deep), var(--awsk-acc)) !important; border-radius: 3px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-me-tag{ border-radius: 6px !important; background: color-mix(in srgb, var(--awsk-acc) 20%, transparent) !important; color: var(--awsk-acc-lite) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-mem.awc-me{ background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ally-sum{ font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ally-sum b{ font-family: var(--awc-font) !important; font-weight: 700 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-table-wrap{ border-radius: 14px !important; border-color: rgba(255, 255, 255, .1) !important; background: rgba(255, 255, 255, .03) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-atable th{ background: rgba(28, 30, 40, .96) !important; color: rgba(255, 255, 255, .56) !important; border-bottom-color: rgba(255, 255, 255, .1) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-atable td{ border-bottom-color: rgba(255, 255, 255, .055) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-atable tr:hover td{ background: rgba(255, 255, 255, .06) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ally-tools{ border-top-color: rgba(255, 255, 255, .08) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-ally-tools > summary b{ font-family: var(--awc-font) !important; font-weight: 700 !important;}
+
+/* ── historique, toast et bannière de MàJ ── */
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-uh-backdrop { background: rgba(8, 9, 14, .45) !important; backdrop-filter: blur(4px) !important; -webkit-backdrop-filter: blur(4px) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-uh-backdrop .awc-uh-card, #awc-update-toast, html.awc-on #aw-update-banner) {
+  border-radius: 20px !important; border: 1px solid rgba(255, 255, 255, .14) !important; color: #f1f1f6 !important; font-family: var(--awc-font) !important;
+  background: rgba(22, 24, 32, .74) !important;
+  backdrop-filter: blur(28px) saturate(1.4) !important; -webkit-backdrop-filter: blur(28px) saturate(1.4) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 30px 80px rgba(0, 0, 0, .55) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-uh-head{ border-bottom-color: rgba(255, 255, 255, .08) !important; padding: 18px 16px 14px 22px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-uh-htitle{ font-size: 18px !important; letter-spacing: -.02em !important; color: #fff !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-uh-hsub{ font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-uh-hsub b{ font-family: var(--awc-font) !important; font-weight: 700 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-uh-backdrop .awc-uh-x { border-radius: 9px !important; background: rgba(255, 255, 255, .07) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-uh-backdrop .awc-uh-item::before { background: rgba(255, 255, 255, .12) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-uh-dot{ background: #1c1e28 !important; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .25) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-uh-now .awc-uh-dot{ background: var(--awsk-acc) !important; box-shadow: 0 0 0 4px color-mix(in srgb, var(--awsk-acc) 22%, transparent) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-uh-backdrop .awc-uh-ver { font-family: var(--awc-font) !important; font-weight: 700 !important; color: #fff !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-uh-backdrop .awc-uh-cur { border-radius: 999px !important; padding: 1px 8px !important; color: #14163a !important; background: var(--awsk-acc-lite) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-uh-count{ font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-uh-backdrop .awc-uh-title { font-weight: 700 !important; color: #fff !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-uh-backdrop .awc-uh-list { color: rgba(255, 255, 255, .66) !important; font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-uh-backdrop .awc-uh-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18) !important; border-radius: 8px !important;}
+
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-update-toast { padding: 18px 18px 16px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-update-toast .awc-toast-x { color: rgba(255, 255, 255, .5) !important; top: 12px !important; right: 12px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-update-toast .awc-toast-x:hover { color: #fff !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-update-toast .awc-toast-badge { border-radius: 999px !important; padding: 2px 10px !important; font-size: 11px !important; font-weight: 700 !important; letter-spacing: 0 !important; color: #14163a !important; background: var(--awsk-acc-lite) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-update-toast .awc-toast-ver { font-size: 17px !important; font-weight: 700 !important; letter-spacing: -.01em !important; color: #fff !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-update-toast .awc-toast-ver b { font-family: var(--awc-font) !important; font-weight: 800 !important; color: var(--awsk-acc-lite) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-update-toast .awc-toast-title { font-size: 13px !important; font-weight: 700 !important; color: #fff !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-update-toast .awc-toast-list { font-size: 12px !important; font-weight: 500 !important; color: rgba(255, 255, 255, .68) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-update-toast .awc-toast-ok { border-radius: 10px !important; padding: 8px 18px !important; font-weight: 700 !important; color: #14163a !important; background: #fff !important; box-shadow: 0 6px 18px rgba(0, 0, 0, .25) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-update-toast .awc-toast-ok:hover { background: var(--awsk-acc-pale) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-update-banner .aw-update-text { font-family: var(--awc-font) !important; color: rgba(255, 255, 255, .72) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-update-banner .aw-update-buttons a { border-radius: 10px !important; font-family: var(--awc-font) !important; background: #fff !important; color: #14163a !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-update-banner .aw-update-buttons button { border-radius: 10px !important; font-family: var(--awc-font) !important; border-color: rgba(255, 255, 255, .16) !important;}
+
+/* ── contenus historiques dans les surfaces Verre (préfixe renforcé) ── */
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-kicker{
+  background: none !important; border: 0 !important; border-radius: 0 !important;
+  padding: 0 !important; margin: 18px 2px 8px !important;
+  font-family: var(--awc-font) !important; font-size: 12px !important; font-weight: 600 !important;
+  letter-spacing: 0 !important; text-transform: none !important; color: var(--awc-dim) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-kicker:first-child{ margin-top: 4px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) :is(.aw-section-header, .aw-calculator-panel__header, .aw-maxlevel-panel__header,
+  .aw-alliance-panel__header, .aw-fleet-viewer__header, .aw-optimizer-panel__header, .aw-theme-panel__header){
+  background: none !important; border: 0 !important; border-radius: 0 !important; padding: 0 2px 6px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) :is(.aw-section-title, .aw-calculator-panel__title, .aw-maxlevel-panel__title,
+  .aw-alliance-panel__title, .aw-fleet-viewer__title, .aw-optimizer-panel__title, .aw-theme-panel__title){
+  font-family: var(--awc-font) !important; font-size: 13px !important; font-weight: 700 !important;
+  letter-spacing: -.01em !important; text-transform: none !important; color: #fff !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) :is(.awap-box .tt, .awff-box .tt){
+  background: none !important; border-bottom: 1px solid rgba(255, 255, 255, .08) !important; border-radius: 12px 12px 0 0 !important;
+  color: #fff !important; font-weight: 700 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-card{
+  border-radius: 12px !important; background: rgba(255, 255, 255, .055) !important; border-color: rgba(255, 255, 255, .08) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07) !important; font-size: 13px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) :is(.awc-btn, .aw-btn, .awap-btn, .awff-btn){
+  border-radius: 9px !important; font-family: var(--awc-font) !important; font-weight: 600 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-btn{
+  background: rgba(255, 255, 255, .07) !important; border: 1px solid rgba(255, 255, 255, .1) !important; color: #fff !important; font-size: 12px !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-btn:hover{ background: rgba(255, 255, 255, .13) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-btn.awc-danger{ color: #ffb0b0 !important; border-color: rgba(255, 107, 107, .3) !important; background: rgba(255, 107, 107, .1) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) :is(.awc-select, .awc-number, .awc-chip-reset, .aw-input, .aw-select, .aw-calc-input){
+  border-radius: 8px !important; background: rgba(0, 0, 0, .25) !important; border-color: rgba(255, 255, 255, .12) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-toggle{ background: rgba(255, 255, 255, .14) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-toggle.awc-on{ background: #5fe3a1 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-toggle.awc-on::after{ background: #fff !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-set-row{ border-bottom-color: rgba(255, 255, 255, .06) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-set-label{ color: rgba(255, 255, 255, .88) !important; font-weight: 500 !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-empty{ font-style: normal !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-body, #awc-wide-body) table th {
+  background: rgba(255, 255, 255, .06) !important; color: rgba(255, 255, 255, .6) !important;
+  font-family: var(--awc-font) !important; font-weight: 600 !important; border-color: rgba(255, 255, 255, .06) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-body, #awc-wide-body) table td { border-color: rgba(255, 255, 255, .05) !important;}
+
+/* ── Verre + couleur d'accent choisie : les états actifs (blancs par défaut) prennent la couleur ── */
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn.awc-on { background: color-mix(in srgb, var(--awsk-acc) 32%, rgba(255, 255, 255, .05)) !important; color: #fff !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 55%, transparent), inset 0 1px 0 rgba(255, 255, 255, .12) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-rail-btn.awc-on svg { color: color-mix(in srgb, var(--awsk-acc) 60%, #fff) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-seg.awc-on { background: color-mix(in srgb, var(--awsk-acc) 32%, rgba(255, 255, 255, .05)) !important; color: #fff !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 55%, transparent), inset 0 1px 0 rgba(255, 255, 255, .12) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-toggle.awc-on { background: var(--awsk-acc) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-primary { background: var(--awsk-acc) !important; color: var(--awsk-ink) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-primary:hover { background: color-mix(in srgb, var(--awsk-acc) 82%, #fff) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-kicker { color: color-mix(in srgb, var(--awsk-acc) 72%, #fff) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-sec > span:first-child { color: color-mix(in srgb, var(--awsk-acc) 72%, #fff) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-item.awc-on { background: color-mix(in srgb, var(--awsk-acc) 32%, rgba(255, 255, 255, .05)) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 55%, transparent), inset 0 1px 0 rgba(255, 255, 255, .12) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-item.awc-on .awc-pal-ico { color: color-mix(in srgb, var(--awsk-acc) 60%, #fff) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-scan-bar-fill { background: var(--awsk-acc) !important;}
+:root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-toast-ok { background: var(--awsk-acc) !important; color: var(--awsk-ink) !important;}
+
+/* moins d'effets si l'utilisateur les a coupés au niveau du système */
+@media (prefers-reduced-transparency: reduce) {
+  :root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-rail::before, :root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-panel, :root.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-wide, :root.awc-skin-glass.awc-skin-glass.awc-skin-glass :is(#awc-rail, #awc-panel, #awc-wide, #awc-pal, #awc-uh-backdrop, #awc-update-toast, #aw-update-banner) .awc-pal-card{
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgb(24, 26, 34) !important;}
+}

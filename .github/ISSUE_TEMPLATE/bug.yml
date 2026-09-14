@@ -1,0 +1,44 @@
+name: Bug
+description: Signaler un problème / Report a problem
+labels: ["bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version de l'extension / Extension version
+      description: Rail → À propos (About)
+      placeholder: "1.0.6"
+    validations:
+      required: true
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Navigateur / Browser
+      options: [Chrome, Edge, Brave, Opera, Firefox, Autre / Other]
+    validations:
+      required: true
+  - type: dropdown
+    id: skin
+    attributes:
+      label: Apparence / Look
+      options: [Verre / Glass, HUD, Classique / Classic]
+  - type: input
+    id: page
+    attributes:
+      label: Page du jeu / Game page
+      placeholder: "/Game/Map"
+  - type: textarea
+    id: what
+    attributes:
+      label: Que se passe-t-il ? / What happens?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Étapes pour reproduire / Steps to reproduce
+      placeholder: "1. …\n2. …"
+  - type: textarea
+    id: extra
+    attributes:
+      label: Captures, erreurs de la console (F12) / Screenshots, console errors (F12)

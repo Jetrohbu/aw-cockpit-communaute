@@ -1,0 +1,89 @@
+{
+  "manifest_version": 3,
+  "name": "AW Cockpit — Édition communauté",
+  "short_name": "AW Cockpit",
+  "version": "1.0.6",
+  "description": "Habillage d'AstroWars : skins HUD, Verre et Classique, jauges graduées, cartes 3D. Sans compte, aucune donnée envoyée.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "AW Cockpit — Édition communauté",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "permissions": [
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://astrowars.games/*"
+      ],
+      "js": [
+        "reskin-early.js"
+      ],
+      "css": [
+        "game-reskin.css",
+        "cockpit.css",
+        "cockpit-skins.css",
+        "game-skins.css",
+        "community.css"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://astrowars.games/*"
+      ],
+      "js": [
+        "translations.js",
+        "map-enhance.js",
+        "trade-enhance.js",
+        "planets-enhance.js",
+        "planets-multiview.js",
+        "gauges.js",
+        "aw-carte-3d.js",
+        "aw-carte-2d.js",
+        "solar3d.js",
+        "cockpit.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/fonts/*",
+        "assets/planets/*",
+        "assets/icons/crosshair/*",
+        "assets/icons/orb/*",
+        "assets/icons/hex/*",
+        "assets/icons/star/*",
+        "assets/icons/diamond/*",
+        "assets/icons/pulse/*",
+        "assets/icons/ringed/*",
+        "assets/astrowars-logo.png",
+        "assets/astrowars-logo-rail.png",
+        "assets/space-bg.jpg",
+        "assets/space-bg-alert.jpg",
+        "vendor/three.module.min.js",
+        "aw-carte-3d.js",
+        "aw-carte-2d.js"
+      ],
+      "matches": [
+        "https://astrowars.games/*"
+      ]
+    }
+  ]
+}

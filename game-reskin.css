@@ -1,0 +1,553 @@
+/*
+ * AW Extension - Game Reskin
+ * Surcouche CSS pour restyler les pages in-game d'astrowars.games
+ * Toutes les regles sont scopees sous html.aw-reskin-active
+ * pour pouvoir activer/desactiver instantanement via un toggle de classe.
+ * Charge via manifest (document_start) = pas de flash.
+ */
+
+/* ============================================
+   JETONS « LOOK DU JEU » (--awg-*)  [EXCEPTION : non scopes]
+   Seules regles du fichier hors .aw-reskin-active : elles ne restylent rien
+   du jeu, elles donnent aux surcouches AW (barre carte #awm-bar, panneaux
+   Flottes / BIG fleets) exactement la palette native d'astrowars.css
+   (table.table th #231E64, td #404040, .lowlight #2F2F2F, hover #1F5857,
+   .map-toolbar #303030, .map-filter-panel #262626, .map-search-panel #1e1e1e).
+   Quand le reskin est actif, les memes jetons basculent sur ses couleurs :
+   les surcouches suivent donc TOUJOURS le theme reellement affiche.
+   Police : aucune famille imposee -> les surcouches font font-family:inherit
+   et heritent de la pile Bootstrap du jeu.
+   ============================================ */
+:root {
+  --awg-toolbar-bg: #303030;   /* .map-toolbar */
+  --awg-panel-bg: #262626;     /* .map-filter-panel */
+  --awg-panel-bg-2: #1e1e1e;   /* .map-search-panel */
+  --awg-head-bg: #231E64;      /* table.table th / td.head / div.head */
+  --awg-cell-bg: #404040;      /* table.table td */
+  --awg-lowlight: #2F2F2F;     /* .lowlight */
+  --awg-hover: #1F5857;        /* .highlight / table.hover */
+  --awg-row-hover: #2c2c2c;    /* .map-search-result-item:hover */
+  --awg-border: rgba(255, 255, 255, 0.12);
+  --awg-border-soft: rgba(255, 255, 255, 0.08);
+  --awg-cell-border: #000;     /* bordures de tableau du jeu */
+  --awg-input-border: #6c757d; /* .map-search-icon */
+  --awg-text: #fff;
+  --awg-text-2: #d0d0d0;       /* .map-search-result-item */
+  --awg-label: rgba(255, 255, 255, 0.55); /* .map-filter-panel-header */
+  --awg-muted: rgba(255, 255, 255, 0.4);  /* .map-search-result-sub */
+  --awg-faint: rgba(255, 255, 255, 0.38); /* .map-search-group-header */
+  --awg-accent: #5f8fc8;       /* accent-color des cases du jeu */
+  --awg-gold: #ffd262;         /* #toggleFilter.filter-active */
+  --awg-radius: 6px;
+}
+
+/* ============================================
+   VARIABLES DERIVEES (toujours definies, utilisees seulement si .aw-reskin-active)
+   ============================================ */
+html.aw-reskin-active {
+  /* les surcouches AW suivent le reskin via les memes jetons */
+  --awg-toolbar-bg: var(--game-cell-bg);
+  --awg-panel-bg: var(--game-lowlight-bg);
+  --awg-panel-bg-2: var(--aw-background, #0a0a1a);
+  --awg-head-bg: var(--game-header-bg);
+  --awg-cell-bg: var(--game-cell-bg);
+  --awg-lowlight: var(--game-lowlight-bg);
+  --awg-hover: var(--game-cell-hover);
+  --awg-row-hover: var(--game-cell-hover);
+  --awg-border: var(--game-border);
+  --awg-border-soft: var(--game-border);
+  --awg-cell-border: var(--game-border);
+  --awg-input-border: var(--game-border);
+  --awg-text: var(--aw-text, #d9ffff);
+  --awg-text-2: var(--aw-text, #d9ffff);
+  --awg-accent: var(--aw-turquoise);
+
+  --game-header-bg: color-mix(in srgb, var(--aw-turquoise) 25%, #0a0a1a);
+  --game-cell-bg: color-mix(in srgb, var(--aw-turquoise) 5%, #2a2a3a);
+  --game-cell-hover: color-mix(in srgb, var(--aw-turquoise) 15%, #1a2a3a);
+  --game-lowlight-bg: color-mix(in srgb, var(--aw-turquoise) 3%, #1f1f2f);
+  --game-border: color-mix(in srgb, var(--aw-turquoise) 20%, #111);
+  --game-btn-glow: color-mix(in srgb, var(--aw-turquoise) 40%, transparent);
+}
+
+/* ============================================
+   BODY & BACKGROUND
+   ============================================ */
+html.aw-reskin-active body {
+  background: radial-gradient(ellipse at 20% 0%, color-mix(in srgb, var(--aw-turquoise) 8%, transparent) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 100%, color-mix(in srgb, var(--aw-neon-pink) 5%, transparent) 0%, transparent 50%),
+              var(--aw-background, #0a0a1a) !important;
+  color: var(--aw-text, #d9ffff) !important;
+}
+
+/* ============================================
+   NAVIGATION TABLE
+   ============================================ */
+html.aw-reskin-active table.table.navigation td {
+  background-color: var(--game-lowlight-bg) !important;
+  border-color: var(--game-border) !important;
+}
+
+html.aw-reskin-active table.table.navigation td:hover,
+html.aw-reskin-active .navigation td:has(a:hover) {
+  background-color: var(--game-cell-hover) !important;
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--aw-turquoise) 20%, transparent);
+}
+
+html.aw-reskin-active table.table.navigation td.active {
+  background-color: var(--game-header-bg) !important;
+  box-shadow: inset 0 -2px 0 var(--aw-turquoise);
+}
+
+html.aw-reskin-active table.table.navigation td a {
+  color: var(--aw-text) !important;
+}
+
+/* ============================================
+   TABLE HEADERS (th, .head, .active cells)
+   ============================================ */
+html.aw-reskin-active table.table th,
+html.aw-reskin-active table.table td.active,
+html.aw-reskin-active table.table td.head,
+html.aw-reskin-active table.table tr.head td,
+html.aw-reskin-active div.head {
+  background-color: var(--game-header-bg) !important;
+  color: var(--aw-text) !important;
+  border-color: var(--game-border) !important;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--aw-turquoise) 30%, transparent);
+}
+
+/* ============================================
+   TABLE CELLS
+   ============================================ */
+html.aw-reskin-active table.table td:not(.msg) {
+  background-color: var(--game-cell-bg) !important;
+  color: var(--aw-text) !important;
+  border-color: var(--game-border) !important;
+}
+
+/* News/messages cells: keep original game background, only adjust border */
+html.aw-reskin-active table.table td.msg {
+  border-color: var(--game-border) !important;
+}
+
+html.aw-reskin-active table.table thead,
+html.aw-reskin-active table.table tbody,
+html.aw-reskin-active table.table tfoot,
+html.aw-reskin-active table.table tr,
+html.aw-reskin-active table.table td,
+html.aw-reskin-active table.table th {
+  border-color: var(--game-border) !important;
+}
+
+/* Lowlight rows */
+html.aw-reskin-active .lowlight:not(.msg),
+html.aw-reskin-active table.table tr.lowlight td:not(.msg),
+html.aw-reskin-active table.table tr.lowlight th,
+html.aw-reskin-active table.table td.lowlight:not(.msg) {
+  background-color: var(--game-lowlight-bg) !important;
+}
+
+/* Odd/even */
+html.aw-reskin-active table.table.oddEven tbody tr:nth-child(even) td,
+html.aw-reskin-active table.table.evenOdd tbody tr:nth-child(odd) td {
+  background-color: var(--game-lowlight-bg) !important;
+}
+
+html.aw-reskin-active table.table.oddEven tbody tr:nth-child(odd) td,
+html.aw-reskin-active table.table.evenOdd tbody tr:nth-child(even) td {
+  background-color: var(--game-cell-bg) !important;
+}
+
+/* Hover */
+html.aw-reskin-active table.table.hover :not(thead) tr:not(.no-hover, .head, .siege, .alert):hover td,
+html.aw-reskin-active table.table.hover :not(thead) tr:not(.no-hover, .head) td:hover,
+html.aw-reskin-active table.table.hover :not(thead) tr.lowlight:hover:not(.no-hover) td,
+html.aw-reskin-active table.table td.hover:hover {
+  background-color: var(--game-cell-hover) !important;
+}
+
+/* Highlight */
+html.aw-reskin-active table.table tr.highlight td:not(.alert),
+html.aw-reskin-active table.table td.highlight,
+html.aw-reskin-active table.table tr.highlight-checked:has(input:checked[type=radio]) td,
+html.aw-reskin-active table.table td.highlight-checked:has(input:checked[type=radio]) {
+  background-color: var(--game-cell-hover) !important;
+}
+
+/* Footer rows */
+html.aw-reskin-active table.table tfoot tr td {
+  background-color: var(--game-lowlight-bg) !important;
+}
+
+/* ============================================
+   ALERT / SIEGE / FRIENDLY ROWS
+   ============================================ */
+html.aw-reskin-active table.table tr.siege td,
+html.aw-reskin-active table.table tr.alert td,
+html.aw-reskin-active table.table td.alert {
+  background-color: color-mix(in srgb, #ff3333 20%, var(--game-cell-bg)) !important;
+}
+
+html.aw-reskin-active table.table tr.friendly-siege td {
+  background-color: color-mix(in srgb, var(--aw-neon-green) 15%, var(--game-cell-bg)) !important;
+}
+
+/* Victory */
+html.aw-reskin-active table.table tr.ranking-victory td {
+  background-color: color-mix(in srgb, #FFD700 30%, var(--game-cell-bg)) !important;
+  color: #FFD700 !important;
+}
+
+html.aw-reskin-active table.table tr.ranking-victory td a {
+  color: #FFD700 !important;
+}
+
+/* ============================================
+   LINKS
+   ============================================ */
+html.aw-reskin-active a {
+  color: var(--aw-turquoise) !important;
+}
+
+html.aw-reskin-active a:hover:not(.btn) {
+  color: var(--aw-border) !important;
+  text-shadow: 0 0 6px color-mix(in srgb, var(--aw-turquoise) 40%, transparent);
+}
+
+html.aw-reskin-active table.table.navigation td a,
+html.aw-reskin-active .ignore-highlight {
+  color: var(--aw-text) !important;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+html.aw-reskin-active .btn-primary {
+  background: linear-gradient(135deg, var(--aw-turquoise), color-mix(in srgb, var(--aw-turquoise) 70%, #000)) !important;
+  border-color: var(--aw-turquoise) !important;
+  color: var(--aw-background, #000) !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+  box-shadow: 0 0 8px var(--game-btn-glow), 0 2px 4px rgba(0,0,0,0.3) !important;
+  
+}
+
+html.aw-reskin-active .btn-primary:hover,
+html.aw-reskin-active .btn-primary:focus {
+  background: linear-gradient(135deg, var(--aw-border), var(--aw-turquoise)) !important;
+  box-shadow: 0 0 16px var(--game-btn-glow), 0 4px 8px rgba(0,0,0,0.4) !important;
+  transform: translateY(-1px);
+}
+
+html.aw-reskin-active .btn-success {
+  background: linear-gradient(135deg, var(--aw-neon-green), color-mix(in srgb, var(--aw-neon-green) 70%, #000)) !important;
+  border-color: var(--aw-neon-green) !important;
+  color: #000 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--aw-neon-green) 40%, transparent) !important;
+  
+}
+
+html.aw-reskin-active .btn-success:hover,
+html.aw-reskin-active .btn-success:focus {
+  box-shadow: 0 0 16px color-mix(in srgb, var(--aw-neon-green) 50%, transparent) !important;
+  transform: translateY(-1px);
+}
+
+html.aw-reskin-active .btn-danger {
+  background: linear-gradient(135deg, var(--aw-neon-pink), color-mix(in srgb, var(--aw-neon-pink) 70%, #000)) !important;
+  border-color: var(--aw-neon-pink) !important;
+  color: #fff !important;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--aw-neon-pink) 40%, transparent) !important;
+  
+}
+
+html.aw-reskin-active .btn-warning {
+  background: linear-gradient(135deg, #ffb347, color-mix(in srgb, #ffb347 70%, #000)) !important;
+  border-color: #ffb347 !important;
+  color: #000 !important;
+  box-shadow: 0 0 8px rgba(255, 179, 71, 0.3) !important;
+  
+}
+
+html.aw-reskin-active .btn-info {
+  background: linear-gradient(135deg, var(--aw-blue), color-mix(in srgb, var(--aw-blue) 70%, #000)) !important;
+  border-color: var(--aw-blue) !important;
+  color: #fff !important;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--aw-blue) 40%, transparent) !important;
+  
+}
+
+/* Small buttons */
+html.aw-reskin-active .btn-sx,
+html.aw-reskin-active .btn-group-sx > .btn {
+  border-radius: 4px !important;
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+html.aw-reskin-active .badge.bg-success {
+  background-color: color-mix(in srgb, var(--aw-neon-green) 80%, #000) !important;
+}
+
+html.aw-reskin-active .badge.bg-info {
+  background-color: color-mix(in srgb, var(--aw-blue) 80%, #000) !important;
+  color: #fff !important;
+}
+
+html.aw-reskin-active .badge.bg-danger {
+  background-color: color-mix(in srgb, var(--aw-neon-pink) 80%, #000) !important;
+}
+
+html.aw-reskin-active .badge.bg-warning {
+  color: #000 !important;
+}
+
+/* ============================================
+   PROGRESS BARS
+   ============================================ */
+html.aw-reskin-active .progress-bar,
+html.aw-reskin-active .progress-bar-timed {
+  background-color: var(--game-lowlight-bg) !important;
+  border: 1px solid var(--game-border) !important;
+  border-radius: 4px !important;
+  overflow: hidden;
+}
+
+html.aw-reskin-active .progress-bar .progress,
+html.aw-reskin-active .progress-bar-timed .progress {
+  background: linear-gradient(90deg, var(--aw-turquoise), color-mix(in srgb, var(--aw-turquoise) 60%, var(--aw-neon-green))) !important;
+  border-radius: 3px !important;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--aw-turquoise) 30%, transparent);
+}
+
+html.aw-reskin-active .progress-bar .progress-text,
+html.aw-reskin-active .progress-bar-timed .progress-text {
+  color: var(--aw-text) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+/* ============================================
+   MODALS
+   ============================================ */
+html.aw-reskin-active .modal .modal-content {
+  background-color: var(--game-lowlight-bg) !important;
+  border: 1px solid var(--game-border) !important;
+  box-shadow: 0 0 30px color-mix(in srgb, var(--aw-turquoise) 15%, transparent);
+}
+
+html.aw-reskin-active .modal .modal-footer {
+  border-top: 1px solid var(--game-border) !important;
+  background-color: color-mix(in srgb, var(--aw-turquoise) 5%, #111) !important;
+}
+
+/* ============================================
+   FORMS
+   ============================================ */
+html.aw-reskin-active .form-control,
+html.aw-reskin-active .form-select {
+  background-color: color-mix(in srgb, var(--aw-turquoise) 5%, #111) !important;
+  border-color: var(--game-border) !important;
+  color: var(--aw-text) !important;
+}
+
+html.aw-reskin-active .form-control:focus,
+html.aw-reskin-active .form-select:focus {
+  border-color: var(--aw-turquoise) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--aw-turquoise) 25%, transparent) !important;
+}
+
+html.aw-reskin-active .form-check-input {
+  background-color: var(--game-cell-bg) !important;
+  border-color: var(--game-border) !important;
+}
+
+html.aw-reskin-active .form-check-input:checked {
+  background-color: var(--aw-turquoise) !important;
+  border-color: var(--aw-turquoise) !important;
+}
+
+/* ============================================
+   RESOURCE BADGES (Production, Culture, Science, Growth)
+   ============================================ */
+html.aw-reskin-active .bonus-production,
+html.aw-reskin-active .output-production {
+  background-color: color-mix(in srgb, saddlebrown 70%, var(--aw-turquoise) 10%) !important;
+}
+
+html.aw-reskin-active .bonus-culture,
+html.aw-reskin-active .output-culture {
+  background-color: color-mix(in srgb, purple 70%, var(--aw-neon-pink) 15%) !important;
+}
+
+html.aw-reskin-active .bonus-science,
+html.aw-reskin-active .output-science {
+  background-color: color-mix(in srgb, royalblue 70%, var(--aw-blue) 15%) !important;
+}
+
+html.aw-reskin-active .bonus-growth,
+html.aw-reskin-active .output-growth {
+  background-color: color-mix(in srgb, darkolivegreen 70%, var(--aw-neon-green) 15%) !important;
+}
+
+/* ============================================
+   FLEET INDICATORS
+   ============================================ */
+html.aw-reskin-active .fleet-launch {
+  background-color: color-mix(in srgb, var(--aw-neon-green) 25%, #1a1a2a) !important;
+}
+
+html.aw-reskin-active .fleet-available {
+  background-color: color-mix(in srgb, var(--aw-blue) 40%, #1a1a2a) !important;
+}
+
+/* ============================================
+   BATTLE RESULTS
+   ============================================ */
+html.aw-reskin-active .bg-battle-victory {
+  background-color: color-mix(in srgb, var(--aw-neon-green) 25%, #0a0a1a) !important;
+}
+
+html.aw-reskin-active .bg-battle-lost {
+  background-color: color-mix(in srgb, #ff3333 25%, #0a0a1a) !important;
+}
+
+/* ============================================
+   MAP
+   ============================================ */
+html.aw-reskin-active .map-content {
+  background-image: linear-gradient(to right, color-mix(in srgb, var(--aw-turquoise) 10%, #111) 1px, transparent 1px),
+                     linear-gradient(color-mix(in srgb, var(--aw-turquoise) 10%, #111) 1px, transparent 1px) !important;
+}
+
+html.aw-reskin-active .map-system-popover {
+  background: var(--game-lowlight-bg) !important;
+  border: 1px solid color-mix(in srgb, var(--aw-turquoise) 30%, transparent) !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 12px color-mix(in srgb, var(--aw-turquoise) 10%, transparent) !important;
+  color: var(--aw-text) !important;
+}
+
+/* ============================================
+   MESSAGES (unread, etc.) - keep original game colors
+   ============================================ */
+
+/* ============================================
+   RACE PICK GRADIENT (keep game feel but tint)
+   ============================================ */
+html.aw-reskin-active table.table td.race-pick-0 { background-color: color-mix(in srgb, #ff2222 15%, var(--game-cell-bg)) !important; }
+html.aw-reskin-active table.table td.race-pick-1 { background-color: color-mix(in srgb, #ff4422 12%, var(--game-cell-bg)) !important; }
+html.aw-reskin-active table.table td.race-pick-2 { background-color: color-mix(in srgb, #ff6622 10%, var(--game-cell-bg)) !important; }
+html.aw-reskin-active table.table td.race-pick-3 { background-color: color-mix(in srgb, #ff8822 8%, var(--game-cell-bg)) !important; }
+html.aw-reskin-active table.table td.race-pick-4 { background-color: var(--game-cell-bg) !important; }
+html.aw-reskin-active table.table td.race-pick-5 { background-color: color-mix(in srgb, #88cc22 8%, var(--game-cell-bg)) !important; }
+html.aw-reskin-active table.table td.race-pick-6 { background-color: color-mix(in srgb, #66cc22 10%, var(--game-cell-bg)) !important; }
+html.aw-reskin-active table.table td.race-pick-7 { background-color: color-mix(in srgb, #44cc33 12%, var(--game-cell-bg)) !important; }
+html.aw-reskin-active table.table td.race-pick-8 { background-color: color-mix(in srgb, var(--aw-neon-green) 15%, var(--game-cell-bg)) !important; }
+
+/* ============================================
+   RANKING MOVEMENT
+   ============================================ */
+html.aw-reskin-active table.table td.ranking-up {
+  background-color: color-mix(in srgb, var(--aw-neon-green) 10%, var(--game-cell-bg)) !important;
+}
+
+html.aw-reskin-active table.table td.ranking-down {
+  background-color: color-mix(in srgb, #ff3333 10%, var(--game-cell-bg)) !important;
+}
+
+/* ============================================
+   TEXT HIGHLIGHTS
+   ============================================ */
+html.aw-reskin-active .text-highlight {
+  color: var(--aw-turquoise) !important;
+}
+
+html.aw-reskin-active .text-highlight-orange {
+  color: color-mix(in srgb, #ff8040 80%, var(--aw-turquoise) 20%) !important;
+}
+
+/* ============================================
+   BUILDING LEVELS
+   ============================================ */
+html.aw-reskin-active table.table td.building-lvl-started {
+  color: color-mix(in srgb, #FFD700 80%, var(--aw-turquoise)) !important;
+}
+
+html.aw-reskin-active table.table td.building-lvl-finish {
+  color: var(--aw-neon-green) !important;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+html.aw-reskin-active footer,
+html.aw-reskin-active .footer a,
+html.aw-reskin-active footer a {
+  color: color-mix(in srgb, var(--aw-text) 60%, transparent) !important;
+}
+
+/* ============================================
+   TOOLTIPS
+   ============================================ */
+html.aw-reskin-active .tooltip .tooltip-inner {
+  background-color: var(--game-lowlight-bg) !important;
+  border-color: var(--game-border) !important;
+  color: var(--aw-text) !important;
+}
+
+/* ============================================
+   SCROLLBAR (Webkit)
+   ============================================ */
+html.aw-reskin-active ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html.aw-reskin-active ::-webkit-scrollbar-track {
+  background: var(--aw-background, #0a0a1a);
+}
+
+html.aw-reskin-active ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--aw-turquoise) 30%, #333);
+  border-radius: 4px;
+}
+
+html.aw-reskin-active ::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--aw-turquoise) 50%, #333);
+}
+
+/* ============================================
+   CARD BODY FIX
+   ============================================ */
+html.aw-reskin-active .card-body,
+html.aw-reskin-active .card-body .nav-link,
+html.aw-reskin-active .card-body .nav-link:hover,
+html.aw-reskin-active .card-body .nav-link:focus {
+  color: var(--aw-text) !important;
+  background-color: var(--game-cell-bg) !important;
+}
+
+html.aw-reskin-active .card {
+  background-color: var(--game-lowlight-bg) !important;
+  border-color: var(--game-border) !important;
+}
+
+/* ============================================
+   MISC
+   ============================================ */
+html.aw-reskin-active code {
+  background-color: var(--game-header-bg) !important;
+  color: var(--aw-turquoise) !important;
+}
+
+html.aw-reskin-active ::selection {
+  background: color-mix(in srgb, var(--aw-turquoise) 40%, transparent);
+  color: #fff;
+}
+
+/* Transitions only on buttons (not on all elements - causes lag) */
+html.aw-reskin-active .btn {
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}

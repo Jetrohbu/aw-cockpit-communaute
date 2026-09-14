@@ -1,0 +1,280 @@
+{
+  "version": "1.0.6",
+  "date": "14/09/2026",
+  "zip": "aw-cockpit-communaute-1.0.6.zip",
+  "size": "5,2 Mo",
+  "releases": [
+    {
+      "version": "1.0.6",
+      "date": "14/09/2026",
+      "title": "Alerte de nouvelle version, aide et rapport de bug",
+      "points": [
+        "Une carte « Nouvelle version » apparaît dans le jeu quand une mise à jour sort, avec le bouton Télécharger (vérification sur GitHub une fois par jour, rien n'est envoyé)",
+        "À propos : état de la mise à jour, « Vérifier maintenant », « Signaler un bug » et « Questions fréquentes »",
+        "Code source et versions publiés sur GitHub"
+      ],
+      "i18n": {
+        "en": {
+          "title": "New version alert, help and bug report",
+          "points": [
+            "A “New version” card appears in the game when an update is out, with a Download button (checked on GitHub once a day, nothing is sent)",
+            "About: update status, “Check now”, “Report a bug” and “FAQ”",
+            "Source code and releases published on GitHub"
+          ]
+        },
+        "es": {
+          "title": "Aviso de nueva versión, ayuda e informe de errores",
+          "points": [
+            "Aparece una tarjeta «Nueva versión» en el juego cuando sale una actualización, con el botón Descargar (comprobación en GitHub una vez al día, no se envía nada)",
+            "Acerca de: estado de la actualización, «Comprobar ahora», «Informar de un error» y «Preguntas frecuentes»",
+            "Código fuente y versiones publicados en GitHub"
+          ]
+        },
+        "de": {
+          "title": "Hinweis auf neue Version, Hilfe und Fehlerbericht",
+          "points": [
+            "Eine Karte „Neue Version“ erscheint im Spiel, sobald ein Update erscheint, mit Download-Button (Prüfung auf GitHub einmal am Tag, nichts wird gesendet)",
+            "Über: Update-Status, „Jetzt prüfen“, „Fehler melden“ und „Häufige Fragen“",
+            "Quellcode und Versionen auf GitHub veröffentlicht"
+          ]
+        }
+      }
+    },
+    {
+      "version": "1.0.5",
+      "date": "14/09/2026",
+      "title": "Barres de défilement dans tous les thèmes",
+      "points": [
+        "Barres de défilement visibles partout aux couleurs de ton apparence (Classique, HUD, Verre, couleur d'accent comprise)",
+        "Pages du jeu : barres de défilement aux couleurs du thème quand « Skin du jeu » est activé"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Scrollbars in every theme",
+          "points": [
+            "Scrollbars visible everywhere in the colours of your look (Classic, HUD, Glass, accent colour included)",
+            "Game pages: scrollbars in the theme colours when “Game skin” is on"
+          ]
+        },
+        "es": {
+          "title": "Barras de desplazamiento en todos los temas",
+          "points": [
+            "Barras de desplazamiento visibles en todas partes con los colores de tu apariencia (Clásico, HUD, Cristal, color de acento incluido)",
+            "Páginas del juego: barras de desplazamiento con los colores del tema cuando «Skin del juego» está activado"
+          ]
+        },
+        "de": {
+          "title": "Scrollleisten in allen Themes",
+          "points": [
+            "Scrollleisten überall sichtbar, in den Farben deines Looks (Klassisch, HUD, Glas, Akzentfarbe inklusive)",
+            "Spielseiten: Scrollleisten in den Theme-Farben, wenn „Spiel-Skin“ aktiv ist"
+          ]
+        }
+      }
+    },
+    {
+      "version": "1.0.4",
+      "date": "13/09/2026",
+      "title": "Un ZIP pour tous les navigateurs",
+      "points": [
+        "Le ZIP contient un dossier par navigateur (Chrome, Edge, Brave, Opera / Firefox) et un LISEZ-MOI",
+        "Chrome, Edge, Brave et Opera : plus d'avertissement « background.scripts » dans la page des extensions"
+      ],
+      "i18n": {
+        "en": {
+          "title": "One ZIP for every browser",
+          "points": [
+            "The ZIP contains one folder per browser (Chrome, Edge, Brave, Opera / Firefox) and a readme",
+            "Chrome, Edge, Brave and Opera: no more “background.scripts” warning on the extensions page"
+          ]
+        },
+        "es": {
+          "title": "Un ZIP para todos los navegadores",
+          "points": [
+            "El ZIP contiene una carpeta por navegador (Chrome, Edge, Brave, Opera / Firefox) y un léeme",
+            "Chrome, Edge, Brave y Opera: se acabó el aviso «background.scripts» en la página de extensiones"
+          ]
+        },
+        "de": {
+          "title": "Ein ZIP für alle Browser",
+          "points": [
+            "Das ZIP enthält einen Ordner pro Browser (Chrome, Edge, Brave, Opera / Firefox) und eine Liesmich-Datei",
+            "Chrome, Edge, Brave und Opera: keine „background.scripts“-Warnung mehr auf der Erweiterungsseite"
+          ]
+        }
+      }
+    },
+    {
+      "version": "1.0.3",
+      "date": "13/09/2026",
+      "title": "Compatible Firefox",
+      "points": [
+        "L'extension s'installe aussi dans Firefox 128 ou plus récent (module temporaire, voir Installer)"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Firefox compatible",
+          "points": [
+            "The extension also installs in Firefox 128 or newer (temporary add-on, see Install)"
+          ]
+        },
+        "es": {
+          "title": "Compatible con Firefox",
+          "points": [
+            "La extensión también se instala en Firefox 128 o posterior (complemento temporal, ver Instalar)"
+          ]
+        },
+        "de": {
+          "title": "Firefox-kompatibel",
+          "points": [
+            "Die Erweiterung lässt sich auch in Firefox 128 oder neuer installieren (temporäres Add-on, siehe Installieren)"
+          ]
+        }
+      }
+    },
+    {
+      "version": "1.0.2",
+      "date": "13/09/2026",
+      "title": "Section Team Holocron",
+      "points": [
+        "À propos : nouvelle section Team Holocron",
+        "Crédits et licences regroupés dans le fichier CREDITS.txt de l'extension"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Team Holocron section",
+          "points": [
+            "About: new Team Holocron section",
+            "Credits and licences gathered in the extension's CREDITS.txt file"
+          ]
+        },
+        "es": {
+          "title": "Sección Team Holocron",
+          "points": [
+            "Acerca de: nueva sección Team Holocron",
+            "Créditos y licencias reunidos en el archivo CREDITS.txt de la extensión"
+          ]
+        },
+        "de": {
+          "title": "Bereich Team Holocron",
+          "points": [
+            "Über: neuer Bereich Team Holocron",
+            "Credits und Lizenzen gesammelt in der Datei CREDITS.txt der Erweiterung"
+          ]
+        }
+      }
+    },
+    {
+      "version": "1.0.1",
+      "date": "13/09/2026",
+      "title": "Carte 3D de toute la galaxie, écran d'accueil, News en cartes",
+      "points": [
+        "Carte : la vue 3D s'ouvre directement et montre toute la galaxie ; panneau Réglages 3D refait (onglets Vue · Style · Galaxie)",
+        "Écran d'accueil à l'installation et nouveau menu de l'icône : langue, pseudo, apparence, couleur d'accent, fond et alerte d'attaque",
+        "News en cartes avec HUD et Verre, badge « Toi » sur les messages qui te visent, option « Seulement si elle vise mes planètes »",
+        "Couleurs d'alliance du jeu respectées dans la vue 3D, les territoires et la vue système",
+        "Buildings : les niveaux en cours ressortent en jaune, y compris ceux que ton stock de PP suffit à terminer"
+      ],
+      "i18n": {
+        "en": {
+          "title": "3D map of the whole galaxy, welcome screen, News as cards",
+          "points": [
+            "Map: the 3D view opens straight away and shows the whole galaxy; 3D settings panel redone (View · Style · Galaxy tabs)",
+            "Welcome screen on install and new icon menu: language, player name, look, accent colour, background and attack alert",
+            "News as cards with HUD and Glass, “You” badge on messages that target you, “Only when it targets my planets” option",
+            "The game's alliance colours are respected in the 3D view, territories and system view",
+            "Buildings: levels in progress stand out in yellow, including those your PP stock is enough to finish"
+          ]
+        },
+        "es": {
+          "title": "Mapa 3D de toda la galaxia, pantalla de bienvenida, News en tarjetas",
+          "points": [
+            "Mapa: la vista 3D se abre directamente y muestra toda la galaxia; panel de ajustes 3D rehecho (pestañas Vista · Estilo · Galaxia)",
+            "Pantalla de bienvenida al instalar y nuevo menú del icono: idioma, nombre de jugador, apariencia, color de acento, fondo y alerta de ataque",
+            "News en tarjetas con HUD y Cristal, distintivo «Tú» en los mensajes que te apuntan, opción «Solo si apunta a mis planetas»",
+            "Se respetan los colores de alianza del juego en la vista 3D, los territorios y la vista de sistema",
+            "Buildings: los niveles en curso destacan en amarillo, incluidos los que tu reserva de PP basta para terminar"
+          ]
+        },
+        "de": {
+          "title": "3D-Karte der ganzen Galaxie, Willkommensbildschirm, News als Karten",
+          "points": [
+            "Karte: Die 3D-Ansicht öffnet sich direkt und zeigt die ganze Galaxie; 3D-Einstellungen neu gestaltet (Tabs Ansicht · Stil · Galaxie)",
+            "Willkommensbildschirm bei der Installation und neues Symbolmenü: Sprache, Spielername, Look, Akzentfarbe, Hintergrund und Angriffsalarm",
+            "News als Karten mit HUD und Glas, Abzeichen „Du“ bei Nachrichten, die dich betreffen, Option „Nur wenn sie meine Planeten angreift“",
+            "Die Allianzfarben des Spiels werden in der 3D-Ansicht, den Territorien und der Systemansicht übernommen",
+            "Buildings: laufende Stufen werden gelb hervorgehoben, auch solche, die dein PP-Vorrat fertigstellen kann"
+          ]
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "13/09/2026",
+      "title": "Première version de l'édition communauté",
+      "points": [
+        "Trois apparences au choix : Verre (par défaut), HUD et Classique, avec couleur d'accent personnalisable",
+        "Les pages du jeu suivent l'apparence : onglets, tableaux, News, rapports de combat, boutons, fenêtres, carte",
+        "Jauges graduées réglables pour les Planètes et la Science",
+        "Fond spatial avec animation optionnelle",
+        "Fond rouge automatique quand une flotte ennemie arrive, d'après les incoming de ta page News",
+        "Carte : vue 3D de la galaxie, territoires 2D et 7 styles d'icônes de systèmes",
+        "Vue 3D des systèmes solaires avec planètes texturées",
+        "Vue multi-planètes et temps jusqu'au prochain niveau de population",
+        "Trade : filtre par tier, bouton Afficher / Masquer Use Supply Unit, colonnes Coût PP et Temps farm, convertisseur PP ⇄ $",
+        "Aucun serveur tiers : l'extension ne parle qu'au jeu, aucune donnée envoyée"
+      ],
+      "i18n": {
+        "en": {
+          "title": "First release of the community edition",
+          "points": [
+            "Three looks to choose from: Glass (default), HUD and Classic, with a customisable accent colour",
+            "Game pages follow the look: tabs, tables, News, battle reports, buttons, windows, map",
+            "Adjustable graduated gauges for Planets and Science",
+            "Space background with optional animation",
+            "Automatic red background when an enemy fleet is incoming, based on the incoming messages on your News page",
+            "Map: 3D galaxy view, 2D territories and 7 system icon styles",
+            "3D view of solar systems with textured planets",
+            "Multi-planet view and time until the next population level",
+            "Trade: tier filter, Show / Hide Use Supply Unit button, PP cost and farm time columns, PP ⇄ $ converter",
+            "No third-party server: the extension only talks to the game, no data sent"
+          ]
+        },
+        "es": {
+          "title": "Primera versión de la edición comunidad",
+          "points": [
+            "Tres apariencias a elegir: Cristal (por defecto), HUD y Clásico, con color de acento personalizable",
+            "Las páginas del juego siguen la apariencia: pestañas, tablas, News, informes de combate, botones, ventanas, mapa",
+            "Indicadores graduados ajustables para Planets y Science",
+            "Fondo espacial con animación opcional",
+            "Fondo rojo automático cuando llega una flota enemiga, según los incoming de tu página News",
+            "Mapa: vista 3D de la galaxia, territorios 2D y 7 estilos de iconos de sistemas",
+            "Vista 3D de los sistemas solares con planetas texturizados",
+            "Vista multiplaneta y tiempo hasta el próximo nivel de población",
+            "Trade: filtro por tier, botón Mostrar / Ocultar Use Supply Unit, columnas coste en PP y tiempo de farm, conversor PP ⇄ $",
+            "Sin servidor de terceros: la extensión solo habla con el juego, ningún dato enviado"
+          ]
+        },
+        "de": {
+          "title": "Erste Version der Community-Edition",
+          "points": [
+            "Drei Looks zur Auswahl: Glas (Standard), HUD und Klassisch, mit anpassbarer Akzentfarbe",
+            "Die Spielseiten folgen dem Look: Tabs, Tabellen, News, Kampfberichte, Buttons, Fenster, Karte",
+            "Einstellbare skalierte Anzeigen für Planets und Science",
+            "Weltraum-Hintergrund mit optionaler Animation",
+            "Automatischer roter Hintergrund, wenn eine feindliche Flotte anfliegt, anhand der Incoming-Meldungen deiner News-Seite",
+            "Karte: 3D-Ansicht der Galaxie, 2D-Territorien und 7 Symbolstile für Systeme",
+            "3D-Ansicht der Sonnensysteme mit texturierten Planeten",
+            "Mehrplaneten-Ansicht und Zeit bis zur nächsten Bevölkerungsstufe",
+            "Trade: Tier-Filter, Button Use Supply Unit ein-/ausblenden, Spalten PP-Kosten und Farmzeit, PP ⇄ $-Umrechner",
+            "Kein Drittserver: Die Erweiterung spricht nur mit dem Spiel, keine Daten werden gesendet"
+          ]
+        }
+      }
+    }
+  ],
+  "zip_firefox": "aw-cockpit-communaute-1.0.6-firefox.zip",
+  "size_firefox": "5,2 Mo",
+  "zip_bundle": "aw-cockpit-communaute-1.0.6-tous-navigateurs.zip",
+  "size_bundle": "10,4 Mo"
+}

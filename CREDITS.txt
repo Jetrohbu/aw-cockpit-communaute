@@ -1,0 +1,8 @@
+AW Cockpit - Edition communaute, par la Team Holocron.
+
+Credits et licences
+- Textures de planetes : Solar System Scope, licence CC BY 4.0 (voir assets/planets/ATTRIBUTION.txt).
+- Polices : Rajdhani, JetBrains Mono, Manrope, sous SIL Open Font License 1.1.
+- Rendu 3D : three.js, licence MIT (mention de licence dans vendor/three.module.min.js).
+
+Extension non officielle, sans lien avec Mud Flat Games. AstroWars est une marque de ses auteurs.

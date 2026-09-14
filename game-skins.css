@@ -1,0 +1,852 @@
+/* ═══════════════════════════════════════════════════════════════════
+   PAGES DU JEU — SKINS « HUD » ET « VERRE »
+   Chargé après cockpit.css / cockpit-skins.css (manifest, document_start).
+   ───────────────────────────────────────────────────────────────────
+   Actif quand le « Skin du jeu » est allumé (html.awc-gameskin) ET qu'un
+   skin d'outil est choisi : html.awc-skin-hud.awc-skin-hud.awc-skin-hud ou html.awc-skin-glass.awc-skin-glass.awc-skin-glass.
+   En « Classique », le skin du jeu historique de cockpit.css s'applique seul.
+
+   Même mécanique que cockpit-skins.css : ce fichier source est écrit
+   lisiblement, puis chaque sélecteur reçoit un préfixe renforcé et chaque
+   déclaration un !important (le skin historique est entièrement en
+   !important, avec des sélecteurs à 5-6 classes).
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ═══════════ HUD ═══════════ */
+
+/* fond de page : trame fine + vignette (quand l'image de fond est coupée) */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin { background-color: #04070a !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin.awc-nobg {
+  background-image:
+    radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--awsk-acc) 7%, transparent), transparent 60%),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 1.8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--awsk-acc) 1.8%, transparent) 1px, transparent 1px) !important;
+  background-size: auto, 48px 48px, 48px 48px !important;
+  background-attachment: fixed !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin body { color: #dfeef0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin main :is(h1, h2, h3, h4, h5, h6) {
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-weight: 700 !important; letter-spacing: .08em !important; color: #f2fdfe !important;}
+
+/* ── onglets (nav principale + sous-navs) ── */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table.navigation { border-spacing: 4px 0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table.navigation td {
+  background: rgba(7, 11, 15, .92) !important;
+  border: 1px solid color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important;
+  border-radius: 0 !important;
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px) !important;
+  color: rgba(223, 238, 240, .62) !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important;
+  font-size: 13px !important; font-weight: 700 !important; letter-spacing: .16em !important; text-transform: uppercase !important;
+  box-shadow: none !important; text-shadow: none !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table.navigation td:hover:has(a) {
+  border-color: color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important; color: #f2fdfe !important;
+  background: color-mix(in srgb, var(--awsk-acc) 7%, transparent) !important; box-shadow: none !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table.navigation td.highlight,
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table.navigation td.active {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--awsk-acc) 16%, transparent), color-mix(in srgb, var(--awsk-acc) 4%, transparent)), rgba(7, 11, 15, .95) !important;
+  border-color: color-mix(in srgb, var(--awsk-acc) 60%, transparent) !important;
+  color: var(--awsk-acc) !important;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important;
+  box-shadow: inset 0 -2px 0 var(--awsk-acc) !important;}
+
+/* ── tableaux ── */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) th,
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tr.head td,
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin div.head {
+  background: color-mix(in srgb, var(--awsk-acc) 7%, transparent) !important;
+  color: color-mix(in srgb, var(--awsk-acc) 92%, transparent) !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important;
+  font-size: 12px !important; font-weight: 700 !important; letter-spacing: .14em !important; text-transform: uppercase !important;
+  border-color: color-mix(in srgb, var(--awsk-acc) 22%, transparent) !important;
+  text-shadow: none !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) td:not(.msg) {
+  background: rgba(7, 11, 15, .9) !important;
+  color: #dfeef0 !important;
+  border-color: color-mix(in srgb, var(--awsk-acc) 8%, transparent) !important;
+  font-variant-numeric: tabular-nums !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tr.owner td:not(.msg) { background: color-mix(in srgb, var(--awsk-acc) 3.5%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table.hover tbody tr:hover td:not(.msg) { background: color-mix(in srgb, var(--awsk-acc) 8%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tfoot td {
+  background: color-mix(in srgb, var(--awsk-acc) 5%, transparent) !important; color: #f2fdfe !important; font-weight: 700 !important;
+  border-top: 1px solid color-mix(in srgb, var(--awsk-acc) 30%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tbody tr.highlight td:not(.msg) {
+  background: color-mix(in srgb, var(--awsk-acc) 12%, transparent) !important; color: #f2fdfe !important; box-shadow: inset 2px 0 0 var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tbody tr.highlight td:not(.msg):not(:first-child) { box-shadow: none !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tbody tr.highlight td a { color: var(--awsk-acc) !important;}
+/* lignes sémantiques : sombres, liseré coloré */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tr.friendly-siege td:not(.msg) { background: rgba(69, 224, 162, .1) !important; color: #bff5dc !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table.hover tbody tr.friendly-siege:hover td:not(.msg) { background: rgba(69, 224, 162, .16) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tr.siege td:not(.msg),
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tr.alert td:not(.msg),
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table td.alert { background: rgba(255, 93, 93, .12) !important; color: #ffd0d0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table tr.ranking-victory td { background: rgba(245, 183, 61, .12) !important; color: #ffd98a !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.bg-battle-victory { background: rgba(69, 224, 162, .12) !important; color: #bff5dc !important; box-shadow: inset 2px 0 0 #45e0a2 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.bg-battle-victory a { color: #7ff0c0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.bg-battle-lost { background: rgba(255, 93, 93, .12) !important; color: #ffd0d0 !important; box-shadow: inset 2px 0 0 #ff5d5d !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.bg-battle-lost a { color: #ff9b9b !important;}
+/* ── Buildings (et SB) : seuls les niveaux EN COURS ressortent, sans trait — jaune = PP déjà investis (building-lvl-started).
+   building-lvl-up = niveau payable avec le stock de PP de la planète (pas forcément entamé) → neutre, le gras du jeu est annulé. ── */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) td.building-lvl-up:not(.msg) { font-weight: inherit !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) td.building-lvl-started:not(.msg) { color: #ffe27a !important; font-weight: 700 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) td.aw-lvl-encours:not(.msg) { color: #ffe27a !important; font-weight: 700 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) td.building-lvl-finish:not(.msg) { color: #6ff0a8 !important; font-weight: 700 !important;}
+/* ── News : une carte par message (en-tête = date + rapporteur, corps = détail) ──
+   Écart entre cartes = bordure haute transparente (background-clip: padding-box),
+   pour garder le titre et la barre de filtres collés. Teinte : --nw (rouge ennemi,
+   vert allié, accent sinon) ; non lu = plus vif + point ; lu = atténué. */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) { background: rgba(3, 5, 8, .9) !important;}   /* les écarts entre cartes restent sombres (sinon l'image de fond y transparaît en bandes) */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg {
+  --nw: var(--awsk-acc) !important; --nw-a: 20% !important; --nw-b: 6% !important;
+  width: 230px !important; vertical-align: top !important; padding: 12px 14px 12px 18px !important; text-align: left !important;
+  border: 0 !important; border-top: 6px solid transparent !important; background-clip: padding-box !important;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--nw) var(--nw-a), transparent), color-mix(in srgb, var(--nw) var(--nw-b), transparent)), rgba(7, 11, 15, .92) !important;
+  box-shadow: inset 3px 0 0 var(--nw) !important;
+  clip-path: polygon(0 calc(6px + 9px), 9px 6px, 100% 6px, 100% 100%, 0 100%) !important;
+  font-family: "JetBrains Mono", "Cascadia Mono", Consolas, monospace !important; font-size: 12px !important; line-height: 1.5 !important; color: rgba(223, 238, 240, .72) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg b { display: inline-block !important; margin-top: 3px !important; font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 14px !important; font-weight: 700 !important; letter-spacing: .06em !important; color: #f2fdfe !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg.player-incoming { --nw: #ff5d5d !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg.player-friendlyincoming { --nw: #45e0a2 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg.read { --nw-a: 9% !important; --nw-b: 3% !important; box-shadow: inset 3px 0 0 color-mix(in srgb, var(--nw) 55%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg.unread { --nw-a: 30% !important; --nw-b: 9% !important; box-shadow: inset 3px 0 0 var(--nw), inset 14px 0 18px -12px color-mix(in srgb, var(--nw) 70%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg.unread::before {
+  content: "" !important; display: inline-block !important; width: 7px !important; height: 7px !important; margin: 0 7px 1px 0 !important; vertical-align: middle !important;
+  background: var(--nw) !important; box-shadow: 0 0 8px var(--nw) !important; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg + td.text-left {
+  vertical-align: top !important; padding: 12px 18px 12px 16px !important;
+  border: 0 !important; border-top: 6px solid transparent !important; background-clip: padding-box !important;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .02), transparent 60%), rgba(7, 11, 15, .86) !important;
+  clip-path: polygon(0 6px, 100% 6px, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%) !important;
+  color: #dfeef0 !important; line-height: 1.6 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg.player-incoming + td.text-left { background: linear-gradient(90deg, rgba(255, 93, 93, .07), transparent 65%), rgba(7, 11, 15, .86) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg.player-friendlyincoming + td.text-left { background: linear-gradient(90deg, rgba(69, 224, 162, .05), transparent 65%), rgba(7, 11, 15, .86) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg.read + td.text-left { color: rgba(223, 238, 240, .78) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg + td.text-left > div > b:first-child { font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-weight: 700 !important; letter-spacing: .1em !important; text-transform: uppercase !important; color: var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg.player-incoming + td.text-left > div > b:first-child { color: #ff8a8a !important; text-shadow: 0 0 10px rgba(255, 93, 93, .5) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.msg.player-friendlyincoming + td.text-left > div > b:first-child { color: #7ff0c0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) tr:hover td.msg + td.text-left { background-color: rgba(12, 18, 24, .92) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.text-left a[href^="/About/BattleCalculator"] {
+  display: inline-block !important; margin-top: 6px !important; padding: 3px 12px !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 45%, transparent) !important;
+  background: color-mix(in srgb, var(--awsk-acc) 8%, transparent) !important; color: var(--awsk-acc) !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: .12em !important; text-transform: uppercase !important;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:has(td.msg) td.text-left a[href^="/About/BattleCalculator"]:hover { background: color-mix(in srgb, var(--awsk-acc) 18%, transparent) !important; color: #f2fdfe !important;}
+/* liens */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) a { color: var(--awsk-acc-lite) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) a:hover { color: #ffffff !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin main a:not(.btn) { text-decoration: none !important;}
+
+/* ── boutons ── */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .btn {
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-weight: 700 !important; letter-spacing: .1em !important; text-transform: uppercase !important;
+  border-radius: 0 !important; box-shadow: none !important; text-shadow: none !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .btn.btn-primary {
+  background: rgba(7, 11, 15, .9) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important; color: rgba(223, 238, 240, .8) !important; border-radius: 0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .btn.btn-primary:hover { background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important; border-color: var(--awsk-acc) !important; color: var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .btn.btn-primary.active { background: var(--awsk-acc) !important; border-color: var(--awsk-acc) !important; color: var(--awsk-ink) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .btn.btn-secondary { background: rgba(7, 11, 15, .9) !important; border: 1px solid rgba(223, 238, 240, .16) !important; color: rgba(223, 238, 240, .72) !important; border-radius: 0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .btn.btn-secondary:hover { border-color: color-mix(in srgb, var(--awsk-acc) 50%, transparent) !important; color: #f2fdfe !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .btn.btn-danger { background: rgba(255, 93, 93, .06) !important; border: 1px solid rgba(255, 93, 93, .45) !important; color: #ff8a8a !important; border-radius: 0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .btn.btn-success { background: rgba(69, 224, 162, .06) !important; border: 1px solid rgba(69, 224, 162, .45) !important; color: #7ff0c0 !important; border-radius: 0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .btn.btn-outline-secondary { border-radius: 0 !important; border-color: rgba(223, 238, 240, .16) !important; color: rgba(223, 238, 240, .72) !important;}
+
+/* ── champs ── */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .form-control,
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .form-select {
+  background-color: rgba(0, 0, 0, .4) !important; color: #f2fdfe !important;
+  border: 1px solid color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important; border-radius: 0 !important;
+  font-family: "JetBrains Mono", "Cascadia Mono", Consolas, monospace !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .form-control:focus,
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .form-select:focus { border-color: var(--awsk-acc) !important; box-shadow: 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .input-group-text { background: color-mix(in srgb, var(--awsk-acc) 7%, transparent) !important; color: color-mix(in srgb, var(--awsk-acc) 90%, transparent) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important; border-radius: 0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .form-check-input:checked { background-color: var(--awsk-acc) !important; border-color: var(--awsk-acc) !important;}
+
+/* ── badges, pastilles ── */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin main .badge { border-radius: 0 !important; font-family: "JetBrains Mono", "Cascadia Mono", Consolas, monospace !important; letter-spacing: .02em !important;}
+
+/* ── modales du jeu ── */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .modal-content {
+  background: rgba(5, 8, 11, .97) !important; color: #dfeef0 !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 30%, transparent) !important; border-radius: 0 !important;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .7) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .modal-header,
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .modal-footer { border-color: color-mix(in srgb, var(--awsk-acc) 18%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .modal-title { font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-weight: 700 !important; letter-spacing: .12em !important; text-transform: uppercase !important; color: #f2fdfe !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .dropdown-menu { background: rgba(5, 8, 11, .97) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 30%, transparent) !important; border-radius: 0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .dropdown-item { color: #dfeef0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .dropdown-item:hover { background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important; color: var(--awsk-acc) !important;}
+
+/* ── carte : barre d'outils, filtres, recherche ── */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .map-toolbar,
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .map-filter-panel,
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .map-search-panel {
+  background: rgba(5, 8, 11, .94) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 22%, transparent) !important; border-radius: 0 !important; color: #dfeef0 !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-weight: 600 !important; letter-spacing: .04em !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .map-toolbar-divider { background: color-mix(in srgb, var(--awsk-acc) 22%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin .map-filter-panel-header { color: color-mix(in srgb, var(--awsk-acc) 90%, transparent) !important; letter-spacing: .14em !important; text-transform: uppercase !important; border-color: color-mix(in srgb, var(--awsk-acc) 20%, transparent) !important;}
+
+/* ── pied de page ── */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin footer { color: rgba(223, 238, 240, .4) !important; font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; letter-spacing: .08em !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin footer a { color: rgba(223, 238, 240, .55) !important; text-decoration: none !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin footer a:hover { color: var(--awsk-acc) !important;}
+
+/* ═══════════ VERRE ═══════════ */
+
+/* fond de page : halos colorés (quand l'image de fond est coupée) — sans
+   matière derrière, le verre n'a rien à flouter */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin { background-color: #0a0b12 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin.awc-nobg {
+  background-image:
+    radial-gradient(900px 600px at 85% -10%, color-mix(in srgb, var(--awsk-acc) 22%, transparent), transparent 70%),
+    radial-gradient(800px 600px at 5% 110%, rgba(42, 210, 216, .14), transparent 70%),
+    radial-gradient(600px 400px at 40% 45%, color-mix(in srgb, var(--awsk-acc-deep) 8%, transparent), transparent 70%) !important;
+  background-attachment: fixed !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin body { color: #f1f1f6 !important; font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin main :is(h1, h2, h3, h4, h5, h6) { font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-weight: 700 !important; letter-spacing: -.01em !important; color: #fff !important;}
+
+/* ── onglets ── */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table.navigation { border-spacing: 6px 0 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table.navigation td {
+  background: rgba(22, 24, 32, .55) !important;
+  border: 1px solid rgba(255, 255, 255, .1) !important;
+  border-radius: 10px !important;
+  color: rgba(255, 255, 255, .62) !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important;
+  font-size: 12px !important; font-weight: 600 !important; letter-spacing: .02em !important; text-transform: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+  backdrop-filter: blur(16px) saturate(1.3) !important; -webkit-backdrop-filter: blur(16px) saturate(1.3) !important;
+  text-shadow: none !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table.navigation td:hover:has(a) { background: rgba(255, 255, 255, .1) !important; border-color: rgba(255, 255, 255, .18) !important; color: #fff !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table.navigation td.highlight,
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table.navigation td.active {
+  background: rgba(255, 255, 255, .18) !important; border-color: rgba(255, 255, 255, .24) !important; color: #fff !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 6px 18px rgba(0, 0, 0, .25) !important; text-shadow: none !important;}
+
+/* ── tableaux : une plaque de verre par tableau ── */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) {
+  border-collapse: separate !important; border-spacing: 0 !important; border-radius: 14px !important; overflow: hidden !important;
+  background: rgba(22, 24, 32, .55) !important;
+  border: 1px solid rgba(255, 255, 255, .1) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 16px 40px rgba(0, 0, 0, .3) !important;
+  backdrop-filter: blur(18px) saturate(1.3) !important; -webkit-backdrop-filter: blur(18px) saturate(1.3) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) th,
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tr.head td,
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin div.head {
+  background: rgba(255, 255, 255, .05) !important;
+  color: rgba(255, 255, 255, .56) !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important;
+  font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important;
+  border: 0 !important; border-bottom: 1px solid rgba(255, 255, 255, .08) !important;
+  text-shadow: none !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) td:not(.msg) {
+  background: transparent !important;
+  color: #f1f1f6 !important;
+  border: 0 !important; border-bottom: 1px solid rgba(255, 255, 255, .055) !important;
+  font-variant-numeric: tabular-nums !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tr:last-child td:not(.msg) { border-bottom: 0 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tr.owner td:not(.msg) { background: rgba(255, 255, 255, .03) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table.hover tbody tr:hover td:not(.msg) { background: rgba(255, 255, 255, .06) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tfoot td { background: rgba(255, 255, 255, .05) !important; color: #fff !important; font-weight: 700 !important; border-top: 1px solid rgba(255, 255, 255, .1) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tbody tr.highlight td:not(.msg) { background: color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important; color: #fff !important; box-shadow: inset 3px 0 0 var(--awsk-acc) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tbody tr.highlight td:not(.msg):not(:first-child) { box-shadow: none !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tbody tr.highlight td a { color: var(--awsk-acc-lite) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tr.friendly-siege td:not(.msg) { background: rgba(95, 227, 161, .12) !important; color: #c9f7e0 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table.hover tbody tr.friendly-siege:hover td:not(.msg) { background: rgba(95, 227, 161, .18) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tr.siege td:not(.msg),
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tr.alert td:not(.msg),
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table td.alert { background: rgba(255, 107, 107, .14) !important; color: #ffd6d6 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table tr.ranking-victory td { background: rgba(255, 200, 92, .14) !important; color: #ffe2a8 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.bg-battle-victory { background: rgba(95, 227, 161, .14) !important; color: #c9f7e0 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.bg-battle-victory a { color: #8ef0bd !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.bg-battle-lost { background: rgba(255, 107, 107, .14) !important; color: #ffd6d6 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tbody tr td.bg-battle-lost a { color: #ffa3a3 !important;}
+/* ── Buildings (et SB) : seuls les niveaux EN COURS ressortent, sans trait — jaune = PP déjà investis (building-lvl-started).
+   building-lvl-up = niveau payable avec le stock de PP de la planète (pas forcément entamé) → neutre, le gras du jeu est annulé. ── */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) td.building-lvl-up:not(.msg) { font-weight: inherit !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) td.building-lvl-started:not(.msg) { color: #ffe38a !important; font-weight: 800 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) td.aw-lvl-encours:not(.msg) { color: #ffe38a !important; font-weight: 800 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) td.building-lvl-finish:not(.msg) { color: #7ef0b0 !important; font-weight: 800 !important;}
+/* ── News : cartes de verre sur la plaque du tableau (écart = bordure transparente) ── */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg {
+  --nw: var(--awsk-acc) !important; --nw-a: 20% !important; --nw-b: 8% !important;
+  width: 230px !important; vertical-align: top !important; padding: 12px 14px 12px 16px !important; text-align: left !important;
+  border: 0 !important; border-top: 8px solid transparent !important; border-left: 10px solid transparent !important; background-clip: padding-box !important;
+  border-radius: 18px 0 0 18px / 16px 0 0 10px !important;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--nw) var(--nw-a), rgba(255, 255, 255, .03)), color-mix(in srgb, var(--nw) var(--nw-b), rgba(255, 255, 255, .03))) !important;
+  box-shadow: none !important;
+  font-size: 12px !important; font-weight: 600 !important; line-height: 1.5 !important; color: rgba(255, 255, 255, .62) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg b { display: inline-block !important; margin-top: 3px !important; font-size: 13.5px !important; font-weight: 700 !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg.player-incoming { --nw: #ff6b6b !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg.player-friendlyincoming { --nw: #5fe3a1 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg.read { --nw-a: 10% !important; --nw-b: 4% !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg.unread { --nw-a: 30% !important; --nw-b: 12% !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg.unread::before {
+  content: "" !important; display: inline-block !important; width: 7px !important; height: 7px !important; margin: 0 7px 1px 0 !important; vertical-align: middle !important;
+  border-radius: 50% !important; background: var(--nw) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--nw) 25%, transparent) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg + td.text-left {
+  vertical-align: top !important; padding: 12px 18px 12px 16px !important;
+  border: 0 !important; border-top: 8px solid transparent !important; border-right: 10px solid transparent !important; background-clip: padding-box !important;
+  border-radius: 0 18px 18px 0 / 0 16px 10px 0 !important;
+  background: rgba(255, 255, 255, .035) !important;
+  color: #f1f1f6 !important; line-height: 1.6 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg.player-incoming + td.text-left { background: color-mix(in srgb, #ff6b6b 6%, rgba(255, 255, 255, .03)) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg.player-friendlyincoming + td.text-left { background: color-mix(in srgb, #5fe3a1 4%, rgba(255, 255, 255, .03)) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg.read + td.text-left { color: rgba(255, 255, 255, .78) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) tr:last-child td.msg { border-bottom: 10px solid transparent !important; border-radius: 18px 0 0 18px / 16px 0 0 18px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) tr:last-child td.msg + td.text-left { border-bottom: 10px solid transparent !important; border-radius: 0 18px 18px 0 / 0 16px 18px 0 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) tr:hover td.msg + td.text-left { background: rgba(255, 255, 255, .06) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg + td.text-left > div > b:first-child { font-weight: 800 !important; color: var(--awsk-acc-lite) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg.player-incoming + td.text-left > div > b:first-child { color: #ffb0b0 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.msg.player-friendlyincoming + td.text-left > div > b:first-child { color: #a8f3cd !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.text-left a[href^="/About/BattleCalculator"] {
+  display: inline-block !important; margin-top: 8px !important; padding: 3px 12px !important; border-radius: 999px !important;
+  background: rgba(255, 255, 255, .08) !important; border: 1px solid rgba(255, 255, 255, .14) !important; color: #fff !important; font-size: 12px !important; font-weight: 600 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation):has(td.msg) td.text-left a[href^="/About/BattleCalculator"]:hover { background: rgba(255, 255, 255, .16) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) a { color: var(--awsk-acc-lite) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) a:hover { color: #ffffff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin main a:not(.btn) { text-decoration: none !important;}
+
+/* ── boutons ── */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .btn { font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-weight: 600 !important; border-radius: 9px !important; box-shadow: none !important; text-shadow: none !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .btn.btn-primary { background: rgba(255, 255, 255, .08) !important; border: 1px solid rgba(255, 255, 255, .12) !important; color: rgba(255, 255, 255, .85) !important; border-radius: 9px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .btn.btn-primary:hover { background: rgba(255, 255, 255, .14) !important; border-color: rgba(255, 255, 255, .2) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .btn.btn-primary.active { background: #ffffff !important; border-color: #ffffff !important; color: #14163a !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .btn.btn-secondary { background: rgba(255, 255, 255, .06) !important; border: 1px solid rgba(255, 255, 255, .1) !important; color: rgba(255, 255, 255, .75) !important; border-radius: 9px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .btn.btn-secondary:hover { background: rgba(255, 255, 255, .12) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .btn.btn-danger { background: rgba(255, 107, 107, .12) !important; border: 1px solid rgba(255, 107, 107, .3) !important; color: #ffb0b0 !important; border-radius: 9px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .btn.btn-success { background: rgba(95, 227, 161, .12) !important; border: 1px solid rgba(95, 227, 161, .3) !important; color: #a8f3cd !important; border-radius: 9px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .btn.btn-outline-secondary { border-radius: 9px !important; border-color: rgba(255, 255, 255, .14) !important; color: rgba(255, 255, 255, .75) !important;}
+
+/* ── champs ── */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .form-control,
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .form-select {
+  background-color: rgba(0, 0, 0, .28) !important; color: #fff !important; border: 1px solid rgba(255, 255, 255, .12) !important; border-radius: 8px !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .form-control:focus,
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .form-select:focus { border-color: color-mix(in srgb, var(--awsk-acc) 60%, transparent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--awsk-acc) 18%, transparent) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .input-group-text { background: rgba(255, 255, 255, .06) !important; color: rgba(255, 255, 255, .7) !important; border: 1px solid rgba(255, 255, 255, .12) !important; border-radius: 8px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .form-check-input:checked { background-color: var(--awsk-acc) !important; border-color: var(--awsk-acc) !important;}
+
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin main .badge { font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-weight: 700 !important;}
+
+/* ── modales ── */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .modal-content {
+  background: rgba(22, 24, 32, .72) !important; color: #f1f1f6 !important; border: 1px solid rgba(255, 255, 255, .14) !important; border-radius: 18px !important;
+  backdrop-filter: blur(28px) saturate(1.4) !important; -webkit-backdrop-filter: blur(28px) saturate(1.4) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 30px 80px rgba(0, 0, 0, .55) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .modal-header,
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .modal-footer { border-color: rgba(255, 255, 255, .08) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .modal-title { font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-weight: 700 !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .dropdown-menu {
+  background: rgba(22, 24, 32, .82) !important; border: 1px solid rgba(255, 255, 255, .14) !important; border-radius: 12px !important;
+  backdrop-filter: blur(22px) !important; -webkit-backdrop-filter: blur(22px) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .dropdown-item { color: #f1f1f6 !important; border-radius: 8px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .dropdown-item:hover { background: rgba(255, 255, 255, .1) !important; color: #fff !important;}
+
+/* ── carte ── */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .map-toolbar,
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .map-filter-panel,
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .map-search-panel {
+  background: rgba(22, 24, 32, .6) !important; border: 1px solid rgba(255, 255, 255, .12) !important; border-radius: 14px !important; color: #f1f1f6 !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important;
+  backdrop-filter: blur(20px) saturate(1.3) !important; -webkit-backdrop-filter: blur(20px) saturate(1.3) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 12px 32px rgba(0, 0, 0, .35) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .map-toolbar-divider { background: rgba(255, 255, 255, .12) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin .map-filter-panel-header { color: rgba(255, 255, 255, .6) !important; border-color: rgba(255, 255, 255, .08) !important;}
+
+/* ── pied de page ── */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin footer { color: rgba(255, 255, 255, .45) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin footer a { color: rgba(255, 255, 255, .6) !important; text-decoration: none !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin footer a:hover { color: #fff !important;}
+
+/* ── jauges : accent du skin (l'accent choisi dans les Réglages garde la main) ── */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin.awc-gauge-on:not(.awc-custom-accent) { --awg-acc: var(--awsk-acc) !important;}
+
+/* ═══════════ BLOCS DE L EXTENSION SUR LES PAGES DU JEU ═══════════ */
+/* ── panneau BIG FLEETS (carte) — HUD ── */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box {
+  width: 292px !important; border-radius: 0 !important; color: #dfeef0 !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 14px !important;
+  border: 1px solid color-mix(in srgb, var(--awsk-acc) 28%, transparent) !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .6) !important;
+  background-color: rgba(5, 8, 11, .95) !important;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)), linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)), linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, .018) 0 1px, transparent 1px 3px) !important;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat !important;
+  background-size: 9px 1px, 1px 9px, 9px 1px, 1px 9px, auto !important;
+  background-position: left 4px top 4px, left 4px top 4px, right 4px bottom 4px, right 4px bottom 4px, 0 0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-head {
+  background: none !important; border-radius: 0 !important; border-bottom: 1px solid color-mix(in srgb, var(--awsk-acc) 20%, transparent) !important;
+  padding: 10px 12px 9px !important; gap: 8px !important; cursor: move !important;
+  font-size: 14px !important; font-weight: 700 !important; letter-spacing: .16em !important; text-transform: uppercase !important; color: #f2fdfe !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-title { text-shadow: 0 0 12px color-mix(in srgb, var(--awsk-acc) 40%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-ico { color: var(--awsk-acc) !important; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--awsk-acc) 70%, transparent)) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-top {
+  background: rgba(0, 0, 0, .45) !important; color: #dfeef0 !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 30%, transparent) !important; border-radius: 0 !important;
+  font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 10px !important; letter-spacing: 0 !important; text-transform: none !important; height: 22px !important; padding: 0 4px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-min { color: rgba(223, 238, 240, .5) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-min:hover { color: var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-body { padding: 4px 0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-row { padding: 6px 12px !important; gap: 0 8px !important; color: #dfeef0 !important; line-height: 1.35 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-row + .awfo-bb-row { border-top: 1px solid color-mix(in srgb, var(--awsk-acc) 7%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-row:hover { background: color-mix(in srgb, var(--awsk-acc) 7%, transparent) !important; color: #f2fdfe !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-rank { font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 11px !important; font-weight: 500 !important; color: rgba(223, 238, 240, .42) !important; min-width: 28px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-p1 .awfo-bb-rank { color: #ffd262 !important; text-shadow: 0 0 8px rgba(255, 210, 98, .6) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-p2 .awfo-bb-rank { color: #d7e6ea !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-p3 .awfo-bb-rank { color: #e8a56b !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-name { font-size: 15px !important; font-weight: 600 !important; letter-spacing: .03em !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-tag { font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 10px !important; color: rgba(223, 238, 240, .42) !important; letter-spacing: .02em !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-cv { font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 13px !important; font-weight: 500 !important; color: #f2fdfe !important; text-shadow: 0 0 10px color-mix(in srgb, var(--awsk-acc) 45%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-bar { height: 2px !important; margin: 3px 0 2px 36px !important; background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important; border-radius: 0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-bar b { background: var(--awsk-acc) !important; opacity: 1 !important; border-radius: 0 !important; box-shadow: 0 0 6px color-mix(in srgb, var(--awsk-acc) 70%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-p1 .awfo-bb-bar b { background: #ffd262 !important; box-shadow: 0 0 6px rgba(255, 210, 98, .7) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-sub { padding-left: 36px !important; font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 10px !important; color: rgba(223, 238, 240, .45) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-sub svg { color: color-mix(in srgb, var(--awsk-acc) 70%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-mine { background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important; box-shadow: inset 2px 0 0 var(--awsk-acc) !important; color: #f2fdfe !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-foot {
+  background: none !important; border-top: 1px solid color-mix(in srgb, var(--awsk-acc) 20%, transparent) !important; padding: 7px 12px !important;
+  font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 10px !important; letter-spacing: .08em !important; text-transform: uppercase !important; color: rgba(223, 238, 240, .42) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box .awfo-bb-age { color: #45e0a2 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-bigboard-box ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important; border-radius: 0 !important;}
+
+/* ── panneau BIG FLEETS (carte) — VERRE ── */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box {
+  width: 292px !important; border-radius: 16px !important; color: #f1f1f6 !important; overflow: hidden !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-size: 13px !important;
+  background: rgba(22, 24, 32, .6) !important;
+  border: 1px solid rgba(255, 255, 255, .13) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 20px 50px rgba(0, 0, 0, .45) !important;
+  backdrop-filter: blur(22px) saturate(1.4) !important; -webkit-backdrop-filter: blur(22px) saturate(1.4) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-head {
+  background: none !important; border-radius: 0 !important; border-bottom: 1px solid rgba(255, 255, 255, .08) !important;
+  padding: 12px 12px 10px 14px !important; gap: 8px !important; cursor: move !important;
+  font-size: 14px !important; font-weight: 700 !important; letter-spacing: -.01em !important; text-transform: none !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-ico { color: #ffd262 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-top {
+  background: rgba(255, 255, 255, .08) !important; color: #fff !important; border: 0 !important; border-radius: 8px !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-size: 11px !important; font-weight: 600 !important; height: 24px !important; padding: 0 6px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-min { color: rgba(255, 255, 255, .5) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-min:hover { color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-body { padding: 6px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-row { padding: 7px 8px !important; gap: 0 8px !important; border-radius: 10px !important; color: #f1f1f6 !important; line-height: 1.35 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-row + .awfo-bb-row { border-top: 0 !important; margin-top: 1px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-row:hover { background: rgba(255, 255, 255, .07) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-rank { font-size: 11px !important; font-weight: 700 !important; color: rgba(255, 255, 255, .4) !important; min-width: 28px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-p1 .awfo-bb-rank { color: #ffd262 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-p2 .awfo-bb-rank { color: #e3e6ee !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-p3 .awfo-bb-rank { color: #f0b27a !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-name { font-weight: 600 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-tag { font-size: 11px !important; font-weight: 500 !important; color: rgba(255, 255, 255, .42) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-cv { font-weight: 700 !important; color: #fff !important; font-variant-numeric: tabular-nums !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-bar { height: 3px !important; margin: 4px 0 2px 36px !important; background: rgba(255, 255, 255, .08) !important; border-radius: 3px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-bar b { background: linear-gradient(90deg, var(--awsk-acc-deep), var(--awsk-acc)) !important; opacity: 1 !important; border-radius: 3px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-p1 .awfo-bb-bar b { background: linear-gradient(90deg, #d9a93a, #ffd262) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-sub { padding-left: 36px !important; font-size: 11px !important; font-weight: 500 !important; color: rgba(255, 255, 255, .45) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-mine { background: color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-foot {
+  background: none !important; border-top: 1px solid rgba(255, 255, 255, .08) !important; padding: 9px 14px !important; font-size: 11px !important; font-weight: 500 !important; color: rgba(255, 255, 255, .45) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-bigboard-box .awfo-bb-age { color: #5fe3a1 !important; font-weight: 600 !important;}
+
+/* ── sous-en-têtes des tableaux du jeu (tr.lowlight : « Prices », « Inventory »…) ── */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tr.lowlight td:not(.msg) {
+  background: color-mix(in srgb, var(--awsk-acc) 4.5%, transparent) !important; color: rgba(223, 238, 240, .82) !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-weight: 700 !important; letter-spacing: .06em !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tr.lowlight td:not(.msg) {
+  background: rgba(255, 255, 255, .045) !important; color: rgba(255, 255, 255, .72) !important; font-weight: 600 !important;}
+
+/* ═══ HUD ═══ */
+
+/* barre AW de la carte */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awm-bar {
+  background: rgba(5, 8, 11, .94) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 22%, transparent) !important; border-radius: 0 !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 14px !important; font-weight: 600 !important; color: #dfeef0 !important;
+  padding: 6px 10px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awm-bar .awm-t { font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 10px !important; letter-spacing: .1em !important; color: color-mix(in srgb, var(--awsk-acc) 80%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on .awm-chip {
+  background: rgba(255, 255, 255, .03) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important; border-radius: 0 !important;
+  font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 11px !important; color: #dfeef0 !important; padding: 2px 7px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on .awm-chip:hover { background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important; border-color: color-mix(in srgb, var(--awsk-acc) 50%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on .awm-chip i { border-radius: 0 !important; width: 7px !important; height: 7px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on .awm-note { font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 15px !important; letter-spacing: .06em !important; text-transform: uppercase !important; color: #ffd262 !important; text-shadow: 0 0 10px rgba(255, 210, 98, .45) !important;}
+
+/* info-bulle système + fiche système */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awm-tip {
+  background: rgba(5, 8, 11, .97) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important; border-radius: 0 !important; color: #dfeef0 !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 14px !important; box-shadow: 0 10px 30px rgba(0, 0, 0, .6) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awm-tip .awm-h { color: #f2fdfe !important; letter-spacing: .06em !important; text-transform: uppercase !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awm-modal {
+  background: rgba(5, 8, 11, .97) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 30%, transparent) !important; border-radius: 0 !important; color: #dfeef0 !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 14px !important; box-shadow: 0 30px 90px rgba(0, 0, 0, .7) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awm-modal .awm-mh { background: none !important; border-radius: 0 !important; border-bottom: 1px solid color-mix(in srgb, var(--awsk-acc) 22%, transparent) !important; padding: 12px 14px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awm-modal .awm-mh b { font-size: 16px !important; font-weight: 700 !important; letter-spacing: .14em !important; color: #f2fdfe !important; text-shadow: 0 0 12px color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awm-modal .awm-mh .awm-sub { font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 10px !important; letter-spacing: .06em !important; color: rgba(223, 238, 240, .5) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on .awm-table th { background: color-mix(in srgb, var(--awsk-acc) 7%, transparent) !important; color: color-mix(in srgb, var(--awsk-acc) 90%, transparent) !important; font-weight: 700 !important; letter-spacing: .12em !important; text-transform: uppercase !important; font-size: 12px !important; border-color: color-mix(in srgb, var(--awsk-acc) 18%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on .awm-table td { background: rgba(7, 11, 15, .9) !important; color: #dfeef0 !important; border-color: color-mix(in srgb, var(--awsk-acc) 8%, transparent) !important;}
+
+/* panneau Flottes de la carte + popup d'orbite */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-panel,
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-detail {
+  background: rgba(5, 8, 11, .96) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 28%, transparent) !important; border-radius: 0 !important; color: #dfeef0 !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 14px !important; box-shadow: 0 18px 50px rgba(0, 0, 0, .6) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on :is(#awfo-panel .awfo-phead, #awfo-detail .awfo-dhead) {
+  background: none !important; border-radius: 0 !important; border-bottom: 1px solid color-mix(in srgb, var(--awsk-acc) 20%, transparent) !important;
+  font-size: 14px !important; font-weight: 700 !important; letter-spacing: .14em !important; color: #f2fdfe !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-detail .awfo-dsec { color: color-mix(in srgb, var(--awsk-acc) 85%, transparent) !important; letter-spacing: .14em !important; font-weight: 700 !important; border-color: color-mix(in srgb, var(--awsk-acc) 12%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-detail .awfo-drow { border-color: color-mix(in srgb, var(--awsk-acc) 7%, transparent) !important; color: #dfeef0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-detail .awfo-drow:hover { background: color-mix(in srgb, var(--awsk-acc) 7%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #awfo-panel .awfo-foot { background: none !important; border-color: color-mix(in srgb, var(--awsk-acc) 15%, transparent) !important; font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 10px !important;}
+
+/* rapports d'intelligence (fiche joueur) */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on .aw-intel-box {
+  background: rgba(5, 8, 11, .94) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 20%, transparent) !important; border-radius: 0 !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on .aw-intel-box--intel { box-shadow: inset 2px 0 0 var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on .aw-intel-box--race { box-shadow: inset 2px 0 0 #ffb54d !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on .aw-intel-header { border-color: color-mix(in srgb, var(--awsk-acc) 18%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on .aw-intel-title { font-size: 14px !important; letter-spacing: .16em !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on .aw-intel-box--intel .aw-intel-title { text-shadow: 0 0 10px color-mix(in srgb, var(--awsk-acc) 45%, transparent) !important;}
+
+/* ── carte 3D : panneau « Réglages 3D » — HUD ── */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel {
+  --p3-acc: var(--awsk-acc) !important; --p3-ink: var(--awsk-ink) !important;
+  border-radius: 0 !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 30%, transparent) !important; color: #dfeef0 !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 14px !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .6) !important;
+  background-color: rgba(5, 8, 11, .95) !important;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, .018) 0 1px, transparent 1px 3px) !important;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat !important;
+  background-size: 9px 1px, 1px 9px, 9px 1px, 1px 9px, auto !important;
+  background-position: left 4px top 4px, left 4px top 4px, right 4px bottom 4px, right 4px bottom 4px, 0 0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-head { border-bottom: 1px solid color-mix(in srgb, var(--awsk-acc) 20%, transparent) !important; padding: 10px 12px 9px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-title { font-size: 14px !important; font-weight: 700 !important; letter-spacing: .16em !important; text-transform: uppercase !important; color: #f2fdfe !important; text-shadow: 0 0 12px color-mix(in srgb, var(--awsk-acc) 40%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-title i { color: var(--awsk-acc) !important; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--awsk-acc) 70%, transparent)) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-stats { font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 10px !important; letter-spacing: .02em !important; color: rgba(223, 238, 240, .45) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-stats b { color: var(--awsk-acc) !important; font-weight: 500 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-tabs { border-radius: 0 !important; background: rgba(0, 0, 0, .4) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-tab { border-radius: 0 !important; font-size: 13px !important; letter-spacing: .14em !important; text-transform: uppercase !important; color: rgba(223, 238, 240, .6) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-tab[aria-selected=true] {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--awsk-acc) 18%, transparent), color-mix(in srgb, var(--awsk-acc) 4%, transparent)) !important;
+  color: var(--awsk-acc) !important; box-shadow: inset 0 -2px 0 var(--awsk-acc) !important; text-shadow: 0 0 10px color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-lab { font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 10px !important; font-weight: 500 !important; letter-spacing: .12em !important; color: color-mix(in srgb, var(--awsk-acc) 80%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-chip {
+  border-radius: 0 !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 22%, transparent) !important; background: rgba(7, 11, 15, .92) !important;
+  color: rgba(223, 238, 240, .75) !important; font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 13px !important; font-weight: 600 !important; letter-spacing: .05em !important;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-chip:hover { border-color: color-mix(in srgb, var(--awsk-acc) 60%, transparent) !important; color: #f2fdfe !important; background: color-mix(in srgb, var(--awsk-acc) 8%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-chip[aria-pressed=true] { background: var(--awsk-acc) !important; border-color: var(--awsk-acc) !important; color: var(--awsk-ink) !important; font-weight: 700 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-bgs .aw3d-chip::before { border-radius: 0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel input[type=text] { border-radius: 0 !important; background: rgba(0, 0, 0, .45) !important; border-color: color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important; font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 12px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel input[type=text]:focus { border-color: var(--awsk-acc) !important; box-shadow: 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-search i { color: color-mix(in srgb, var(--awsk-acc) 70%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-filters label { border-radius: 0 !important; border-color: color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important; background: rgba(7, 11, 15, .9) !important; font-size: 13px !important; font-weight: 600 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-filters label:has(input:checked) { border-color: color-mix(in srgb, var(--awsk-acc) 60%, transparent) !important; background: color-mix(in srgb, var(--awsk-acc) 12%, transparent) !important; box-shadow: inset 2px 0 0 var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-fld label { font-size: 13px !important; font-weight: 600 !important; letter-spacing: .03em !important; color: rgba(223, 238, 240, .8) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-fld output { border-radius: 0 !important; font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 11px !important; color: var(--awsk-acc) !important; background: color-mix(in srgb, var(--awsk-acc) 8%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel input[type=range]::-webkit-slider-runnable-track { height: 2px !important; border-radius: 0 !important; background: color-mix(in srgb, var(--awsk-acc) 22%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel input[type=range]::-webkit-slider-thumb { width: 10px !important; height: 14px !important; margin-top: -6px !important; border-radius: 0 !important; border: 0 !important; background: var(--awsk-acc) !important; box-shadow: 0 0 8px color-mix(in srgb, var(--awsk-acc) 70%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-help { font-size: 13px !important; color: rgba(223, 238, 240, .6) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-help kbd { border-radius: 0 !important; font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 10px !important; border-color: color-mix(in srgb, var(--awsk-acc) 30%, transparent) !important; background: rgba(0, 0, 0, .4) !important; color: var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-foot { border-top: 1px solid color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-foot .aw3d-chip { letter-spacing: .12em !important; text-transform: uppercase !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-primary { background: var(--awsk-acc) !important; border-color: var(--awsk-acc) !important; color: var(--awsk-ink) !important; font-weight: 700 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw3d-panel .aw3d-primary:hover { background: var(--awsk-acc-hi) !important; color: var(--awsk-ink) !important;}
+
+/* ── Trade (trade-enhance.js + artefact-trade-ui.js) — HUD ──
+   Les contrôles de trade-enhance portent des styles EN LIGNE (repli du skin
+   Classique) : les règles ci-dessous passent devant grâce au !important du build.
+   L'état actif est lu sur aria-pressed, posé par trade-enhance.js. */
+/* barre des tiers */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on [data-aw-tierbar] {
+  background: rgba(5, 8, 11, .9) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important; border-radius: 0 !important; padding: 5px !important; gap: 5px !important;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on [data-aw-tierbar] [data-aw-tierbtn] {
+  background: rgba(7, 11, 15, .92) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important; border-radius: 0 !important; color: rgba(223, 238, 240, .62) !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 13px !important; font-weight: 700 !important; letter-spacing: .16em !important; text-transform: uppercase !important;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px) !important;
+  box-shadow: none !important; text-shadow: none !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on [data-aw-tierbar] [data-aw-tierbtn]:hover { background: color-mix(in srgb, var(--awsk-acc) 7%, transparent) !important; border-color: color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important; color: #f2fdfe !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on [data-aw-tierbar] [data-aw-tierbtn][aria-pressed="true"] {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--awsk-acc) 16%, transparent), color-mix(in srgb, var(--awsk-acc) 4%, transparent)), rgba(7, 11, 15, .95) !important;
+  border-color: color-mix(in srgb, var(--awsk-acc) 60%, transparent) !important; color: var(--awsk-acc) !important;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important; box-shadow: inset 0 -2px 0 var(--awsk-acc) !important;}
+/* bouton « Afficher / Masquer Use Supply Unit » (titre de la carte) */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-trade-usesu-toggle {
+  background: rgba(0, 0, 0, .45) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important; border-radius: 0 !important; color: rgba(223, 238, 240, .8) !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 11px !important; font-weight: 700 !important; letter-spacing: .12em !important; text-transform: uppercase !important;
+  line-height: 1 !important; padding: 5px 9px !important; box-shadow: none !important; text-shadow: none !important;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-trade-usesu-toggle:hover { background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important; border-color: var(--awsk-acc) !important; color: var(--awsk-acc) !important;}
+/* convertisseur PP ⇄ $ (inventaire) */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-trade-conv-row :is([data-aw-conv-pp], [data-aw-conv-usd]) {
+  background: rgba(0, 0, 0, .45) !important; color: #f2fdfe !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important; border-radius: 0 !important;
+  font-family: "JetBrains Mono", "Cascadia Mono", Consolas, monospace !important; font-size: 13px !important; padding: 4px 7px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-trade-conv-row :is([data-aw-conv-pp], [data-aw-conv-usd]):focus { border-color: var(--awsk-acc) !important; box-shadow: 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important; outline: none !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-trade-conv-row [data-aw-conv-reset] {
+  background: rgba(7, 11, 15, .92) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important; border-radius: 0 !important; color: color-mix(in srgb, var(--awsk-acc) 85%, transparent) !important;
+  font-family: "JetBrains Mono", "Cascadia Mono", Consolas, monospace !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-trade-conv-row [data-aw-conv-reset]:hover { background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important; border-color: var(--awsk-acc) !important; color: var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-trade-conv-row [data-aw-conv-reset][aria-pressed="true"] { background: color-mix(in srgb, var(--awsk-acc) 14%, transparent) !important; border-color: color-mix(in srgb, var(--awsk-acc) 60%, transparent) !important; color: var(--awsk-acc) !important; box-shadow: inset 0 -2px 0 var(--awsk-acc) !important;}
+/* panneau Auto-Trade Artefacts */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui {
+  border-radius: 0 !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important; color: #dfeef0 !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .45) !important;
+  background-color: rgba(5, 8, 11, .94) !important;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)), linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)), linear-gradient(color-mix(in srgb, var(--awsk-acc) 80%, transparent), color-mix(in srgb, var(--awsk-acc) 80%, transparent)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, .018) 0 1px, transparent 1px 3px) !important;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat !important;
+  background-size: 9px 1px, 1px 9px, 9px 1px, 1px 9px, auto !important;
+  background-position: left 4px top 4px, left 4px top 4px, right 4px bottom 4px, right 4px bottom 4px, 0 0 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-tp-head {
+  background: none !important; border-bottom: 1px solid color-mix(in srgb, var(--awsk-acc) 20%, transparent) !important; padding: 10px 64px 9px !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 14px !important; font-weight: 700 !important; letter-spacing: .16em !important; text-transform: uppercase !important;
+  color: #f2fdfe !important; text-shadow: 0 0 12px color-mix(in srgb, var(--awsk-acc) 40%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-icon {
+  background: rgba(0, 0, 0, .45) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 30%, transparent) !important; border-radius: 0 !important; color: rgba(223, 238, 240, .7) !important;
+  font-family: "JetBrains Mono", Consolas, monospace !important; text-shadow: none !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-icon:hover { background: color-mix(in srgb, var(--awsk-acc) 10%, transparent) !important; border-color: var(--awsk-acc) !important; color: var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-tp-body { background: transparent !important; padding: 12px !important; gap: 11px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-note { color: rgba(223, 238, 240, .55) !important; font-size: 11.5px !important; line-height: 1.5 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-note b { color: #f2fdfe !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui :is(.aw-lbl, .aw-sub) {
+  font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 10px !important; font-weight: 500 !important; letter-spacing: .1em !important; text-transform: uppercase !important; color: color-mix(in srgb, var(--awsk-acc) 80%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-sub { border-top: 1px solid color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important; padding-top: 9px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-seg { background: rgba(0, 0, 0, .35) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important; border-radius: 0 !important; padding: 4px !important; gap: 4px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-seg button {
+  background: rgba(7, 11, 15, .92) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 16%, transparent) !important; border-radius: 0 !important; color: rgba(223, 238, 240, .62) !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 13px !important; font-weight: 700 !important; letter-spacing: .14em !important; text-transform: uppercase !important;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px) !important; text-shadow: none !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-seg button:hover { background: color-mix(in srgb, var(--awsk-acc) 7%, transparent) !important; border-color: color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important; color: #f2fdfe !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-seg button.on {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--awsk-acc) 16%, transparent), color-mix(in srgb, var(--awsk-acc) 4%, transparent)), rgba(7, 11, 15, .95) !important;
+  border-color: color-mix(in srgb, var(--awsk-acc) 60%, transparent) !important; color: var(--awsk-acc) !important; text-shadow: 0 0 10px color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important; box-shadow: inset 0 -2px 0 var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui :is(input[type=number], input[type=datetime-local], .aw-dd-btn) {
+  background: rgba(0, 0, 0, .45) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important; border-radius: 0 !important; color: #f2fdfe !important;
+  font-family: "JetBrains Mono", "Cascadia Mono", Consolas, monospace !important; font-size: 12.5px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui :is(input[type=number], input[type=datetime-local]):focus,
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-dd.open .aw-dd-btn { border-color: var(--awsk-acc) !important; box-shadow: 0 0 0 1px color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui input::placeholder { color: rgba(223, 238, 240, .35) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-dd-btn::after { color: var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-dd-list {
+  background: rgba(5, 8, 11, .98) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 35%, transparent) !important; border-radius: 0 !important; box-shadow: 0 14px 34px rgba(0, 0, 0, .6) !important; padding: 3px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-opt { border-radius: 0 !important; color: #dfeef0 !important; font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 14px !important; font-weight: 600 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-opt:hover { background: color-mix(in srgb, var(--awsk-acc) 8%, transparent) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-opt.sel { background: color-mix(in srgb, var(--awsk-acc) 14%, transparent) !important; color: var(--awsk-acc) !important; box-shadow: inset 2px 0 0 var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-opt small { font-family: "JetBrains Mono", Consolas, monospace !important; color: rgba(223, 238, 240, .45) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-chip {
+  background: rgba(7, 11, 15, .92) !important; border: 1px solid color-mix(in srgb, var(--awsk-acc) 20%, transparent) !important; border-radius: 0 !important; color: rgba(223, 238, 240, .7) !important;
+  font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 11px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui :is(.aw-chip:hover, .aw-chip.on) { background: color-mix(in srgb, var(--awsk-acc) 12%, transparent) !important; border-color: color-mix(in srgb, var(--awsk-acc) 60%, transparent) !important; color: var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-check { color: rgba(223, 238, 240, .6) !important; font-size: 12px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-check input { accent-color: var(--awsk-acc) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-submit {
+  height: 38px !important; padding: 0 18px !important; border: 0 !important; border-radius: 0 !important; background: var(--awsk-acc) !important; color: var(--awsk-ink) !important;
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 14px !important; font-weight: 700 !important; letter-spacing: .16em !important; text-transform: uppercase !important;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px) !important; box-shadow: none !important; text-shadow: none !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-submit:hover { background: var(--awsk-acc-hi) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-submit:disabled { background: color-mix(in srgb, var(--awsk-acc) 25%, transparent) !important; color: rgba(223, 238, 240, .6) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-list td { border-top: 1px solid color-mix(in srgb, var(--awsk-acc) 8%, transparent) !important; color: #dfeef0 !important; font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif !important; font-size: 13px !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-list .aw-desc { font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 10px !important; color: rgba(223, 238, 240, .45) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-badge { border-radius: 0 !important; font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 10px !important; letter-spacing: .06em !important; text-transform: uppercase !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui :is(.aw-del, .aw-clear) { border-radius: 0 !important; border-color: rgba(255, 93, 93, .45) !important; color: #ff8a8a !important; background: rgba(255, 93, 93, .06) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui :is(.aw-del, .aw-clear):hover { background: rgba(255, 93, 93, .16) !important; border-color: #ff5d5d !important; color: #ffb3b3 !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-empty { font-family: "JetBrains Mono", Consolas, monospace !important; font-size: 11px !important; letter-spacing: .08em !important; text-transform: uppercase !important; color: rgba(223, 238, 240, .42) !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-msg.aw-err { color: #ff8a8a !important;}
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on #aw-artefact-ui .aw-msg.aw-ok { color: #45e0a2 !important;}
+
+/* ═══ VERRE ═══ */
+
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awm-bar {
+  background: rgba(22, 24, 32, .6) !important; border: 1px solid rgba(255, 255, 255, .12) !important; border-radius: 14px !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; color: #f1f1f6 !important; padding: 8px 12px !important;
+  backdrop-filter: blur(20px) saturate(1.3) !important; -webkit-backdrop-filter: blur(20px) saturate(1.3) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awm-bar .awm-t { letter-spacing: 0 !important; text-transform: none !important; font-weight: 600 !important; color: rgba(255, 255, 255, .5) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on .awm-chip {
+  background: rgba(255, 255, 255, .07) !important; border: 1px solid rgba(255, 255, 255, .08) !important; border-radius: 999px !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-size: 12px !important; font-weight: 600 !important; color: #f1f1f6 !important; padding: 2px 9px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on .awm-chip:hover { background: rgba(255, 255, 255, .14) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on .awm-note { font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-size: 14px !important; font-weight: 700 !important; color: #ffd262 !important;}
+
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awm-tip {
+  background: rgba(22, 24, 32, .82) !important; border: 1px solid rgba(255, 255, 255, .14) !important; border-radius: 12px !important; color: #f1f1f6 !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; backdrop-filter: blur(18px) !important; -webkit-backdrop-filter: blur(18px) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awm-modal {
+  background: rgba(22, 24, 32, .72) !important; border: 1px solid rgba(255, 255, 255, .14) !important; border-radius: 18px !important; color: #f1f1f6 !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important;
+  backdrop-filter: blur(28px) saturate(1.4) !important; -webkit-backdrop-filter: blur(28px) saturate(1.4) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 30px 80px rgba(0, 0, 0, .55) !important; overflow: hidden !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awm-modal .awm-mh { background: none !important; border-radius: 0 !important; border-bottom: 1px solid rgba(255, 255, 255, .08) !important; padding: 14px 16px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awm-modal .awm-mh b { font-size: 16px !important; font-weight: 700 !important; letter-spacing: -.01em !important; text-transform: none !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on .awm-table { border-collapse: separate !important; border-spacing: 0 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on .awm-table th { background: rgba(255, 255, 255, .05) !important; color: rgba(255, 255, 255, .56) !important; font-weight: 600 !important; border: 0 !important; border-bottom: 1px solid rgba(255, 255, 255, .08) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on .awm-table td { background: transparent !important; color: #f1f1f6 !important; border: 0 !important; border-bottom: 1px solid rgba(255, 255, 255, .055) !important;}
+
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-panel,
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-detail {
+  background: rgba(22, 24, 32, .68) !important; border: 1px solid rgba(255, 255, 255, .13) !important; border-radius: 16px !important; color: #f1f1f6 !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important;
+  backdrop-filter: blur(22px) saturate(1.4) !important; -webkit-backdrop-filter: blur(22px) saturate(1.4) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 20px 50px rgba(0, 0, 0, .45) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on :is(#awfo-panel .awfo-phead, #awfo-detail .awfo-dhead) {
+  background: none !important; border-radius: 0 !important; border-bottom: 1px solid rgba(255, 255, 255, .08) !important; text-transform: none !important; letter-spacing: -.01em !important; font-size: 14px !important; font-weight: 700 !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-detail .awfo-dsec { text-transform: none !important; letter-spacing: 0 !important; font-weight: 600 !important; color: rgba(255, 255, 255, .5) !important; border-color: rgba(255, 255, 255, .06) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-detail .awfo-drow { border-color: rgba(255, 255, 255, .05) !important; color: #f1f1f6 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-detail .awfo-drow:hover { background: rgba(255, 255, 255, .07) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #awfo-panel .awfo-foot { background: none !important; border-color: rgba(255, 255, 255, .08) !important;}
+
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on .aw-intel-box {
+  background: rgba(22, 24, 32, .6) !important; border: 1px solid rgba(255, 255, 255, .12) !important; border-radius: 14px !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important;
+  backdrop-filter: blur(18px) saturate(1.3) !important; -webkit-backdrop-filter: blur(18px) saturate(1.3) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on .aw-intel-box--intel { border-left: 1px solid rgba(255, 255, 255, .12) !important; box-shadow: inset 3px 0 0 var(--awsk-acc), inset 0 1px 0 rgba(255, 255, 255, .08) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on .aw-intel-box--race { border-left: 1px solid rgba(255, 255, 255, .12) !important; box-shadow: inset 3px 0 0 #ffc85c, inset 0 1px 0 rgba(255, 255, 255, .08) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on .aw-intel-header { border-color: rgba(255, 255, 255, .08) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on .aw-intel-title { text-transform: none !important; letter-spacing: -.01em !important; font-size: 14px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on .aw-intel-box--intel .aw-intel-title { color: var(--awsk-acc-lite) !important;}
+
+/* ── carte 3D : panneau « Réglages 3D » — VERRE ── */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel {
+  --p3-acc: #fff !important; --p3-ink: #14163a !important;
+  border-radius: 18px !important; border: 1px solid rgba(255, 255, 255, .14) !important; color: #f1f1f6 !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-size: 13px !important;
+  background: rgba(22, 24, 32, .7) !important;
+  backdrop-filter: blur(24px) saturate(1.4) !important; -webkit-backdrop-filter: blur(24px) saturate(1.4) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 24px 60px rgba(0, 0, 0, .5) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent.awc-on #aw3d-panel { --p3-acc: var(--awsk-acc) !important; --p3-ink: var(--awsk-ink) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-head { padding: 12px 14px 10px !important; border-bottom: 1px solid rgba(255, 255, 255, .08) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-title { font-size: 14px !important; font-weight: 700 !important; letter-spacing: -.01em !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-title i { color: var(--awsk-acc-lite) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-stats { font-size: 11px !important; font-weight: 600 !important; color: rgba(255, 255, 255, .45) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-stats b { color: #fff !important; font-weight: 700 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-body { padding: 12px 14px 14px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-tabs { border-radius: 12px !important; background: rgba(0, 0, 0, .22) !important; border-color: rgba(255, 255, 255, .08) !important; padding: 4px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-tab { border-radius: 9px !important; font-size: 12.5px !important; font-weight: 600 !important; color: rgba(255, 255, 255, .62) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-tab[aria-selected=true] { background: rgba(255, 255, 255, .18) !important; color: #fff !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 6px 18px rgba(0, 0, 0, .25) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent.awc-on #aw3d-panel .aw3d-tab[aria-selected=true] { background: color-mix(in srgb, var(--awsk-acc) 32%, rgba(255, 255, 255, .05)) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-lab { font-size: 11.5px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; color: rgba(255, 255, 255, .5) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-chip { border-radius: 999px !important; border: 1px solid rgba(255, 255, 255, .1) !important; background: rgba(255, 255, 255, .07) !important; color: #f1f1f6 !important; font-size: 12px !important; font-weight: 600 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-chip:hover { background: rgba(255, 255, 255, .14) !important; border-color: rgba(255, 255, 255, .2) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-chip[aria-pressed=true] { background: var(--p3-acc) !important; border-color: var(--p3-acc) !important; color: var(--p3-ink) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel input[type=text] { border-radius: 10px !important; background: rgba(0, 0, 0, .28) !important; border-color: rgba(255, 255, 255, .12) !important; font-size: 12.5px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel input[type=text]:focus { border-color: rgba(154, 162, 255, .6) !important; box-shadow: 0 0 0 3px rgba(154, 162, 255, .18) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-filters label { border-radius: 10px !important; border-color: rgba(255, 255, 255, .08) !important; background: rgba(255, 255, 255, .04) !important; font-size: 12px !important; font-weight: 600 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-filters label:has(input:checked) { border-color: rgba(255, 255, 255, .24) !important; background: rgba(255, 255, 255, .14) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent.awc-on #aw3d-panel .aw3d-filters label:has(input:checked) { border-color: color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important; background: color-mix(in srgb, var(--awsk-acc) 18%, transparent) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-fld label { font-size: 12.5px !important; font-weight: 500 !important; color: rgba(255, 255, 255, .78) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-fld output { border-radius: 999px !important; font-size: 11px !important; font-weight: 700 !important; background: rgba(255, 255, 255, .1) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel input[type=range]::-webkit-slider-runnable-track { height: 4px !important; border-radius: 4px !important; background: rgba(255, 255, 255, .14) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel input[type=range]::-webkit-slider-thumb { width: 16px !important; height: 16px !important; margin-top: -6px !important; border: 0 !important; background: var(--p3-acc) !important; box-shadow: 0 2px 8px rgba(0, 0, 0, .45), 0 0 0 4px rgba(255, 255, 255, .12) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-help kbd { border-radius: 6px !important; border-color: rgba(255, 255, 255, .16) !important; background: rgba(255, 255, 255, .08) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-foot { border-top: 1px solid rgba(255, 255, 255, .08) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-foot .aw3d-chip { border-radius: 10px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw3d-panel .aw3d-primary { background: var(--p3-acc) !important; border-color: var(--p3-acc) !important; color: var(--p3-ink) !important; box-shadow: 0 6px 18px rgba(0, 0, 0, .25) !important;}
+
+/* ── Trade (trade-enhance.js + artefact-trade-ui.js) — VERRE ── */
+/* barre des tiers : même segmenté que les onglets du jeu */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on [data-aw-tierbar] {
+  background: rgba(22, 24, 32, .55) !important; border: 1px solid rgba(255, 255, 255, .1) !important; border-radius: 14px !important; padding: 5px !important; gap: 5px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+  backdrop-filter: blur(16px) saturate(1.3) !important; -webkit-backdrop-filter: blur(16px) saturate(1.3) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on [data-aw-tierbar] [data-aw-tierbtn] {
+  background: transparent !important; border: 1px solid transparent !important; border-radius: 10px !important; color: rgba(255, 255, 255, .62) !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-size: 12.5px !important; font-weight: 600 !important; letter-spacing: .02em !important; text-transform: none !important;
+  box-shadow: none !important; text-shadow: none !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on [data-aw-tierbar] [data-aw-tierbtn]:hover { background: rgba(255, 255, 255, .08) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on [data-aw-tierbar] [data-aw-tierbtn][aria-pressed="true"] {
+  background: rgba(255, 255, 255, .18) !important; border-color: rgba(255, 255, 255, .24) !important; color: #fff !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 6px 18px rgba(0, 0, 0, .25) !important;}
+/* bouton « Afficher / Masquer Use Supply Unit » : pastille de verre */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-trade-usesu-toggle {
+  background: rgba(255, 255, 255, .08) !important; border: 1px solid rgba(255, 255, 255, .14) !important; border-radius: 999px !important; color: rgba(255, 255, 255, .85) !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-size: 11.5px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important;
+  line-height: 1.2 !important; padding: 4px 11px !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08) !important; text-shadow: none !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-trade-usesu-toggle:hover { background: rgba(255, 255, 255, .16) !important; border-color: rgba(255, 255, 255, .24) !important; color: #fff !important;}
+/* convertisseur PP ⇄ $ */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-trade-conv-row :is([data-aw-conv-pp], [data-aw-conv-usd]) {
+  background: rgba(0, 0, 0, .28) !important; color: #fff !important; border: 1px solid rgba(255, 255, 255, .12) !important; border-radius: 8px !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-size: 13px !important; font-weight: 600 !important; font-variant-numeric: tabular-nums !important; padding: 4px 8px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-trade-conv-row :is([data-aw-conv-pp], [data-aw-conv-usd]):focus { border-color: color-mix(in srgb, var(--awsk-acc) 60%, transparent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--awsk-acc) 18%, transparent) !important; outline: none !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-trade-conv-row [data-aw-conv-reset] { background: rgba(255, 255, 255, .07) !important; border: 1px solid rgba(255, 255, 255, .1) !important; border-radius: 8px !important; color: rgba(255, 255, 255, .75) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-trade-conv-row [data-aw-conv-reset]:hover { background: rgba(255, 255, 255, .14) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-trade-conv-row [data-aw-conv-reset][aria-pressed="true"] { background: color-mix(in srgb, var(--awsk-acc) 22%, transparent) !important; border-color: color-mix(in srgb, var(--awsk-acc) 45%, transparent) !important; color: #fff !important;}
+/* panneau Auto-Trade Artefacts : plaque de verre */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui {
+  border-radius: 16px !important; border: 1px solid rgba(255, 255, 255, .13) !important; background: rgba(22, 24, 32, .6) !important; color: #f1f1f6 !important; overflow: hidden !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important;
+  backdrop-filter: blur(22px) saturate(1.4) !important; -webkit-backdrop-filter: blur(22px) saturate(1.4) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 20px 50px rgba(0, 0, 0, .35) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-tp-head {
+  background: none !important; border-bottom: 1px solid rgba(255, 255, 255, .08) !important; padding: 12px 64px 10px !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-size: 14px !important; font-weight: 700 !important; letter-spacing: -.01em !important; text-transform: none !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-icon { width: 24px !important; height: 22px !important; background: rgba(255, 255, 255, .08) !important; border: 0 !important; border-radius: 8px !important; color: rgba(255, 255, 255, .75) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-icon:hover { background: rgba(255, 255, 255, .16) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-tp-body { background: transparent !important; padding: 14px !important; gap: 12px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-note { color: rgba(255, 255, 255, .55) !important; font-size: 12px !important; line-height: 1.5 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-note b { color: #fff !important; font-weight: 700 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui :is(.aw-lbl, .aw-sub) { font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; color: rgba(255, 255, 255, .5) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-sub { border-top: 1px solid rgba(255, 255, 255, .08) !important; padding-top: 10px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-seg { background: rgba(0, 0, 0, .22) !important; border: 1px solid rgba(255, 255, 255, .08) !important; border-radius: 12px !important; padding: 4px !important; gap: 4px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-seg button {
+  background: transparent !important; border: 1px solid transparent !important; border-radius: 9px !important; color: rgba(255, 255, 255, .62) !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-size: 12.5px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-seg button:hover { background: rgba(255, 255, 255, .07) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-seg button.on {
+  background: rgba(255, 255, 255, .18) !important; border-color: rgba(255, 255, 255, .22) !important; color: #fff !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 6px 18px rgba(0, 0, 0, .25) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui :is(input[type=number], input[type=datetime-local], .aw-dd-btn) {
+  background: rgba(0, 0, 0, .28) !important; border: 1px solid rgba(255, 255, 255, .12) !important; border-radius: 10px !important; color: #fff !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-size: 13px !important; font-weight: 500 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui :is(input[type=number], input[type=datetime-local]):focus,
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-dd.open .aw-dd-btn { border-color: color-mix(in srgb, var(--awsk-acc) 60%, transparent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--awsk-acc) 18%, transparent) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui input::placeholder { color: rgba(255, 255, 255, .35) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-dd-btn::after { color: rgba(255, 255, 255, .6) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-dd-list {
+  background: rgba(28, 30, 40, .94) !important; border: 1px solid rgba(255, 255, 255, .14) !important; border-radius: 12px !important; padding: 4px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .5) !important; backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-opt { border-radius: 8px !important; color: #f1f1f6 !important; font-size: 13px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-opt:hover { background: rgba(255, 255, 255, .08) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-opt.sel { background: color-mix(in srgb, var(--awsk-acc) 20%, transparent) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-opt small { color: rgba(255, 255, 255, .5) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-chip {
+  background: rgba(255, 255, 255, .07) !important; border: 1px solid rgba(255, 255, 255, .08) !important; border-radius: 999px !important; color: #f1f1f6 !important;
+  font-size: 12px !important; font-weight: 600 !important; padding: 3px 11px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui :is(.aw-chip:hover, .aw-chip.on) { background: rgba(255, 255, 255, .18) !important; border-color: rgba(255, 255, 255, .22) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-check { color: rgba(255, 255, 255, .6) !important; font-size: 12px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-check input { accent-color: var(--awsk-acc) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-submit {
+  padding: 9px !important; border: 0 !important; border-radius: 10px !important; background: #fff !important; color: #14163a !important;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif !important; font-size: 13px !important; font-weight: 700 !important; letter-spacing: 0 !important; text-transform: none !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .25) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-submit:hover { background: var(--awsk-acc-pale) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-submit:disabled { background: rgba(255, 255, 255, .14) !important; color: rgba(255, 255, 255, .6) !important; box-shadow: none !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-list td { border-top: 1px solid rgba(255, 255, 255, .06) !important; color: #f1f1f6 !important; font-size: 12.5px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-list .aw-desc { color: rgba(255, 255, 255, .5) !important; font-size: 11px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-badge { border-radius: 999px !important; font-size: 10.5px !important; font-weight: 700 !important; padding: 1px 8px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui :is(.aw-del, .aw-clear) { border-radius: 8px !important; border-color: rgba(255, 107, 107, .3) !important; color: #ffb0b0 !important; background: rgba(255, 107, 107, .1) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui :is(.aw-del, .aw-clear):hover { background: rgba(255, 107, 107, .2) !important; border-color: rgba(255, 107, 107, .5) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-empty { color: rgba(255, 255, 255, .45) !important; font-size: 12px !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-msg.aw-err { color: #ffb0b0 !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on #aw-artefact-ui .aw-msg.aw-ok { color: #a8f3cd !important;}
+
+/* ── Verre + couleur d'accent choisie : états actifs des pages du jeu et des blocs de l'extension ── */
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent.awc-on.awc-gameskin table.table.navigation td.highlight,
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent.awc-on.awc-gameskin table.table.navigation td.active { background: color-mix(in srgb, var(--awsk-acc) 32%, rgba(255, 255, 255, .05)) !important; border-color: color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent.awc-on.awc-gameskin .btn.btn-primary.active { background: var(--awsk-acc) !important; border-color: var(--awsk-acc) !important; color: var(--awsk-ink) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent.awc-on [data-aw-tierbar] [data-aw-tierbtn][aria-pressed="true"] { background: color-mix(in srgb, var(--awsk-acc) 32%, rgba(255, 255, 255, .05)) !important; border-color: color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent.awc-on #aw-artefact-ui .aw-seg button.on { background: color-mix(in srgb, var(--awsk-acc) 32%, rgba(255, 255, 255, .05)) !important; border-color: color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important; color: #fff !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent.awc-on #aw-artefact-ui :is(.aw-chip:hover, .aw-chip.on) { background: color-mix(in srgb, var(--awsk-acc) 32%, rgba(255, 255, 255, .05)) !important; border-color: color-mix(in srgb, var(--awsk-acc) 55%, transparent) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent.awc-on #aw-artefact-ui .aw-submit { background: var(--awsk-acc) !important; color: var(--awsk-ink) !important;}
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent.awc-on #aw-artefact-ui .aw-submit:hover { background: color-mix(in srgb, var(--awsk-acc) 82%, #fff) !important;}
+
+/* les lignes elles-mêmes ne peignent rien : c'est la cellule (translucide) qui porte la teinte */
+html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tr,
+html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tr { background: transparent !important;}

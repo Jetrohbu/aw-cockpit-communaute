@@ -1,0 +1,4 @@
+Textures de planètes : Solar System Scope (https://www.solarsystemscope.com/textures/)
+Licence : Creative Commons Attribution 4.0 International (CC BY 4.0)
+Réduites en 1024×512 (2048×1024 pour le fond étoilé) pour l'extension AW.
+Fichiers *_fictional (ceres, eris, haumea, makemake) : textures fictives du même auteur.
