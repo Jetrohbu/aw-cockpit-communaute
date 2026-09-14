@@ -8,3 +8,11 @@ notes.md
 tools/*
 !tools/build_zip.py
 !tools/release_notes.py
+
+# app Android : sorties de build, dépendance téléchargée, CLÉ DE SIGNATURE (jamais dans le dépôt)
+android/build/
+android/libs/
+android/signing/
+*.jks
+*.keystore
+signing.json

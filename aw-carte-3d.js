@@ -1984,7 +1984,7 @@
        (servi en http) n'avait JAMAIS de texture sur la carte — sphères unies. */
     /* + raw.githubusercontent.com : l'app Android n'embarque pas les textures, son shim les pointe sur
        le dépôt public de l'édition communauté (CORS « * », indispensable pour WebGL) */
-    var S3_URL_OK = /^(chrome-extension|moz-extension|data|blob):|^https?:\/\/(localhost|127\.0\.0\.1)[:/]|^https:\/\/raw\.githubusercontent\.com\//;
+    var S3_URL_OK = /^(chrome-extension|moz-extension|data|blob):|^https?:\/\/(localhost|127\.0\.0\.1)[:/]|^https:\/\/raw\.githubusercontent\.com\/|^https:\/\/astrowars\.games\/__awc\//;
     function s3Tex(name, lin) {
       var key = name + (lin ? "#lin" : "");
       if (S3.tex[key]) return S3.tex[key];

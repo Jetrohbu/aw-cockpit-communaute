@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="awc_bg">#FF05070D</color>
+    <color name="awc_accent">#FF2AD2D8</color>
+    <color name="awc_icon_bg">#FF070B16</color>
+
+    <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/awc_bg</item>
+        <item name="android:colorBackground">@color/awc_bg</item>
+        <item name="android:statusBarColor">@color/awc_bg</item>
+        <item name="android:navigationBarColor">@color/awc_bg</item>
+        <item name="android:colorPrimary">@color/awc_bg</item>
+        <item name="android:colorPrimaryDark">@color/awc_bg</item>
+        <item name="android:colorAccent">@color/awc_accent</item>
+    </style>
+</resources>

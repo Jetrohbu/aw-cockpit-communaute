@@ -14,7 +14,7 @@ Contrôles avant d'écrire :
 import fnmatch, hashlib, json, os, re, sys, zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXCL_DIRS = {"site", "tools", "dist", "backups_site", ".git", ".github", ".claude", "__pycache__", "node_modules"}
+EXCL_DIRS = {"site", "tools", "dist", "backups_site", "android", ".git", ".github", ".claude", "__pycache__", "node_modules"}
 EXCL_FILES = re.compile(r"(\.bak|\.zip$|\.py$|\.log$|\.md$|^\.git)", re.I)
 
 manifest = json.load(open(os.path.join(ROOT, "manifest.json"), encoding="utf-8"))

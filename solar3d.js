@@ -331,7 +331,7 @@
     // rejette sans réseau : planètes unies, couleur d'archétype, tant que le
     // mod n'embarque pas assets/planets/ dans sa table de data-URI.
     const TEX_ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy() || 1);
-    const TEX_URL_OK = /^(chrome-extension|moz-extension|data|blob):|^https?:\/\/(localhost|127\.0\.0\.1)[:/]/;
+    const TEX_URL_OK = /^(chrome-extension|moz-extension|data|blob):|^https?:\/\/(localhost|127\.0\.0\.1)[:/]|^https:\/\/astrowars\.games\/__awc\//;
     const texCache = {};
     /* Chrono de chargement : combien de fichiers ce système attend, et quand le
        dernier arrive — c'est ce qui fait « le temps que le bloc 3D arrive ». */

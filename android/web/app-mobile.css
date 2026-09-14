@@ -1,0 +1,58 @@
+/* ═══════════════════════════════════════════════════════════════
+   AW Cockpit — app Android : ajouts à app.css (après les CSS du manifeste)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── menu de l'app : popup.html dans une feuille plein écran ── */
+#awc-app-sheet {
+  position: fixed; inset: 0; z-index: 2147483000;
+  background: rgba(3, 5, 10, .68); opacity: 0; transition: opacity .18s ease;
+}
+#awc-app-sheet.awc-in { opacity: 1; }
+/* color-scheme identique au document embarqué, sinon Chrome peint un fond opaque derrière l'iframe */
+#awc-app-sheet iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; color-scheme: dark; }
+
+/* ── au doigt : pas d'info-bulles de survol (elles restent collées après un appui) ── */
+@media (hover: none) {
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on .awc-rail-btn::after { display: none !important; }
+}
+
+/* ── téléphone en portrait : rail fin, colonne en feuille par-dessus la page ──
+   Les apparences fixent leurs jetons avec :root.awc-skin-x ×3 + !important : ×4 ici, et ce fichier passe en dernier. */
+@media (max-width: 640px) {
+  :root.awc-on.awc-on.awc-on.awc-on { --awc-rail-w: 46px !important; --awc-panel-w: calc(100vw - 46px) !important; }
+  :root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-skin-glass { --awc-rail-w: 52px !important; --awc-panel-w: calc(100vw - 52px) !important; }
+
+  /* la page n'est poussée que par le rail, jamais par la colonne */
+  :root.awc-on.awc-on.awc-on.awc-on.awc-open,
+  :root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-open { margin-right: var(--awc-rail-w) !important; }
+  :root.awc-on.awc-on.awc-on.awc-on.awc-rail-hidden { margin-right: 0 !important; }
+
+  /* rail */
+  :root.awc-on.awc-on.awc-on.awc-on #awc-rail { padding: 8px 0 !important; gap: 2px !important; }
+  :root.awc-on.awc-on.awc-on.awc-on #awc-rail .awc-logo,
+  :root.awc-on.awc-on.awc-on.awc-on #awc-rail .awc-logo img { width: 34px !important; height: 34px !important; margin-bottom: 4px !important; }
+  :root.awc-on.awc-on.awc-on.awc-on #awc-rail .awc-rail-btn { width: 36px !important; height: 36px !important; }
+  :root.awc-on.awc-on.awc-on.awc-on #awc-ver { font-size: 9px !important; }
+  :root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-rail { padding: 16px 0 !important; }
+  :root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-rail::before { inset: 6px 5px !important; border-radius: 14px !important; }
+
+  /* colonne : toute la largeur à gauche du rail */
+  :root.awc-on.awc-on.awc-on.awc-on #awc-panel { left: 0 !important; width: auto !important; right: var(--awc-rail-w) !important; }
+  :root.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-skin-glass #awc-panel { left: 6px !important; top: 6px !important; bottom: 6px !important; }
+  :root.awc-on.awc-on.awc-on.awc-on #awc-resize { display: none !important; }
+
+  /* cartes « nouvelle version » / « quoi de neuf » */
+  :root.awc-on.awc-on.awc-on.awc-on #awc-update-toast { left: 8px !important; right: calc(var(--awc-rail-w) + 6px) !important; width: auto !important; }
+
+  /* la page ne déborde jamais en largeur : sinon la WebView dézoome tout et le rail sort de l'écran */
+  :root.awc-on.awc-on.awc-on.awc-on { overflow-x: hidden !important; }
+
+  /* onglets du jeu (skin du jeu) : tiennent dans la largeur laissée par le rail — colonnes égales,
+     sans l'espacement des lettres du PC ; les tableaux de données ont déjà leur défilement (.overflow-auto) */
+  :root.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table.navigation { table-layout: fixed !important; width: 100% !important; border-spacing: 3px 0 !important; }
+  :root.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table.navigation td {
+    font-size: 11px !important; letter-spacing: .02em !important; overflow: hidden !important; text-overflow: ellipsis !important;
+  }
+  :root.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table.navigation td a { padding: 9px 1px !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+  :root.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table.navigation td:not(:has(a)) { padding: 9px 1px !important; }
+}

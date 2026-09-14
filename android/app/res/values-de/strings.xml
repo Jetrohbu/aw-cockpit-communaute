@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="offline_title">AstroWars ist nicht erreichbar</string>
+    <string name="offline_msg">Prüfe deine Verbindung und versuche es erneut.</string>
+    <string name="retry">Erneut versuchen</string>
+    <string name="no_browser">Keine App kann diesen Link öffnen.</string>
+</resources>

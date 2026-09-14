@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="offline_title">AstroWars est injoignable</string>
+    <string name="offline_msg">Vérifie ta connexion, puis réessaie.</string>
+    <string name="retry">Réessayer</string>
+    <string name="no_browser">Aucune app ne peut ouvrir ce lien.</string>
+</resources>

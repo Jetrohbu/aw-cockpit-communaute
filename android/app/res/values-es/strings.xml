@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="offline_title">No se puede conectar con AstroWars</string>
+    <string name="offline_msg">Comprueba tu conexión y vuelve a intentarlo.</string>
+    <string name="retry">Reintentar</string>
+    <string name="no_browser">Ninguna app puede abrir este enlace.</string>
+</resources>

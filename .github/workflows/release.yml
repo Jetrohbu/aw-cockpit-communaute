@@ -5,6 +5,8 @@
 #   aw-cockpit-communaute.zip          tous navigateurs (un dossier par navigateur + LISEZ-MOI)
 #   aw-cockpit-communaute-chrome.zip   Chrome, Edge, Brave, Opera
 #   aw-cockpit-communaute-firefox.zip  Firefox 128+
+# + aw-cockpit-communaute.apk (app Android, lue par l'app) SI les secrets AWC_KEYSTORE_B64 (clé .jks
+#   en base64) et AWC_KEYSTORE_PASS existent ; sinon l'étape est sautée (android/README.md).
 name: Release
 
 on:
@@ -17,6 +19,8 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      AWC_KEYSTORE_B64: ${{ secrets.AWC_KEYSTORE_B64 }}
     steps:
       - uses: actions/checkout@v4
 
@@ -35,8 +39,28 @@ jobs:
       - name: Construire les ZIP
         run: python tools/build_zip.py
 
+      - uses: actions/setup-java@v4
+        if: env.AWC_KEYSTORE_B64 != ''
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: App Android (APK signée)
+        if: env.AWC_KEYSTORE_B64 != ''
+        env:
+          AWC_KEYSTORE_PASS: ${{ secrets.AWC_KEYSTORE_PASS }}
+        run: |
+          pip install pillow
+          umask 077
+          echo "$AWC_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/awc.jks"
+          AWC_KEYSTORE="$RUNNER_TEMP/awc.jks" python android/build_apk.py
+          rm -f "$RUNNER_TEMP/awc.jks"
+
       - name: Notes de version
-        run: python tools/release_notes.py "$VER" > notes.md
+        run: |
+          APK=""
+          [ -f android/dist/aw-cockpit-communaute.apk ] && APK="--apk"
+          python tools/release_notes.py "$VER" $APK > notes.md
 
       - name: Créer la Release
         env:
@@ -46,8 +70,7 @@ jobs:
           cp "dist/aw-cockpit-communaute-$VER.zip" dist/aw-cockpit-communaute-chrome.zip
           cp "dist/aw-cockpit-communaute-$VER-firefox.zip" dist/aw-cockpit-communaute-firefox.zip
           TITLE=$(python tools/release_notes.py "$VER" --title)
-          gh release create "$GITHUB_REF_NAME" \
-            dist/aw-cockpit-communaute.zip \
-            dist/aw-cockpit-communaute-chrome.zip \
-            dist/aw-cockpit-communaute-firefox.zip \
+          FILES="dist/aw-cockpit-communaute.zip dist/aw-cockpit-communaute-chrome.zip dist/aw-cockpit-communaute-firefox.zip"
+          [ -f android/dist/aw-cockpit-communaute.apk ] && FILES="$FILES android/dist/aw-cockpit-communaute.apk"
+          gh release create "$GITHUB_REF_NAME" $FILES \
             --title "v$VER — $TITLE" --notes-file notes.md --latest

@@ -2,6 +2,7 @@
 
   python tools/release_notes.py 1.0.6            → Markdown (FR, EN, ES, DE + installation)
   python tools/release_notes.py 1.0.6 --title    → titre français seul
+  python tools/release_notes.py 1.0.6 --apk      → + installation de l'app Android (APK jointe)
 """
 import json, os, sys
 
@@ -35,4 +36,13 @@ out += [
     "",
     "Aide, FAQ, rapport de bug : https://holocron-gt.fr/static/aw-cockpit-communaute.html",
 ]
+if "--apk" in sys.argv:
+    out[-1:-1] = [
+        "**App Android** : télécharge `aw-cockpit-communaute.apk` sur ton téléphone et ouvre-la ; pour une mise à jour, "
+        "installe-la par-dessus l'app (réglages et connexion conservés). L'app te prévient d'elle-même des nouvelles versions.",
+        "",
+        "**Android app**: download `aw-cockpit-communaute.apk` on your phone and open it; to update, install it over the app "
+        "(settings and login are kept). The app tells you about new versions by itself.",
+        "",
+    ]
 print("\n".join(out))
