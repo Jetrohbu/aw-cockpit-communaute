@@ -57,6 +57,16 @@
 
   /* ── notes de version de l'édition communauté ── */
   const UPDATE_NOTES = {
+    "1.0.7": {
+      title: "Carte 3D : systèmes en grand, planètes détaillées, plein écran",
+      points: [
+        "Carte 3D : au survol, le système s'ouvre en grand sur la gauche, légèrement incliné, et sa fiche (les 12 planètes et leurs propriétaires) s'affiche à droite",
+        "Planètes détaillées comme la vue système (relief, nuages, atmosphère, anneaux, villes la nuit), avec le propriétaire et l'alliance écrits sous chacune",
+        "Planètes bien réparties autour de l'étoile et qui ne se touchent jamais, apparition animée, fond d'étoiles, le reste de la carte masqué derrière le système",
+        "Flottes en vol : marqueur « comète » et paraboles moins hautes",
+        "Nouveau : carte 3D en plein écran (bouton en bas à gauche ou touche F, Échap pour revenir)",
+      ],
+    },
     "1.0.6": {
       title: "Alerte de nouvelle version, aide et rapport de bug",
       points: [

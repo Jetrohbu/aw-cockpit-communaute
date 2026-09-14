@@ -1,9 +1,53 @@
 {
-  "version": "1.0.6",
+  "version": "1.0.7",
   "date": "14/09/2026",
-  "zip": "aw-cockpit-communaute-1.0.6.zip",
+  "zip": "aw-cockpit-communaute-1.0.7.zip",
   "size": "5,2 Mo",
   "releases": [
+    {
+      "version": "1.0.7",
+      "date": "14/09/2026",
+      "title": "Carte 3D : systèmes en grand, planètes détaillées, plein écran",
+      "points": [
+        "Carte 3D : au survol, le système s'ouvre en grand sur la gauche, légèrement incliné, et sa fiche (les 12 planètes et leurs propriétaires) s'affiche à droite",
+        "Planètes détaillées comme la vue système (relief, nuages, atmosphère, anneaux, villes la nuit), avec le propriétaire et l'alliance écrits sous chacune",
+        "Planètes bien réparties autour de l'étoile et qui ne se touchent jamais, apparition animée, fond d'étoiles, le reste de la carte masqué derrière le système",
+        "Flottes en vol : marqueur « comète » et paraboles moins hautes",
+        "Nouveau : carte 3D en plein écran (bouton en bas à gauche ou touche F, Échap pour revenir)"
+      ],
+      "i18n": {
+        "en": {
+          "title": "3D map: big systems, detailed planets, full screen",
+          "points": [
+            "3D map: on hover, the system opens large on the left, slightly tilted, and its sheet (the 12 planets and their owners) shows on the right",
+            "Planets as detailed as the system view (relief, clouds, atmosphere, rings, city lights at night), with the owner and alliance written under each one",
+            "Planets evenly spread around the star and never touching, animated arrival, starry background, the rest of the map hidden behind the system",
+            "Fleets in flight: “comet” marker and lower arcs",
+            "New: full-screen 3D map (button at the bottom left or F key, Esc to go back)"
+          ]
+        },
+        "es": {
+          "title": "Mapa 3D: sistemas en grande, planetas detallados, pantalla completa",
+          "points": [
+            "Mapa 3D: al pasar el ratón, el sistema se abre en grande a la izquierda, algo inclinado, y su ficha (los 12 planetas y sus dueños) aparece a la derecha",
+            "Planetas tan detallados como en la vista de sistema (relieve, nubes, atmósfera, anillos, luces de ciudades de noche), con el dueño y la alianza escritos debajo de cada uno",
+            "Planetas bien repartidos alrededor de la estrella y que nunca se tocan, aparición animada, fondo de estrellas, el resto del mapa oculto detrás del sistema",
+            "Flotas en vuelo: marcador «cometa» y parábolas más bajas",
+            "Nuevo: mapa 3D en pantalla completa (botón abajo a la izquierda o tecla F, Esc para volver)"
+          ]
+        },
+        "de": {
+          "title": "3D-Karte: große Systeme, detaillierte Planeten, Vollbild",
+          "points": [
+            "3D-Karte: Beim Überfahren öffnet sich das System groß auf der linken Seite, leicht geneigt, und sein Steckbrief (die 12 Planeten und ihre Besitzer) erscheint rechts",
+            "Planeten so detailliert wie in der Systemansicht (Relief, Wolken, Atmosphäre, Ringe, Stadtlichter bei Nacht), mit Besitzer und Allianz unter jedem Planeten",
+            "Planeten gleichmäßig um den Stern verteilt, die sich nie berühren, animiertes Erscheinen, Sternenhintergrund, der Rest der Karte hinter dem System verborgen",
+            "Flotten im Flug: „Komet“-Markierung und flachere Bögen",
+            "Neu: 3D-Karte im Vollbild (Button unten links oder Taste F, Esc zum Zurückkehren)"
+          ]
+        }
+      }
+    },
     {
       "version": "1.0.6",
       "date": "14/09/2026",
@@ -273,8 +317,8 @@
       }
     }
   ],
-  "zip_firefox": "aw-cockpit-communaute-1.0.6-firefox.zip",
+  "zip_firefox": "aw-cockpit-communaute-1.0.7-firefox.zip",
   "size_firefox": "5,2 Mo",
-  "zip_bundle": "aw-cockpit-communaute-1.0.6-tous-navigateurs.zip",
+  "zip_bundle": "aw-cockpit-communaute-1.0.7-tous-navigateurs.zip",
   "size_bundle": "10,4 Mo"
 }
