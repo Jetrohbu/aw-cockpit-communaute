@@ -1028,6 +1028,27 @@
       "#aw3d-tip.big .t-o{font-size:1.05rem;max-height:110px;margin-top:12px;}",
       "#aw3d-tip.big .t-g{font-size:1rem;margin-top:10px;}",
       "#aw3d-tip.big .t-f{font-size:.92rem;margin-top:12px;}",
+      /* hors plein écran (bloc de la carte du jeu) : fiche compacte, ou réduite si le bloc est bas */
+      "#aw3d-tip.big.compact{width:360px;padding:12px 14px;}",
+      "#aw3d-tip.big.compact .t-n{font-size:1.18rem;}",
+      "#aw3d-tip.big.compact .t-t{font-size:.76rem;}",
+      "#aw3d-tip.big.compact .t-t i{width:9px;height:9px;}",
+      "#aw3d-tip.big.compact .t-xy{font-size:.8rem;}",
+      "#aw3d-tip.big.compact .t-tab{margin-top:8px;font-size:.88rem;}",
+      "#aw3d-tip.big.compact .t-tab th{font-size:.68rem;padding:1px 8px 3px 0;}",
+      "#aw3d-tip.big.compact .t-tab td{padding:2px 8px 2px 0;max-width:170px;}",
+      "#aw3d-tip.big.compact .t-o{font-size:.82rem;max-height:60px;margin-top:8px;}",
+      "#aw3d-tip.big.compact .t-g{font-size:.78rem;margin-top:6px;}",
+      "#aw3d-tip.big.compact .t-f{font-size:.72rem;margin-top:8px;}",
+      "#aw3d-tip.big.tiny{width:290px;padding:9px 11px;}",
+      "#aw3d-tip.big.tiny .t-n{font-size:1rem;}",
+      "#aw3d-tip.big.tiny .t-t{font-size:.68rem;}",
+      "#aw3d-tip.big.tiny .t-xy{font-size:.7rem;}",
+      "#aw3d-tip.big.tiny .t-tab{margin-top:6px;font-size:.76rem;}",
+      "#aw3d-tip.big.tiny .t-tab th{font-size:.62rem;padding:1px 6px 2px 0;}",
+      "#aw3d-tip.big.tiny .t-tab td{padding:1px 6px 1px 0;max-width:140px;}",
+      "#aw3d-tip.big.tiny .t-o,#aw3d-tip.big.tiny .t-g{font-size:.72rem;margin-top:5px;max-height:46px;}",
+      "#aw3d-tip.big.tiny .t-f{font-size:.66rem;margin-top:6px;}",
 
       /* plein écran : l'hôte, déplacé sous <body>, couvre toute la fenêtre (sous le panneau Réglages 3D) */
       "#aw3d-host.aw3d-full{position:fixed !important;inset:0 !important;z-index:2147482600 !important;border-radius:0 !important;}",
@@ -2379,10 +2400,11 @@
        pitch  : le plan des orbites est vu plus RASANT (rad ajoutés à l'angle depuis la verticale,
                 plafonné à PITCH_MAX pour ne jamais passer sous le plan)
        disc   : opacité du masque sous les anneaux
-       size   : rayon de l'anneau extérieur à l'écran, en fraction de la hauteur (le bloc n'est jamais plus petit)
+       size   : rayon de l'anneau extérieur à l'écran, en fraction de la hauteur (le bloc n'est jamais plus petit) — plein écran
+       sizeBloc : idem dans le bloc de la carte du jeu (hors plein écran), plus petit pour laisser la place à la fiche
        orbit  : vitesse des orbites du système ouvert (1 = celle de la carte) — « très lentement », 14/09
        spin   : vitesse de rotation propre des planètes du bloc (1 = vue système) */
-    var PRESENT = { x: .31, y: .47, roll: -.22, pitch: .38, disc: .82, size: .44, orbit: .06, spin: .35 }, PITCH_MAX = 1.36;   /* roll < 0 : penché à DROITE (14/09 « de l'autre côté, même inclinaison ») */
+    var PRESENT = { x: .31, y: .47, roll: -.22, pitch: .38, disc: .82, size: .44, sizeBloc: .34, orbit: .06, spin: .35 }, PITCH_MAX = 1.36;   /* roll < 0 : penché à DROITE (14/09 « de l'autre côté, même inclinaison ») */
     var openCam = null, openSys = null, openF = 0, _openW = null, _openD = null, _openT = null, _openO = null;
     function smooth01(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
     function updateOpenCam(s) {
@@ -2403,7 +2425,7 @@
       /* bloc en GRAND : distance telle que l'anneau extérieur (système déployé) fasse
          PRESENT.size de la hauteur — jamais plus loin que la caméra de la carte */
       var rFull = (s.outerOpen || unit * (.30 + 11 * .055) * 6.5) * 1.1;
-      var dWant = rFull / (2 * PRESENT.size * Math.tan(camera.fov * Math.PI / 360));
+      var dWant = rFull / (2 * (isFull() ? PRESENT.size : PRESENT.sizeBloc) * Math.tan(camera.fov * Math.PI / 360));
       rr = rr + (Math.min(rr, dWant) - rr) * openF;
       var ph = Math.acos(Math.max(-1, Math.min(1, _openO.y / (_openO.length() || 1)))), th = Math.atan2(_openO.x, _openO.z);
       var ph2 = ph >= PITCH_MAX ? ph : Math.min(PITCH_MAX, ph + PRESENT.pitch * openF);
@@ -3581,11 +3603,12 @@
         var dur = (raw.launchTime && (raw.arrivalTime || raw.arrivalAt))
           ? (Date.parse(raw.arrivalTime || raw.arrivalAt) - Date.parse(raw.launchTime)) / 3600000
           : Math.hypot(to.cx - from.cx, to.cy - from.cy) * 1.35;
-        var apex = Math.min(12, 2.2 * Math.sqrt(Math.max(0.2, dur))) * unit;
+        /* 14/09 « réduis les hauteurs des paraboles » : 2,2 × √h plafonné à 12 → 1,2 × √h plafonné à 6,5 */
+        var apex = Math.min(6.5, 1.2 * Math.sqrt(Math.max(0.2, dur))) * unit;
         /* plusieurs vols vers la meme cible : chaque arc suivant monte de 22 %
            pour qu'on ne voie pas un fagot indistinct */
         var tk = to.cx + "/" + to.cy, tn = tgtN[tk] | 0; tgtN[tk] = tn + 1;
-        apex *= 1 + 0.22 * tn;
+        apex *= 1 + 0.18 * tn;
         var SEGA = 24;
         var geo = new T.BufferGeometry();
         geo.setAttribute("position", new T.Float32BufferAttribute(new Float32Array((SEGA + 1) * 3), 3));
@@ -4891,6 +4914,14 @@
       if (MOBILE) return;
       var el = tip();
       if (el.classList.contains("big")) {
+        /* plein écran : grande fiche ; dans le bloc de la carte : compacte, ou réduite si le bloc est bas */
+        var tmode = isFull() ? "" : (ch >= 540 ? "compact" : "tiny");
+        var tcur = el.classList.contains("compact") ? "compact" : el.classList.contains("tiny") ? "tiny" : "";
+        if (tmode !== tcur) {
+          el.classList.remove("compact", "tiny");
+          if (tmode) el.classList.add(tmode);
+          measureTip();
+        }
         /* système ouvert : le bloc est à gauche (PRESENT.x), la fiche à DROITE, centrée
            dans l'espace libre et verticalement ; jamais sous le panneau Réglages 3D */
         var right = cw - 16;
