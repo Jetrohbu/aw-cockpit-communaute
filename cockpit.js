@@ -57,6 +57,15 @@
 
   /* ── notes de version de l'édition communauté ── */
   const UPDATE_NOTES = {
+    "1.0.9": {
+      title: "Vue 3D des systèmes retirée, app Android plus lisible au téléphone",
+      points: [
+        "La vue 3D sur la page d'un système est retirée : la carte 3D de la galaxie garde ses systèmes ouverts en grand, avec leurs planètes détaillées",
+        "App Android : choix de la langue au premier lancement, puis écran d'accueil dans cette langue",
+        "App Android : News en cartes lisibles, page Trade qui tient dans l'écran, languette du rail en bas à droite",
+        "App Android : icône d'AstroWars, menu de l'app toujours au-dessus de la carte 3D",
+      ],
+    },
     "1.0.8": {
       title: "Vue système 3D mieux cadrée, plein écran de la carte réparé au doigt",
       points: [
@@ -636,7 +645,7 @@
     body.appendChild(awcHint(T("team_hint", "AW Cockpit est imaginé et développé par la Team Holocron, pour toute la communauté AstroWars : gratuit, sans compte et sans publicité.")));
     body.appendChild(awcHint(T("team_thanks", "Merci à tous les joueurs qui le testent et font remonter leurs idées. Bon jeu, et que la Force soit avec ta flotte !")));
     // Les mentions de licence (textures CC BY 4.0, polices SIL OFL, three.js MIT) restent dans
-    // CREDITS.txt, dans l'infobulle de la vue système 3D et en pied de la page de téléchargement.
+    // CREDITS.txt et en pied de la page de téléchargement (vue système 3D retirée de l'édition le 16/09/2026).
   }
 
   /* ═══════════ historique des versions + toast après mise à jour ═══════════ */

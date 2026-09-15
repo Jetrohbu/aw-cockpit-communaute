@@ -1,6 +1,6 @@
 # AW Cockpit — Édition communauté
 
-Extension de navigateur gratuite pour [AstroWars](https://astrowars.games) : apparences Verre, HUD et Classique pour l'interface et les pages du jeu, jauges graduées, fond spatial, carte de la galaxie et systèmes solaires en 3D, vue multi-planètes, aides sur la page Trade.
+Extension de navigateur gratuite pour [AstroWars](https://astrowars.games) : apparences Verre, HUD et Classique pour l'interface et les pages du jeu, jauges graduées, fond spatial, carte de la galaxie en 3D (systèmes ouverts en grand), vue multi-planètes, aides sur la page Trade.
 
 - **Pas de compte, rien n'est envoyé.** L'extension ne parle qu'au jeu (pages Fleets, Planets, News, historique des prix) et lit une fois par jour la dernière Release de ce dépôt pour te prévenir d'une nouvelle version.
 - **Rien n'est automatisé** : aucune action de jeu n'est déclenchée à ta place.

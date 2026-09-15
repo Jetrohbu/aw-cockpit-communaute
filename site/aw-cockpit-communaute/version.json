@@ -1,9 +1,49 @@
 {
-  "version": "1.0.8",
-  "date": "15/09/2026",
-  "zip": "aw-cockpit-communaute-1.0.8.zip",
+  "version": "1.0.9",
+  "date": "16/09/2026",
+  "zip": "aw-cockpit-communaute-1.0.9.zip",
   "size": "5,2 Mo",
   "releases": [
+    {
+      "version": "1.0.9",
+      "date": "16/09/2026",
+      "title": "Vue 3D des systèmes retirée, app Android plus lisible au téléphone",
+      "points": [
+        "La vue 3D sur la page d'un système est retirée : la carte 3D de la galaxie garde ses systèmes ouverts en grand, avec leurs planètes détaillées",
+        "App Android : choix de la langue au premier lancement, puis écran d'accueil dans cette langue",
+        "App Android : News en cartes lisibles, page Trade qui tient dans l'écran, languette du rail en bas à droite",
+        "App Android : icône d'AstroWars, menu de l'app toujours au-dessus de la carte 3D"
+      ],
+      "i18n": {
+        "en": {
+          "title": "3D system view removed, Android app easier to read on a phone",
+          "points": [
+            "The 3D view on a system's page is removed: the 3D galaxy map keeps its systems opening large, with detailed planets",
+            "Android app: language choice on first launch, then the welcome screen in that language",
+            "Android app: readable News cards, a Trade page that fits the screen, rail tab at the bottom right",
+            "Android app: AstroWars icon, app menu always above the 3D map"
+          ]
+        },
+        "es": {
+          "title": "Vista 3D de los sistemas retirada, app Android más legible en el móvil",
+          "points": [
+            "Se retira la vista 3D de la página de un sistema: el mapa 3D de la galaxia mantiene sus sistemas abiertos en grande, con planetas detallados",
+            "App Android: elección del idioma en el primer inicio y pantalla de bienvenida en ese idioma",
+            "App Android: News en tarjetas legibles, página Trade que cabe en la pantalla, pestaña del riel abajo a la derecha",
+            "App Android: icono de AstroWars, menú de la app siempre por encima del mapa 3D"
+          ]
+        },
+        "de": {
+          "title": "3D-Systemansicht entfernt, Android-App auf dem Handy besser lesbar",
+          "points": [
+            "Die 3D-Ansicht auf der Seite eines Systems wurde entfernt: Die 3D-Galaxiekarte öffnet ihre Systeme weiterhin groß, mit detaillierten Planeten",
+            "Android-App: Sprachauswahl beim ersten Start, danach Begrüßung in dieser Sprache",
+            "Android-App: lesbare News-Karten, Trade-Seite passt auf den Bildschirm, Leisten-Lasche unten rechts",
+            "Android-App: AstroWars-Symbol, App-Menü immer über der 3D-Karte"
+          ]
+        }
+      }
+    },
     {
       "version": "1.0.8",
       "date": "15/09/2026",
@@ -357,8 +397,8 @@
       }
     }
   ],
-  "zip_firefox": "aw-cockpit-communaute-1.0.8-firefox.zip",
+  "zip_firefox": "aw-cockpit-communaute-1.0.9-firefox.zip",
   "size_firefox": "5,2 Mo",
-  "zip_bundle": "aw-cockpit-communaute-1.0.8-tous-navigateurs.zip",
+  "zip_bundle": "aw-cockpit-communaute-1.0.9-tous-navigateurs.zip",
   "size_bundle": "10,4 Mo"
 }
