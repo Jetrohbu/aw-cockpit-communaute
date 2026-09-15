@@ -804,7 +804,7 @@
     if (!apk) return;
     var loc = { fr: "fr-FR", en: "en-GB", es: "es-ES", de: "de-DE" }[lang];
     var meta = ["v" + esc(apk.version), esc(t("apk_note"))];
-    if (apk.count != null) meta.push(apk.count === 1 ? esc(t("apk_count_1")) : esc(t("apk_count").replace("{n}", apk.count.toLocaleString(loc))));
+    if (apk.count != null) meta.push(apk.count === 1 || (lang === "fr" && apk.count === 0) ? esc(t("apk_count_1").replace("1", apk.count)) : esc(t("apk_count").replace("{n}", apk.count.toLocaleString(loc))));
     document.getElementById("apk-meta").innerHTML = meta.join(" · ");
     document.getElementById("apk-dl").href = apk.url;
     document.getElementById("apk-pill").hidden = false;
