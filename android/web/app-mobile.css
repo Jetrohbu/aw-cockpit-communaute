@@ -4,7 +4,7 @@
 
 /* ── menu de l'app : popup.html dans une feuille plein écran ── */
 #awc-app-sheet {
-  position: fixed; inset: 0; z-index: 2147483000;
+  position: fixed; inset: 0; z-index: 2147483647 !important;   /* au-dessus du panneau Réglages 3D (2147483000) */
   background: rgba(3, 5, 10, .68); opacity: 0; transition: opacity .18s ease;
 }
 #awc-app-sheet.awc-in { opacity: 1; }
@@ -55,4 +55,51 @@
   }
   :root.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table.navigation td a { padding: 9px 1px !important; overflow: hidden !important; text-overflow: ellipsis !important; }
   :root.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table.navigation td:not(:has(a)) { padding: 9px 1px !important; }
+}
+
+/* ── téléphone : pages du jeu comparées à la version mobile du site (Chrome) ── */
+@media (max-width: 640px) {
+  /* ── News : chaque message en carte empilée (en-tête date + joueur, puis texte sur toute la largeur) ──
+     Les apparences posent 230px + clip-path en biseau sur deux colonnes : ×9 + !important ici. */
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg),
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) > tbody,
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) > thead,
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) > thead > tr,
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) > thead th { display: block !important; width: auto !important; }
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) > tbody > tr:has(> td.msg) {
+    display: block !important; margin: 0 0 8px !important; background: none !important;
+  }
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) td.msg,
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) td.msg + td {
+    display: block !important; width: auto !important; min-width: 0 !important; clip-path: none !important; text-align: left !important;
+    border: 0 !important; background-clip: border-box !important;
+  }
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) td.msg {
+    padding: 9px 14px 7px 16px !important; border-radius: 14px 14px 0 0 !important; font-size: 12px !important; line-height: 1.45 !important;
+  }
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) td.msg br { display: none !important; }
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) td.msg b { margin: 0 0 0 6px !important; }
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) td.msg + td {
+    padding: 8px 14px 11px 16px !important; border-radius: 0 0 14px 14px !important; line-height: 1.5 !important;
+  }
+  :root.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-gameskin table.table:has(td.msg) td.msg,
+  :root.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-gameskin table.table:has(td.msg) td.msg + td { border-radius: 0 !important; }
+
+  /* ── Trade : bouton « Afficher Use Supply Unit » sous le titre (il chevauchait « Trade & Artefacts ») ── */
+  :root.awc-on.awc-on.awc-on.awc-on #aw-trade-usesu-toggle {
+    position: static !important; transform: none !important; display: block !important; margin: 6px auto 0 !important;
+  }
+  /* tableau des prix élargi par les colonnes Coût PP / Temps : plus compact au téléphone,
+     et défilement horizontal dans son bloc en dernier recours (sinon la WebView dézoome toute la page) */
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on table.table:has(.aw-trade-extra-cell) th,
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on table.table:has(.aw-trade-extra-cell) td {
+    padding-left: 3px !important; padding-right: 3px !important; font-size: 11.5px !important; letter-spacing: 0 !important;
+  }
+  :root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on .col-md-6:has(> table.table .aw-trade-extra-cell) { overflow-x: auto !important; }
+
+  /* ── languette de rappel du rail : collée au bord, fine, tout en bas (au milieu elle masquait la dernière colonne des tableaux) ── */
+  :root.awc-on.awc-on.awc-on.awc-on #awc-rail-tab {
+    top: auto !important; bottom: 12px !important; right: 0 !important; width: 14px !important; height: 44px !important;
+    border-radius: 12px 0 0 12px !important; opacity: .85 !important;
+  }
 }

@@ -1281,11 +1281,18 @@ float ridged(vec3 p){
        au lieu des constantes en dur (78 / 92 / 72 / 12 / 220) qui ne valaient
        que pour un système plein de 12 planètes : ailleurs on était soit collé
        dessus, soit si loin qu'il n'était plus qu'un point.
-       FIT = distance à laquelle le système remplit tout juste la hauteur. */
+       FIT = distance à laquelle le système tient tout juste dans l'image, sur
+       l'axe le plus étroit : la hauteur sur un écran large, la LARGEUR sur un
+       téléphone (calculé sur la hauteur seule, les orbites extérieures sortaient
+       du cadre à gauche et à droite). Recalculé à chaque redimensionnement. */
     const R_OUT = orbitR(Math.max(3, planets.length ? Math.max.apply(null, planets.map((q) => q.idx)) : 12));
-    const FIT = (R_OUT * 1.06) / Math.tan((camera.fov * Math.PI / 180) / 2);
+    const fitFor = (aspect) => {
+      const tv = Math.tan((camera.fov * Math.PI / 180) / 2);
+      return (R_OUT * 1.06) / (tv * Math.min(1, aspect || 1));
+    };
+    let FIT = fitFor(camera.aspect);
     const ZMIN = SUN_R * 1.7;        /* juste au-dessus de la couronne */
-    const ZMAX = FIT * 0.95;         /* le système remplit encore l'image */
+    const zmax = () => FIT * 1.35;   /* on peut reculer un peu au-delà du système entier */
     const zoneOf = (i) => (i <= 3 ? "hot" : (i <= 7 ? "temperate" : "cold"));
     const SPIRAL_0 = prand(SYSTEM_ID * 0.911 + 4.2) * Math.PI * 2;
     planets.forEach((p) => {
@@ -1413,7 +1420,7 @@ float ridged(vec3 p){
     /* toutes les distances de caméra sont désormais relatives à l'étendue du
        système : un système de 5 planètes n'a pas à être cadré comme un de 12
        (78 / 92 / 72 en dur laissaient le petit perdu au fond de l'image). */
-    const orbit = { theta: Math.atan2(homePos.z, homePos.x) + 2.2, phi: 1.08, dist: FIT * 0.85 };
+    const orbit = { theta: Math.atan2(homePos.z, homePos.x) + 2.2, phi: 1.08, dist: FIT * 0.95 };
     const goal = { theta: orbit.theta, phi: orbit.phi, dist: orbit.dist };
     const look = new T.Vector3(0, 0, 0);      /* point visé, lissé image par image */
     const lookGoal = new T.Vector3(0, 0, 0);
@@ -1430,10 +1437,12 @@ float ridged(vec3 p){
        enchaîne des plans (large, rasant, autour de l'étoile) avec des
        transitions douces — au lieu d'un balayage uniforme sans intention. */
     const SHOTS = [
-      { name: "home",   focus: homePos, dist: 8.5,         phi: 0.50, drift: 0.10, hold: 14 },
-      { name: "large",  focus: CENTER,  dist: FIT * 0.85,  phi: 1.10, drift: 0.05, hold: 16 },
-      { name: "rasant", focus: CENTER,  dist: FIT * 0.66,  phi: 0.18, drift: 0.09, hold: 13 },
-      { name: "etoile", focus: CENTER,  dist: SUN_R * 5.8, phi: 0.70, drift: 0.14, hold: 11 },
+      /* plans moins serrés qu'avant (8,5 / 0,66 rasant à 0,18 rad / 5,8) : une planète
+         du premier plan finissait par occuper la moitié de l'image */
+      { name: "home",   focus: homePos, fit: 0.45, min: 20,        phi: 0.62, drift: 0.10, hold: 12 },
+      { name: "large",  focus: CENTER,  fit: 0.95,                 phi: 1.10, drift: 0.05, hold: 18 },
+      { name: "rasant", focus: CENTER,  fit: 0.92,                 phi: 0.34, drift: 0.09, hold: 13 },
+      { name: "etoile", focus: CENTER,  dist: SUN_R * 10,         phi: 0.72, drift: 0.14, hold: 10 },
     ];
     let shotI = 0, shotAt = 0;
     function idleCam(tt) {
@@ -1443,9 +1452,9 @@ float ridged(vec3 p){
       const sh = SHOTS[shotI];
       lookGoal.copy(sh.focus);
       goal.phi = sh.phi;
-      goal.dist = sh.dist;
+      goal.dist = sh.fit ? Math.max(sh.min || 0, FIT * sh.fit) : sh.dist;
       goal.theta += sh.drift * 0.004;         /* dérive lente pendant le plan */
-      bob = Math.sin(tt * 0.32) * sh.dist * 0.02;
+      bob = Math.sin(tt * 0.32) * goal.dist * 0.02;
       /* lissage exponentiel = démarrages et arrivées en douceur */
       orbit.theta += (goal.theta - orbit.theta) * 0.02;
       orbit.phi += (goal.phi - orbit.phi) * 0.02;
@@ -1510,7 +1519,7 @@ float ridged(vec3 p){
       if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pointers.size >= 2 && pinchSpan0 > 0) {
         const d = spanOf();
-        if (d > 0) orbit.dist = Math.min(ZMAX, Math.max(ZMIN, pinchDist0 * (pinchSpan0 / d)));
+        if (d > 0) orbit.dist = Math.min(zmax(), Math.max(ZMIN, pinchDist0 * (pinchSpan0 / d)));
         idleReset();
         return;
       }
@@ -1527,7 +1536,7 @@ float ridged(vec3 p){
     });
     canvas.addEventListener("wheel", (e) => {
       e.preventDefault();
-      orbit.dist = Math.min(ZMAX, Math.max(ZMIN, orbit.dist * (e.deltaY > 0 ? 1.1 : 0.9)));
+      orbit.dist = Math.min(zmax(), Math.max(ZMIN, orbit.dist * (e.deltaY > 0 ? 1.1 : 0.9)));
       /* la molette coupe la veille, sinon le plan en cours reprend la main
          sur la distance et le zoom paraît sans effet */
       idleReset();
@@ -1590,6 +1599,12 @@ float ridged(vec3 p){
       if (!w || !h) return;
       renderer.setSize(w, h, false);
       camera.aspect = w / h; camera.updateProjectionMatrix();
+      /* recadrer : garder le même rapport au système entier */
+      const f = fitFor(camera.aspect);
+      if (Math.abs(f - FIT) > 1e-6) {
+        const k = f / FIT;
+        FIT = f; orbit.dist *= k; goal.dist *= k;
+      }
     }
     window.addEventListener("resize", resize);
     resize();

@@ -18,7 +18,39 @@
   Object.keys(O).forEach(function (l) { if (D[l]) Object.assign(D[l], O[l]); });
 
   function close() { try { window.top.__awcApp.closeMenu(); } catch (e) { /* aperçu hors app */ } }
+
+  /* premier lancement : choisir la langue AVANT l'écran de bienvenue (langue jamais enregistrée) */
+  var LANGS = [["fr", "Français", "FR"], ["en", "English", "EN"], ["es", "Español", "ES"], ["de", "Deutsch", "DE"]];
+  function langStep() {
+    var box = document.createElement("section");
+    box.id = "awc-lang-step";
+    var nav = String(navigator.language || "").slice(0, 2).toLowerCase();
+    box.innerHTML =
+      '<img class="awc-ls-logo" src="assets/astrowars-logo-rail.png" alt="">' +
+      '<h1>AW Cockpit</h1>' +
+      '<p class="awc-ls-sub" translate="no">Choisis ta langue · Choose your language<br>Elige tu idioma · Wähle deine Sprache</p>' +
+      '<div class="awc-ls-grid" translate="no">' + LANGS.map(function (l) {
+        return '<button type="button" lang="' + l[0] + '" data-pick="' + l[0] + '"' + (l[0] === nav ? ' class="awc-ls-sug"' : "") +
+          '><b>' + l[1] + '</b><small>' + l[2] + '</small></button>';
+      }).join("") + "</div>";
+    document.querySelector(".app").prepend(box);
+    document.documentElement.classList.add("awc-langstep");
+    box.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-pick]");
+      if (!b) return;
+      var sw = document.querySelector('.langs [data-lang="' + b.dataset.pick + '"]');
+      if (sw) sw.click();                        // popup.js enregistre la langue et retraduit l'accueil
+      document.documentElement.classList.remove("awc-langstep");
+      box.remove();
+      /* popup.js place le curseur dans le pseudo : au téléphone le clavier masquerait l'accueil */
+      setTimeout(function () { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }, 150);
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
+    if (new URLSearchParams(location.search).get("welcome") === "1") {
+      chrome.storage.local.get("aw_language", function (r) { if (!(r && r.aw_language)) langStep(); });
+    }
     var x = document.createElement("button");
     x.type = "button";
     x.className = "awc-app-x";

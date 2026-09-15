@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "AW Cockpit — Édition communauté",
   "short_name": "AW Cockpit",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Habillage d'AstroWars : skins HUD, Verre et Classique, jauges graduées, cartes 3D. Sans compte, aucune donnée envoyée.",
   "icons": {
     "16": "icons/icon16.png",

@@ -15,6 +15,24 @@ html.awc-app.sk-classic .app { border-radius: 10px; }
 html.awc-app #m-open { display: none; }
 html.awc-app button, html.awc-app input { touch-action: manipulation; }
 
+/* premier lancement : choix de la langue avant l'accueil */
+html.awc-langstep .app > :not(#awc-lang-step) { display: none !important; }
+#awc-lang-step { text-align: center; padding: 6px 2px 4px; }
+#awc-lang-step .awc-ls-logo { width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(0, 0, 0, .6)); }
+#awc-lang-step h1 { margin: 10px 0 4px; font-size: 24px; }
+#awc-lang-step .awc-ls-sub { margin: 0 0 20px; font-size: 13px; line-height: 1.5; opacity: .66; }
+#awc-lang-step .awc-ls-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+#awc-lang-step button {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 16px; cursor: pointer; text-align: left;
+  border-radius: 14px; border: 1px solid rgba(255, 255, 255, .14); background: rgba(255, 255, 255, .05); color: inherit;
+}
+#awc-lang-step button b { font-size: 19px; font-weight: 700; }
+#awc-lang-step button small { font-size: 11px; letter-spacing: .08em; opacity: .55; }
+#awc-lang-step button:active { background: rgba(255, 255, 255, .1); }
+#awc-lang-step button.awc-ls-sug { border-color: var(--acc, #2ad2d8); box-shadow: 0 0 22px color-mix(in srgb, var(--acc, #2ad2d8) 22%, transparent); }
+#awc-lang-step button.awc-ls-sug small { color: var(--acc, #2ad2d8); opacity: 1; }
+html.sk-hud #awc-lang-step button { border-radius: 0; }
+
 .awc-app-x {
   position: fixed; top: 12px; right: 12px; z-index: 5; width: 38px; height: 38px; padding: 8px;
   display: grid; place-items: center; border-radius: 50%; cursor: pointer;

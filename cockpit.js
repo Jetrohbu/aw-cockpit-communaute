@@ -57,6 +57,15 @@
 
   /* ── notes de version de l'édition communauté ── */
   const UPDATE_NOTES = {
+    "1.0.8": {
+      title: "Vue système 3D mieux cadrée, plein écran de la carte réparé au doigt",
+      points: [
+        "Vue 3D d'un système : tout le système tient dans l'image, même sur un écran étroit, et on peut reculer davantage",
+        "Caméra automatique de la vue système moins collée aux planètes et à l'étoile",
+        "Carte 3D au doigt (tablette, téléphone) : le système s'ouvre d'un appui, disposition adaptée au portrait, taille fixe à l'écran",
+        "Carte 3D en plein écran au doigt : les boutons Mon système, Centre, Vue dessus et Quitter le plein écran ne passent plus sous le panneau Réglages 3D",
+      ],
+    },
     "1.0.7": {
       title: "Carte 3D : systèmes en grand, planètes détaillées, plein écran",
       points: [

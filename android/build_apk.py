@@ -250,6 +250,12 @@ def build_icons():
         die("Pillow requis pour l'icône : pip install pillow")
     import random
     S = 432
+    src = HERE / "app" / "icon"
+    if (src / "foreground.png").is_file() and (src / "background.png").is_file():
+        # icône de l'app AstroWars (mod) : même insigne plein cadre sur fond spatial, 432 px d'origine
+        bg = Image.open(src / "background.png").convert("RGBA").resize((S, S), Image.LANCZOS)
+        fg = Image.open(src / "foreground.png").convert("RGBA").resize((S, S), Image.LANCZOS)
+        return write_icons(bg, fg, S)
     bg = Image.new("RGB", (S, S))
     c0, c1 = (24, 38, 72), (3, 5, 12)
     px = bg.load()
@@ -277,6 +283,11 @@ def build_icons():
     fg = Image.alpha_composite(fg, shadow.filter(ImageFilter.GaussianBlur(8)))
     fg.alpha_composite(badge, ((S - D) // 2, (S - D) // 2))
 
+    return write_icons(bg, fg, S)
+
+
+def write_icons(bg, fg, S):
+    from PIL import Image, ImageDraw
     gen = BUILD / "res-gen"
     for name, size in (("mdpi", 108), ("hdpi", 162), ("xhdpi", 216), ("xxhdpi", 324), ("xxxhdpi", 432)):
         dd = gen / f"mipmap-{name}"

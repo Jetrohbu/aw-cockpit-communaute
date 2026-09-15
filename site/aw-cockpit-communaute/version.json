@@ -1,9 +1,49 @@
 {
-  "version": "1.0.7",
-  "date": "14/09/2026",
-  "zip": "aw-cockpit-communaute-1.0.7.zip",
+  "version": "1.0.8",
+  "date": "15/09/2026",
+  "zip": "aw-cockpit-communaute-1.0.8.zip",
   "size": "5,2 Mo",
   "releases": [
+    {
+      "version": "1.0.8",
+      "date": "15/09/2026",
+      "title": "Vue système 3D mieux cadrée, plein écran de la carte réparé au doigt",
+      "points": [
+        "Vue 3D d'un système : tout le système tient dans l'image, même sur un écran étroit, et on peut reculer davantage",
+        "Caméra automatique de la vue système moins collée aux planètes et à l'étoile",
+        "Carte 3D au doigt (tablette, téléphone) : le système s'ouvre d'un appui, disposition adaptée au portrait, taille fixe à l'écran",
+        "Carte 3D en plein écran au doigt : les boutons Mon système, Centre, Vue dessus et Quitter le plein écran ne passent plus sous le panneau Réglages 3D"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Better-framed 3D system view, full-screen map fixed on touch screens",
+          "points": [
+            "3D system view: the whole system fits in the picture, even on a narrow screen, and you can zoom out further",
+            "The system view's automatic camera no longer gets so close to planets and the star",
+            "3D map on touch screens (tablet, phone): the system opens with a tap, layout suited to portrait, fixed on-screen size",
+            "Full-screen 3D map on touch screens: the My system, Centre, Top view and Exit full screen buttons no longer hide under the 3D settings panel"
+          ]
+        },
+        "es": {
+          "title": "Vista de sistema 3D mejor encuadrada, pantalla completa del mapa arreglada en táctil",
+          "points": [
+            "Vista 3D de un sistema: todo el sistema cabe en la imagen, incluso en una pantalla estrecha, y se puede alejar más",
+            "La cámara automática de la vista de sistema ya no se acerca tanto a los planetas y a la estrella",
+            "Mapa 3D en táctil (tableta, móvil): el sistema se abre con un toque, disposición adaptada al vertical, tamaño fijo en pantalla",
+            "Mapa 3D en pantalla completa en táctil: los botones Mi sistema, Centro, Vista superior y Salir de pantalla completa ya no quedan bajo el panel Ajustes 3D"
+          ]
+        },
+        "de": {
+          "title": "3D-Systemansicht besser gerahmt, Vollbild der Karte auf Touchscreens repariert",
+          "points": [
+            "3D-Systemansicht: Das ganze System passt ins Bild, auch auf einem schmalen Bildschirm, und man kann weiter herauszoomen",
+            "Die automatische Kamera der Systemansicht rückt Planeten und Stern nicht mehr so nah",
+            "3D-Karte auf Touchscreens (Tablet, Handy): Das System öffnet sich per Tippen, Hochformat-Layout, feste Bildschirmgröße",
+            "3D-Karte im Vollbild auf Touchscreens: Die Schaltflächen Mein System, Zentrum, Draufsicht und Vollbild beenden liegen nicht mehr unter dem Panel 3D-Einstellungen"
+          ]
+        }
+      }
+    },
     {
       "version": "1.0.7",
       "date": "14/09/2026",
@@ -317,8 +357,8 @@
       }
     }
   ],
-  "zip_firefox": "aw-cockpit-communaute-1.0.7-firefox.zip",
+  "zip_firefox": "aw-cockpit-communaute-1.0.8-firefox.zip",
   "size_firefox": "5,2 Mo",
-  "zip_bundle": "aw-cockpit-communaute-1.0.7-tous-navigateurs.zip",
+  "zip_bundle": "aw-cockpit-communaute-1.0.8-tous-navigateurs.zip",
   "size_bundle": "10,4 Mo"
 }

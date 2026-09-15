@@ -141,8 +141,15 @@
   .btn-sm { height: 42px; padding: 0 16px; font-size: 14px; }
   .meta { margin-top: 16px; font-family: var(--mono); font-size: 12px; color: var(--faint); letter-spacing: .04em; }
   .meta b { color: var(--text); font-weight: 500; }
+  .visits { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-family: var(--mono); font-size: 12px; color: var(--faint); letter-spacing: .04em; }
+  .visits[hidden] { display: none; }
+  .visits b { color: var(--text); font-weight: 500; }
+  .visits svg { width: 15px; height: 15px; color: var(--cyan); flex: none; }
   .privacy-pill { display: inline-flex; align-items: center; gap: 10px; margin-top: 22px; padding: 10px 14px; background: rgba(69, 224, 162, .06); box-shadow: inset 0 0 0 1px rgba(69, 224, 162, .35); clip-path: var(--cham); font-size: 14px; }
   .privacy-pill svg { width: 18px; height: 18px; color: var(--ok); flex: none; }
+  .soon-pill { display: flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; margin-top: 10px; padding: 10px 14px; background: rgba(255, 210, 98, .06); box-shadow: inset 0 0 0 1px rgba(255, 210, 98, .35); clip-path: var(--cham); font-size: 14px; }
+  .soon-pill svg { width: 18px; height: 18px; color: var(--gold); flex: none; }
+  .soon-pill b { color: var(--gold); font-weight: 600; }
 
   /* ── aperçu ── */
   .shot { position: relative; padding: 14px; background: var(--panel); border: 1px solid var(--line-2); box-shadow: 0 40px 100px rgba(0, 0, 0, .6); }
@@ -195,6 +202,10 @@
   .faq .ans { padding: 0 20px 18px 44px; color: var(--dim); }
   .faq .ans p { margin: 0 0 8px; }
   .faq .ans p:last-child { margin: 0; }
+  .faq .ans ul { margin: 0 0 10px; padding-left: 20px; }
+  .faq .ans ul ul { margin: 4px 0 2px; }
+  .faq .ans li { margin: 3px 0; }
+  .faq .ans li::marker { color: var(--cyan); }
 
   /* ── rapport de bug ── */
   .bug { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 32px; align-items: start; }
@@ -288,9 +299,17 @@
         <a class="btn btn-ghost" href="#versions" data-i18n="news">Nouveautés</a>
       </div>
       <div class="meta" id="meta" data-i18n="loading_version">Chargement de la dernière version…</div>
+      <div class="visits" id="visits" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" stroke-linejoin="round"/><circle cx="12" cy="12" r="3"/></svg>
+        <span id="visits-text"></span>
+      </div>
       <div class="privacy-pill">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span data-i18n="privacy_pill">Sans compte · aucune donnée envoyée · permission unique : réglages locaux</span>
+      </div>
+      <div class="soon-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3" stroke-linecap="round"/></svg>
+        <span data-i18n="soon_apk"><b>Bientôt</b> : l'application Android (APK) arrive, pour jouer en mode cockpit sur ton téléphone.</span>
       </div>
     </div>
 
@@ -356,7 +375,7 @@
       </ul>
       <ul class="check">
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="priv_4"><b>Active uniquement sur astrowars.games.</b> Aucun autre site n'est touché.</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="priv_5"><b>Rien n'est automatisé.</b> Aucune action de jeu n'est déclenchée à ta place : conforme au règlement d'AstroWars.</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="priv_5"><b>Aucune action automatisée.</b> L'extension ne clique pas et ne donne aucun ordre à ta place ; elle lit seulement quelques pages du jeu (détail dans la FAQ).</span></li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5 9-10" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="priv_6b"><b>Code ouvert.</b> Les fichiers sources sont publiés sur GitHub et livrés non minifiés dans le ZIP (hormis la bibliothèque three.js) : chacun peut vérifier.</span></li>
       </ul>
     </div>
@@ -366,15 +385,15 @@
     <div class="kicker" data-i18n="faq_kicker">Aide</div>
     <h2 data-i18n="faq_h2">Questions fréquentes</h2>
     <div class="faq">
-      <details><summary data-i18n="faq1_q">Est-ce autorisé par le règlement d'AstroWars ?</summary><div class="ans" data-i18n="faq1_a"><p>L'extension change l'affichage et lit les pages du jeu que tu ouvres, comme ton navigateur. Elle ne joue <b>aucune action à ta place</b> et n'automatise rien : le règlement interdit l'automatisation et le multi-compte, et l'extension ne fait ni l'un ni l'autre.</p></div></details>
-      <details><summary data-i18n="faq2_q">Mes données sont-elles envoyées quelque part ?</summary><div class="ans" data-i18n="faq2_a"><p>Non. Il n'y a ni compte, ni statistiques, ni pisteur. Tes réglages restent dans ton navigateur. La seule requête hors du jeu est la lecture, une fois par jour, du numéro de la dernière version sur GitHub. Elle est anonyme et n'envoie rien.</p></div></details>
+      <details><summary data-i18n="faq1_q">Est-ce autorisé par le règlement d'AstroWars ?</summary><div class="ans" data-i18n="faq1_a"><p><b>Oui.</b> Le règlement interdit d'automatiser des actions de joueur et d'avoir plusieurs comptes. L'extension ne fait ni l'un ni l'autre : elle ne clique jamais, ne construit rien, ne lance aucune flotte, n'achète et ne vend rien. C'est toujours toi qui joues.</p><p>Elle change l'affichage et, pour remplir certaines vues, <b>relit quelques pages du jeu</b> comme si tu les ouvrais toi-même (détail dans la question suivante). Le règlement autorise ce genre d'outil de lecture dans une mesure raisonnable.</p></div></details>
+      <details><summary data-i18n="faq2_q">À quoi l'extension se connecte-t-elle ? Mes données partent-elles ailleurs ?</summary><div class="ans" data-i18n="faq2_a"><p><b>Rien n'est envoyé, à personne.</b> Pas de compte, pas de statistiques, pas de pisteur, aucun serveur tiers (pas même Holocron). Tes réglages restent dans ton navigateur.</p><p>L'extension contacte seulement deux endroits, et uniquement pour <b>lire</b> :</p><ul><li><b>Le jeu</b> (astrowars.games), avec ta propre session, sans rien modifier :<ul><li>Carte 3D : ta page Flottes et la carte des secteurs</li><li>Trade : tes Planètes (au plus toutes les 5 min) et l'historique des prix (au plus toutes les heures)</li><li>Buildings : les fiches de tes planètes, pour les niveaux en cours</li><li>Alerte incoming : la page News (au plus toutes les 5 min)</li><li>Vue multi : les fiches planète que tu coches</li></ul></li><li><b>GitHub</b>, une fois par jour : le numéro et les notes de la dernière version. Requête anonyme, sans cookie.</li></ul><p>Les liens vers cette page ne s'ouvrent que si tu cliques dessus. Une seule permission est demandée (<code>storage</code>, pour tes réglages), l'extension n'agit que sur astrowars.games, et son code est public sur GitHub : chacun peut vérifier.</p></div></details>
       <details><summary data-i18n="faq3_q">Le rail n'apparaît pas dans le jeu</summary><div class="ans" data-i18n="faq3_a"><p>Vérifie que tu as choisi le dossier qui contient directement <code>manifest.json</code> (<code>AW-Cockpit-Chrome-Edge-Brave-Opera</code>), pas le dossier parent. Vérifie que l'extension est activée dans <code>chrome://extensions</code>, clique <b>↻</b>, puis <span class="kbd">Ctrl</span> + <span class="kbd">Maj</span> + <span class="kbd">R</span> sur l'onglet du jeu.</p><p>Le rail peut aussi avoir été masqué : une petite languette à droite de l'écran le fait revenir.</p></div></details>
       <details><summary data-i18n="faq4_q">Comment savoir qu'une nouvelle version est sortie ?</summary><div class="ans" data-i18n="faq4_a"><p>Depuis la version 1.0.6, une carte <b>Nouvelle version</b> apparaît dans le jeu, au plus tard le lendemain de la sortie. Pour vérifier tout de suite : rail → <b>À propos</b> → <b>Vérifier maintenant</b>. Cette page affiche aussi toujours la dernière version.</p></div></details>
       <details><summary data-i18n="faq5_q">J'ai perdu mes réglages après une mise à jour</summary><div class="ans" data-i18n="faq5_a"><p>Le navigateur rattache les réglages à l'emplacement du dossier de l'extension. Pour les garder, <b>remplace le contenu du même dossier</b> au lieu de charger un nouveau dossier ailleurs, puis clique <b>↻</b>.</p></div></details>
       <details><summary data-i18n="faq6_q">Chrome affiche un avertissement sur le mode développeur</summary><div class="ans" data-i18n="faq6_a"><p>C'est normal pour une extension installée depuis un dossier et non depuis le Chrome Web Store. Tu peux fermer l'avertissement : l'extension continue de fonctionner.</p></div></details>
       <details><summary data-i18n="faq7_q">Firefox : l'extension disparaît à chaque redémarrage</summary><div class="ans" data-i18n="faq7_a"><p>Firefox ne garde les modules chargés depuis <code>about:debugging</code> que jusqu'à sa fermeture. Il faut recharger le <code>manifest.json</code> du dossier <code>AW-Cockpit-Firefox</code> à chaque démarrage.</p></div></details>
       <details><summary data-i18n="faq8_q">Puis-je l'utiliser avec l'extension AW de l'alliance ?</summary><div class="ans" data-i18n="faq8_a"><p>Active une seule des deux à la fois : elles habillent les mêmes pages et se gêneraient. Désactive l'autre dans la page des extensions.</p></div></details>
-      <details><summary data-i18n="faq9_q">Ça marche sur téléphone ?</summary><div class="ans" data-i18n="faq9_a"><p>Non : l'extension est prévue pour les navigateurs d'ordinateur (Chrome, Edge, Brave, Opera, Firefox).</p></div></details>
+      <details><summary data-i18n="faq9_q">Ça marche sur téléphone ?</summary><div class="ans" data-i18n="faq9_a"><p>Pas encore : l'extension est prévue pour les navigateurs d'ordinateur (Chrome, Edge, Brave, Opera, Firefox). Une application Android (APK) arrive bientôt.</p></div></details>
       <details><summary data-i18n="faq10_q">Le jeu est plus lent avec l'extension</summary><div class="ans" data-i18n="faq10_a"><p>Coupe l'animation du fond (rail → <b>Apparence</b> → Fond) et ferme la carte 3D quand tu ne t'en sers pas. Si ça ne suffit pas, signale-le avec le formulaire ci-dessous en précisant la page concernée.</p></div></details>
     </div>
   </section>
@@ -448,6 +467,7 @@
       dl_ver: "Télécharger v{v}",
       meta: "Version <b>{v}</b> · {d} · ZIP {s} · Chrome, Edge, Brave, Opera, Firefox",
       meta_err: "Impossible de lire la dernière version pour l'instant.",
+      visits: "<b>{n}</b> visites", visits_1: "<b>1</b> visite", visits_today: " · {t} aujourd'hui",
       shot_alt: "Aperçu : ",
       bf_need: "Décris le problème avant d'envoyer.",
       bf_copied: "Rapport copié : colle-le sur Discord.",
@@ -462,6 +482,7 @@
       dl_ver: "Download v{v}",
       meta: "Version <b>{v}</b> · {d} · ZIP {s} · Chrome, Edge, Brave, Opera, Firefox",
       meta_err: "Can't read the latest version right now.",
+      visits: "<b>{n}</b> visits", visits_1: "<b>1</b> visit", visits_today: " · {t} today",
       shot_alt: "Preview: ",
       bf_need: "Describe the problem before sending.",
       bf_copied: "Report copied: paste it on Discord.",
@@ -477,6 +498,7 @@
       dl: "Download", dl_fx: "Firefox version", news: "What's new",
       loading_version: "Loading the latest version…",
       privacy_pill: "No account · no data sent · one permission: local settings",
+      soon_apk: "<b>Coming soon</b>: the Android app (APK) is on its way, to play in cockpit mode on your phone.",
       tab_glass: "Glass", tab_hud: "HUD", tab_map: "3D map", shot_soon: "Preview coming soon",
       feat_kicker: "What it changes", feat_h2: "The whole game, restyled",
       c1_h: "3 looks", c1_p: "Translucent Glass, HUD with cyan lines, or Classic, true to the game's colours. Pick an accent colour, applied everywhere.",
@@ -503,13 +525,13 @@
       priv_2: "<b>No account, no password.</b> Nothing to create, nothing to type.",
       priv_3: "<b>A single permission:</b> <code>storage</code>, to remember your settings on your computer.",
       priv_4: "<b>Active only on astrowars.games.</b> No other site is touched.",
-      priv_5: "<b>Nothing is automated.</b> No game action is ever triggered for you: in line with the AstroWars rules.",
+      priv_5: "<b>No automated actions.</b> The extension never clicks or gives orders for you; it only reads a few game pages (details in the FAQ).",
       priv_6b: "<b>Open code.</b> The source files are published on GitHub and shipped unminified in the ZIP (except the three.js library): anyone can check.",
       faq_kicker: "Help", faq_h2: "FAQ",
       faq1_q: "Is it allowed by the AstroWars rules?",
-      faq1_a: "<p>The extension changes how things look and reads the game pages you open, just like your browser. It plays <b>no action for you</b> and automates nothing: the rules forbid automation and multi-accounting, and the extension does neither.</p>",
-      faq2_q: "Is my data sent anywhere?",
-      faq2_a: "<p>No. No account, no analytics, no tracker. Your settings stay in your browser. The only request outside the game reads the latest version number on GitHub once a day. It is anonymous and sends nothing.</p>",
+      faq1_a: "<p><b>Yes.</b> The rules forbid automating player actions and having several accounts. The extension does neither: it never clicks, builds nothing, launches no fleet, buys and sells nothing. You are always the one playing.</p><p>It changes how things look and, to fill some views, <b>reads a few game pages</b> as if you opened them yourself (details in the next question). The rules allow this kind of read-only tool within a reasonable scope.</p>",
+      faq2_q: "What does the extension connect to? Does my data go anywhere?",
+      faq2_a: "<p><b>Nothing is sent, to anyone.</b> No account, no analytics, no tracker, no third-party server (not even Holocron). Your settings stay in your browser.</p><p>The extension only contacts two places, and only to <b>read</b>:</p><ul><li><b>The game</b> (astrowars.games), with your own session, changing nothing:<ul><li>3D map: your Fleets page and the sector map</li><li>Trade: your Planets (at most every 5 min) and the price history (at most every hour)</li><li>Buildings: your planet sheets, for levels in progress</li><li>Incoming alert: the News page (at most every 5 min)</li><li>Multi-view: the planet sheets you tick</li></ul></li><li><b>GitHub</b>, once a day: the latest version number and notes. Anonymous request, no cookie.</li></ul><p>Links to this page only open when you click them. Only one permission is requested (<code>storage</code>, for your settings), the extension only works on astrowars.games, and its code is public on GitHub: anyone can check.</p>",
       faq3_q: "The rail doesn't show up in the game",
       faq3_a: "<p>Make sure you picked the folder that directly contains <code>manifest.json</code> (<code>AW-Cockpit-Chrome-Edge-Brave-Opera</code>), not its parent folder. Check that the extension is enabled in <code>chrome://extensions</code>, click <b>↻</b>, then <span class=\"kbd\">Ctrl</span> + <span class=\"kbd\">Shift</span> + <span class=\"kbd\">R</span> on the game tab.</p><p>The rail may also have been hidden: a small tab on the right edge of the screen brings it back.</p>",
       faq4_q: "How do I know a new version is out?",
@@ -523,7 +545,7 @@
       faq8_q: "Can I use it together with the alliance AW extension?",
       faq8_a: "<p>Enable only one of them at a time: they restyle the same pages and would get in each other's way. Disable the other one on the extensions page.</p>",
       faq9_q: "Does it work on a phone?",
-      faq9_a: "<p>No: the extension is made for desktop browsers (Chrome, Edge, Brave, Opera, Firefox).</p>",
+      faq9_a: "<p>Not yet: the extension is made for desktop browsers (Chrome, Edge, Brave, Opera, Firefox). An Android app (APK) is coming soon.</p>",
       faq10_q: "The game is slower with the extension",
       faq10_a: "<p>Turn off the background animation (rail → <b>Look</b> → Background) and close the 3D map when you're not using it. If that's not enough, report it with the form below and say which page is affected.</p>",
       bug_kicker: "A problem?", bug_h2: "Report a bug",
@@ -543,6 +565,7 @@
       dl_ver: "Descargar v{v}",
       meta: "Versión <b>{v}</b> · {d} · ZIP {s} · Chrome, Edge, Brave, Opera, Firefox",
       meta_err: "No se puede leer la última versión por ahora.",
+      visits: "<b>{n}</b> visitas", visits_1: "<b>1</b> visita", visits_today: " · {t} hoy",
       shot_alt: "Vista previa: ",
       bf_need: "Describe el problema antes de enviar.",
       bf_copied: "Informe copiado: pégalo en Discord.",
@@ -558,6 +581,7 @@
       dl: "Descargar", dl_fx: "Versión Firefox", news: "Novedades",
       loading_version: "Cargando la última versión…",
       privacy_pill: "Sin cuenta · ningún dato enviado · un único permiso: ajustes locales",
+      soon_apk: "<b>Muy pronto</b>: llega la aplicación Android (APK), para jugar en modo cockpit en tu móvil.",
       tab_glass: "Cristal", tab_hud: "HUD", tab_map: "Mapa 3D", shot_soon: "Vista previa próximamente",
       feat_kicker: "Lo que cambia", feat_h2: "Todo el juego, renovado",
       c1_h: "3 apariencias", c1_p: "Cristal translúcido, HUD con líneas cian o Clásico, fiel a los colores del juego. Color de acento a elegir, aplicado en todas partes.",
@@ -584,13 +608,13 @@
       priv_2: "<b>Sin cuenta ni contraseña.</b> Nada que crear, nada que escribir.",
       priv_3: "<b>Un único permiso:</b> <code>storage</code>, para recordar tus ajustes en tu ordenador.",
       priv_4: "<b>Activa solo en astrowars.games.</b> Ningún otro sitio se ve afectado.",
-      priv_5: "<b>Nada está automatizado.</b> Ninguna acción de juego se ejecuta por ti: conforme al reglamento de AstroWars.",
+      priv_5: "<b>Ninguna acción automatizada.</b> La extensión nunca hace clic ni da órdenes por ti; solo lee algunas páginas del juego (detalles en la FAQ).",
       priv_6b: "<b>Código abierto.</b> Los archivos fuente están publicados en GitHub y se entregan sin minificar en el ZIP (salvo la biblioteca three.js): cualquiera puede comprobarlo.",
       faq_kicker: "Ayuda", faq_h2: "Preguntas frecuentes",
       faq1_q: "¿Está permitido por el reglamento de AstroWars?",
-      faq1_a: "<p>La extensión cambia la apariencia y lee las páginas del juego que abres, como tu navegador. No juega <b>ninguna acción por ti</b> ni automatiza nada: el reglamento prohíbe la automatización y las multicuentas, y la extensión no hace ni lo uno ni lo otro.</p>",
-      faq2_q: "¿Se envían mis datos a algún sitio?",
-      faq2_a: "<p>No. No hay cuenta, ni estadísticas, ni rastreadores. Tus ajustes se quedan en tu navegador. La única petición fuera del juego lee una vez al día el número de la última versión en GitHub. Es anónima y no envía nada.</p>",
+      faq1_a: "<p><b>Sí.</b> El reglamento prohíbe automatizar acciones de jugador y tener varias cuentas. La extensión no hace ninguna de las dos cosas: nunca hace clic, no construye nada, no lanza flotas, no compra ni vende nada. Siempre eres tú quien juega.</p><p>Cambia la apariencia y, para completar algunas vistas, <b>lee algunas páginas del juego</b> como si las abrieras tú (detalles en la pregunta siguiente). El reglamento permite este tipo de herramienta de lectura dentro de un uso razonable.</p>",
+      faq2_q: "¿A qué se conecta la extensión? ¿Mis datos van a algún sitio?",
+      faq2_a: "<p><b>No se envía nada a nadie.</b> Sin cuenta, sin estadísticas, sin rastreadores, ningún servidor de terceros (ni siquiera Holocron). Tus ajustes se quedan en tu navegador.</p><p>La extensión solo contacta dos sitios, y únicamente para <b>leer</b>:</p><ul><li><b>El juego</b> (astrowars.games), con tu propia sesión, sin modificar nada:<ul><li>Mapa 3D: tu página Flotas y el mapa de sectores</li><li>Trade: tus Planetas (como mucho cada 5 min) y el historial de precios (como mucho cada hora)</li><li>Buildings: las fichas de tus planetas, para los niveles en curso</li><li>Alerta incoming: la página News (como mucho cada 5 min)</li><li>Vista múltiple: las fichas de planeta que marques</li></ul></li><li><b>GitHub</b>, una vez al día: el número y las notas de la última versión. Petición anónima, sin cookies.</li></ul><p>Los enlaces a esta página solo se abren si haces clic. Solo se pide un permiso (<code>storage</code>, para tus ajustes), la extensión solo actúa en astrowars.games y su código es público en GitHub: cualquiera puede comprobarlo.</p>",
       faq3_q: "La barra no aparece en el juego",
       faq3_a: "<p>Comprueba que elegiste la carpeta que contiene directamente <code>manifest.json</code> (<code>AW-Cockpit-Chrome-Edge-Brave-Opera</code>), no la carpeta superior. Comprueba que la extensión está activada en <code>chrome://extensions</code>, haz clic en <b>↻</b> y luego <span class=\"kbd\">Ctrl</span> + <span class=\"kbd\">Mayús</span> + <span class=\"kbd\">R</span> en la pestaña del juego.</p><p>También puede que la barra esté oculta: una pequeña pestaña en el borde derecho de la pantalla la hace volver.</p>",
       faq4_q: "¿Cómo sé que ha salido una nueva versión?",
@@ -604,7 +628,7 @@
       faq8_q: "¿Puedo usarla junto con la extensión AW de la alianza?",
       faq8_a: "<p>Activa solo una a la vez: las dos modifican las mismas páginas y se estorbarían. Desactiva la otra en la página de extensiones.</p>",
       faq9_q: "¿Funciona en el móvil?",
-      faq9_a: "<p>No: la extensión está pensada para navegadores de ordenador (Chrome, Edge, Brave, Opera, Firefox).</p>",
+      faq9_a: "<p>Todavía no: la extensión está pensada para navegadores de ordenador (Chrome, Edge, Brave, Opera, Firefox). Muy pronto llegará una aplicación Android (APK).</p>",
       faq10_q: "El juego va más lento con la extensión",
       faq10_a: "<p>Desactiva la animación del fondo (barra → <b>Apariencia</b> → Fondo) y cierra el mapa 3D cuando no lo uses. Si no basta, infórmalo con el formulario de abajo indicando la página afectada.</p>",
       bug_kicker: "¿Algún problema?", bug_h2: "Informar de un error",
@@ -624,6 +648,7 @@
       dl_ver: "Herunterladen v{v}",
       meta: "Version <b>{v}</b> · {d} · ZIP {s} · Chrome, Edge, Brave, Opera, Firefox",
       meta_err: "Die neueste Version kann gerade nicht gelesen werden.",
+      visits: "<b>{n}</b> Besuche", visits_1: "<b>1</b> Besuch", visits_today: " · {t} heute",
       shot_alt: "Vorschau: ",
       bf_need: "Beschreibe das Problem vor dem Senden.",
       bf_copied: "Bericht kopiert: füge ihn auf Discord ein.",
@@ -639,6 +664,7 @@
       dl: "Herunterladen", dl_fx: "Firefox-Version", news: "Neuigkeiten",
       loading_version: "Neueste Version wird geladen…",
       privacy_pill: "Kein Konto · keine Daten gesendet · eine einzige Berechtigung: lokale Einstellungen",
+      soon_apk: "<b>Demnächst</b>: Die Android-App (APK) kommt – für den Cockpit-Modus auf deinem Handy.",
       tab_glass: "Glas", tab_hud: "HUD", tab_map: "3D-Karte", shot_soon: "Vorschau folgt in Kürze",
       feat_kicker: "Was sich ändert", feat_h2: "Das ganze Spiel in neuem Look",
       c1_h: "3 Looks", c1_p: "Durchscheinendes Glas, HUD mit Cyan-Linien oder Klassisch, getreu den Farben des Spiels. Akzentfarbe frei wählbar, überall angewendet.",
@@ -665,13 +691,13 @@
       priv_2: "<b>Kein Konto, kein Passwort.</b> Nichts anzulegen, nichts einzugeben.",
       priv_3: "<b>Eine einzige Berechtigung:</b> <code>storage</code>, um deine Einstellungen auf deinem Computer zu speichern.",
       priv_4: "<b>Nur auf astrowars.games aktiv.</b> Keine andere Website wird verändert.",
-      priv_5: "<b>Nichts ist automatisiert.</b> Keine Spielaktion wird für dich ausgelöst: im Einklang mit den AstroWars-Regeln.",
+      priv_5: "<b>Keine automatisierten Aktionen.</b> Die Erweiterung klickt nie und gibt keine Befehle für dich; sie liest nur einige Spielseiten (Details in den FAQ).",
       priv_6b: "<b>Offener Code.</b> Die Quelldateien sind auf GitHub veröffentlicht und im ZIP nicht minifiziert enthalten (außer der Bibliothek three.js): Jeder kann es prüfen.",
       faq_kicker: "Hilfe", faq_h2: "Häufige Fragen",
       faq1_q: "Ist das nach den AstroWars-Regeln erlaubt?",
-      faq1_a: "<p>Die Erweiterung ändert die Darstellung und liest die Spielseiten, die du öffnest, wie dein Browser. Sie führt <b>keine Aktion für dich aus</b> und automatisiert nichts: Die Regeln verbieten Automatisierung und Mehrfachkonten, und die Erweiterung tut weder das eine noch das andere.</p>",
-      faq2_q: "Werden meine Daten irgendwohin gesendet?",
-      faq2_a: "<p>Nein. Kein Konto, keine Statistiken, kein Tracker. Deine Einstellungen bleiben in deinem Browser. Die einzige Anfrage außerhalb des Spiels liest einmal am Tag die Nummer der neuesten Version auf GitHub. Sie ist anonym und sendet nichts.</p>",
+      faq1_a: "<p><b>Ja.</b> Die Regeln verbieten, Spieleraktionen zu automatisieren und mehrere Konten zu haben. Die Erweiterung tut weder das eine noch das andere: Sie klickt nie, baut nichts, startet keine Flotte, kauft und verkauft nichts. Du spielst immer selbst.</p><p>Sie ändert die Darstellung und <b>liest einige Spielseiten</b>, um manche Ansichten zu füllen, so als würdest du sie selbst öffnen (Details in der nächsten Frage). Die Regeln erlauben solche Lese-Werkzeuge in vernünftigem Umfang.</p>",
+      faq2_q: "Womit verbindet sich die Erweiterung? Gehen meine Daten irgendwohin?",
+      faq2_a: "<p><b>Es wird nichts gesendet, an niemanden.</b> Kein Konto, keine Statistiken, kein Tracker, kein Drittserver (auch nicht Holocron). Deine Einstellungen bleiben in deinem Browser.</p><p>Die Erweiterung kontaktiert nur zwei Stellen, und nur zum <b>Lesen</b>:</p><ul><li><b>Das Spiel</b> (astrowars.games), mit deiner eigenen Sitzung, ohne etwas zu ändern:<ul><li>3D-Karte: deine Flotten-Seite und die Sektorkarte</li><li>Trade: deine Planeten (höchstens alle 5 Min.) und der Preisverlauf (höchstens stündlich)</li><li>Buildings: deine Planetenblätter, für laufende Stufen</li><li>Incoming-Alarm: die News-Seite (höchstens alle 5 Min.)</li><li>Mehrfachansicht: die Planetenblätter, die du anhakst</li></ul></li><li><b>GitHub</b>, einmal am Tag: Nummer und Notizen der neuesten Version. Anonyme Anfrage, ohne Cookie.</li></ul><p>Links zu dieser Seite öffnen sich nur, wenn du sie anklickst. Es wird nur eine Berechtigung verlangt (<code>storage</code>, für deine Einstellungen), die Erweiterung wirkt nur auf astrowars.games, und ihr Code ist öffentlich auf GitHub: Jeder kann es prüfen.</p>",
       faq3_q: "Die Leiste erscheint nicht im Spiel",
       faq3_a: "<p>Prüfe, dass du den Ordner gewählt hast, der direkt <code>manifest.json</code> enthält (<code>AW-Cockpit-Chrome-Edge-Brave-Opera</code>), nicht den übergeordneten Ordner. Prüfe, dass die Erweiterung in <code>chrome://extensions</code> aktiviert ist, klicke auf <b>↻</b> und dann <span class=\"kbd\">Strg</span> + <span class=\"kbd\">Umschalt</span> + <span class=\"kbd\">R</span> im Spiel-Tab.</p><p>Die Leiste kann auch ausgeblendet sein: Eine kleine Lasche am rechten Bildschirmrand holt sie zurück.</p>",
       faq4_q: "Woher weiß ich, dass eine neue Version erschienen ist?",
@@ -685,7 +711,7 @@
       faq8_q: "Kann ich sie zusammen mit der AW-Erweiterung der Allianz nutzen?",
       faq8_a: "<p>Aktiviere immer nur eine der beiden: Sie verändern dieselben Seiten und würden sich gegenseitig stören. Deaktiviere die andere auf der Erweiterungsseite.</p>",
       faq9_q: "Funktioniert das auf dem Handy?",
-      faq9_a: "<p>Nein: Die Erweiterung ist für Desktop-Browser gedacht (Chrome, Edge, Brave, Opera, Firefox).</p>",
+      faq9_a: "<p>Noch nicht: Die Erweiterung ist für Desktop-Browser gedacht (Chrome, Edge, Brave, Opera, Firefox). Eine Android-App (APK) kommt demnächst.</p>",
       faq10_q: "Das Spiel ist mit der Erweiterung langsamer",
       faq10_a: "<p>Schalte die Hintergrundanimation aus (Leiste → <b>Aussehen</b> → Hintergrund) und schließe die 3D-Karte, wenn du sie nicht brauchst. Reicht das nicht, melde es mit dem Formular unten und nenne die betroffene Seite.</p>",
       bug_kicker: "Ein Problem?", bug_h2: "Fehler melden",
@@ -746,6 +772,18 @@
     if (!bv.value) bv.placeholder = info.version;
   }
 
+  /* ── compteur de visites : visits.json écrit toutes les 5 min par le serveur à partir de ses logs (aucun suivi dans la page) ── */
+  var visits = null;
+  function renderVisits() {
+    if (!visits) return;
+    var loc = { fr: "fr-FR", en: "en-GB", es: "es-ES", de: "de-DE" }[lang];
+    var n = Number(visits.visits), today = Number(visits.today) || 0;
+    var txt = n === 1 ? t("visits_1") : t("visits").replace("{n}", esc(n.toLocaleString(loc)));
+    if (today > 0) txt += t("visits_today").replace("{t}", esc(today.toLocaleString(loc)));
+    document.getElementById("visits-text").innerHTML = txt;
+    document.getElementById("visits").hidden = false;
+  }
+
   function apply(l) {
     lang = LANGS.indexOf(l) >= 0 ? l : "fr";
     document.documentElement.lang = lang;
@@ -760,6 +798,7 @@
     if (sel) img.alt = t("shot_alt") + sel.textContent;
     document.querySelectorAll(".lang-switch button[data-lang]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.lang === lang)); });
     renderVersion();
+    renderVisits();
     document.documentElement.classList.remove("i18n-pending");
   }
 
@@ -838,6 +877,11 @@
     })
     .catch(function () { return useLocal(); })
     .catch(function () { document.getElementById("meta").textContent = t("meta_err"); });
+
+  fetch(BASE + "visits.json?t=" + Date.now(), { cache: "no-store" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (v) { if (v && isFinite(v.visits) && v.visits > 0) { visits = v; renderVisits(); } })
+    .catch(function () {});
 
   /* ── rapport de bug ── */
   var q = new URLSearchParams(location.search);

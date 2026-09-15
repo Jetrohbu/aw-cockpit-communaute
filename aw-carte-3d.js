@@ -1090,6 +1090,10 @@
       "  #aw3d-tip{left:8px !important;right:8px;top:46px !important;width:auto;}",
       /* grande fiche en portrait : bandeau au-dessus de la barre rapide */
       "  #aw3d-tip.big.sheet{top:auto !important;left:8px !important;right:8px !important;width:auto !important;}",
+      /* plein écran : la carte descend jusqu'en bas, sous le tiroir replié (≈ 46 px) — la barre rapide
+         (Mon système, Centre, Vue dessus, Plein écran) et le menu des flottes remontent au-dessus */
+      "  #aw3d-host.aw3d-full #aw3d-quickbar{bottom:calc(56px + env(safe-area-inset-bottom,0px));}",
+      "  #aw3d-host.aw3d-full #aw3d-fleetmenu{bottom:calc(104px + env(safe-area-inset-bottom,0px));}",
       "}",
       "#aw3d-fleetmenu{position:absolute;left:8px;bottom:56px;z-index:31;display:flex;flex-direction:column;gap:4px;",
       "  padding:6px;border-radius:6px;border:1px solid rgba(140,160,220,.35);background:rgba(10,14,28,.94);}",
