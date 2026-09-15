@@ -150,6 +150,14 @@
   .soon-pill { display: flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; margin-top: 10px; padding: 10px 14px; background: rgba(255, 210, 98, .06); box-shadow: inset 0 0 0 1px rgba(255, 210, 98, .35); clip-path: var(--cham); font-size: 14px; }
   .soon-pill svg { width: 18px; height: 18px; color: var(--gold); flex: none; }
   .soon-pill b { color: var(--gold); font-weight: 600; }
+  .soon-pill[hidden] { display: none; }
+  .apk-pill { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; width: fit-content; max-width: 100%; margin-top: 10px; padding: 10px 12px 10px 14px; background: rgba(255, 210, 98, .07); box-shadow: inset 0 0 0 1px rgba(255, 210, 98, .4); clip-path: var(--cham); font-size: 14px; }
+  .apk-pill[hidden] { display: none; }
+  .apk-pill > svg { width: 22px; height: 22px; color: var(--gold); flex: none; }
+  .apk-pill .apk-txt { display: flex; flex-direction: column; line-height: 1.3; }
+  .apk-pill .apk-txt b { color: var(--gold); font-weight: 600; }
+  .apk-pill .apk-txt span { font-family: var(--mono); font-size: 12px; color: var(--dim); letter-spacing: .02em; }
+  .apk-pill .apk-btn { padding: 9px 14px; font-size: 13px; }
 
   /* ── aperçu ── */
   .shot { position: relative; padding: 14px; background: var(--panel); border: 1px solid var(--line-2); box-shadow: 0 40px 100px rgba(0, 0, 0, .6); }
@@ -307,9 +315,14 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span data-i18n="privacy_pill">Sans compte · aucune donnée envoyée · permission unique : réglages locaux</span>
       </div>
-      <div class="soon-pill">
+      <div class="soon-pill" id="soon-pill">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3" stroke-linecap="round"/></svg>
         <span data-i18n="soon_apk"><b>Bientôt</b> : l'application Android (APK) arrive, pour jouer en mode cockpit sur ton téléphone.</span>
+      </div>
+      <div class="apk-pill" id="apk-pill" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3" stroke-linecap="round"/></svg>
+        <div class="apk-txt"><b data-i18n="apk_title">Application Android</b><span id="apk-meta"></span></div>
+        <a class="btn btn-primary apk-btn" id="apk-dl" href="https://github.com/Jetrohbu/aw-cockpit-communaute/releases/latest/download/aw-cockpit-communaute.apk" data-i18n="apk_dl">Télécharger l'APK</a>
       </div>
     </div>
 
@@ -468,6 +481,8 @@
       meta: "Version <b>{v}</b> · {d} · ZIP {s} · Chrome, Edge, Brave, Opera, Firefox",
       meta_err: "Impossible de lire la dernière version pour l'instant.",
       visits: "<b>{n}</b> visites", visits_1: "<b>1</b> visite", visits_today: " · {t} aujourd'hui",
+      apk_note: "Android 8 ou plus", apk_count: "{n} téléchargements", apk_count_1: "1 téléchargement",
+      faq9_a_apk: "<p>Oui, avec l'<b>application Android</b> (bouton en haut de la page) : le même habillage et la carte 3D, et les nouvelles versions sont annoncées dans l'app. À l'installation, Android demande d'autoriser ton navigateur à installer des applications.</p>",
       shot_alt: "Aperçu : ",
       bf_need: "Décris le problème avant d'envoyer.",
       bf_copied: "Rapport copié : colle-le sur Discord.",
@@ -483,6 +498,9 @@
       meta: "Version <b>{v}</b> · {d} · ZIP {s} · Chrome, Edge, Brave, Opera, Firefox",
       meta_err: "Can't read the latest version right now.",
       visits: "<b>{n}</b> visits", visits_1: "<b>1</b> visit", visits_today: " · {t} today",
+      apk_note: "Android 8 or later", apk_count: "{n} downloads", apk_count_1: "1 download",
+      apk_title: "Android app", apk_dl: "Download the APK",
+      faq9_a_apk: "<p>Yes, with the <b>Android app</b> (button at the top of the page): the same look and the 3D map, and new versions are announced in the app. When installing, Android asks you to allow your browser to install apps.</p>",
       shot_alt: "Preview: ",
       bf_need: "Describe the problem before sending.",
       bf_copied: "Report copied: paste it on Discord.",
@@ -566,6 +584,9 @@
       meta: "Versión <b>{v}</b> · {d} · ZIP {s} · Chrome, Edge, Brave, Opera, Firefox",
       meta_err: "No se puede leer la última versión por ahora.",
       visits: "<b>{n}</b> visitas", visits_1: "<b>1</b> visita", visits_today: " · {t} hoy",
+      apk_note: "Android 8 o superior", apk_count: "{n} descargas", apk_count_1: "1 descarga",
+      apk_title: "Aplicación Android", apk_dl: "Descargar el APK",
+      faq9_a_apk: "<p>Sí, con la <b>aplicación Android</b> (botón arriba de la página): la misma apariencia y el mapa 3D, y las nuevas versiones se anuncian en la app. Al instalar, Android pide autorizar a tu navegador a instalar aplicaciones.</p>",
       shot_alt: "Vista previa: ",
       bf_need: "Describe el problema antes de enviar.",
       bf_copied: "Informe copiado: pégalo en Discord.",
@@ -649,6 +670,9 @@
       meta: "Version <b>{v}</b> · {d} · ZIP {s} · Chrome, Edge, Brave, Opera, Firefox",
       meta_err: "Die neueste Version kann gerade nicht gelesen werden.",
       visits: "<b>{n}</b> Besuche", visits_1: "<b>1</b> Besuch", visits_today: " · {t} heute",
+      apk_note: "Android 8 oder neuer", apk_count: "{n} Downloads", apk_count_1: "1 Download",
+      apk_title: "Android-App", apk_dl: "APK herunterladen",
+      faq9_a_apk: "<p>Ja, mit der <b>Android-App</b> (Schaltfläche oben auf der Seite): derselbe Look und die 3D-Karte, neue Versionen werden in der App angekündigt. Bei der Installation fragt Android, ob dein Browser Apps installieren darf.</p>",
       shot_alt: "Vorschau: ",
       bf_need: "Beschreibe das Problem vor dem Senden.",
       bf_copied: "Bericht kopiert: füge ihn auf Discord ein.",
@@ -772,6 +796,37 @@
     if (!bv.value) bv.placeholder = info.version;
   }
 
+  /* ── application Android : bouton + compteur dès que la dernière Release contient l'APK ──
+     Le compteur additionne download_count de chaque aw-cockpit-communaute.apk de toutes les Releases
+     (compté par GitHub, rien n'est ajouté à la page). Sans APK publiée, le bandeau « Bientôt » reste. */
+  var apk = null;
+  function renderApk() {
+    if (!apk) return;
+    var loc = { fr: "fr-FR", en: "en-GB", es: "es-ES", de: "de-DE" }[lang];
+    var meta = ["v" + esc(apk.version), esc(t("apk_note"))];
+    if (apk.count != null) meta.push(apk.count === 1 ? esc(t("apk_count_1")) : esc(t("apk_count").replace("{n}", apk.count.toLocaleString(loc))));
+    document.getElementById("apk-meta").innerHTML = meta.join(" · ");
+    document.getElementById("apk-dl").href = apk.url;
+    document.getElementById("apk-pill").hidden = false;
+    document.getElementById("soon-pill").hidden = true;
+    var f9 = document.querySelector('[data-i18n="faq9_a"]');
+    if (f9) f9.innerHTML = t("faq9_a_apk");
+  }
+  function loadApk(version, asset) {
+    apk = { version: version, url: asset.browser_download_url, count: null };
+    renderApk();
+    fetch("https://api.github.com/repos/" + REPO + "/releases?per_page=100", { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (list) {
+        apk.count = (list || []).reduce(function (sum, rel) {
+          return sum + (rel.assets || []).filter(function (a) { return /\.apk$/i.test(a.name); })
+            .reduce(function (n, a) { return n + (a.download_count || 0); }, 0);
+        }, 0);
+        renderApk();
+      })
+      .catch(function () {});
+  }
+
   /* ── compteur de visites : visits.json écrit toutes les 5 min par le serveur à partir de ses logs (aucun suivi dans la page) ── */
   var visits = null;
   function renderVisits() {
@@ -799,6 +854,7 @@
     document.querySelectorAll(".lang-switch button[data-lang]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.lang === lang)); });
     renderVersion();
     renderVisits();
+    renderApk();
     document.documentElement.classList.remove("i18n-pending");
   }
 
@@ -868,6 +924,8 @@
     .then(function (rel) {
       var tag = String(rel.tag_name || ""), version = tag.replace(/^v/i, "");
       var bundle = (rel.assets || []).filter(function (a) { return a.name === "aw-cockpit-communaute.zip"; })[0];
+      var apkAsset = (rel.assets || []).filter(function (a) { return /\.apk$/i.test(a.name); })[0];
+      if (apkAsset) loadApk(version, apkAsset);
       return fetch("https://raw.githubusercontent.com/" + REPO + "/" + encodeURIComponent(tag) + "/site/aw-cockpit-communaute/version.json", { cache: "no-store" })
         .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
         .then(function (vj) {
