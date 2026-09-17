@@ -850,3 +850,26 @@ html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-custom-accent.awc-on #aw-a
 /* les lignes elles-mêmes ne peignent rien : c'est la cellule (translucide) qui porte la teinte */
 html.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-on.awc-gameskin table.table:not(.navigation) tr,
 html.awc-skin-glass.awc-skin-glass.awc-skin-glass.awc-on.awc-gameskin table.table:not(.navigation) tr { background: transparent !important;}
+
+/* ── News en cartes EMPILÉES, comme sur mobile (app-mobile.css) : en-tête date + joueur,
+   puis le texte sur toute la largeur. Placé en fin de feuille et en :root×8 pour passer devant
+   les cartes deux colonnes (230px + biseaux / bordures d'écart) des apparences HUD et Verre. ── */
+:root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg),
+:root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) > tbody,
+:root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) > thead,
+:root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) > thead > tr,
+:root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) > thead th { display: block !important; width: auto !important;}
+:root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) > tbody > tr:has(> td.msg) {
+  display: block !important; margin: 0 0 8px !important; background: none !important;}
+:root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) td.msg,
+:root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) td.msg + td {
+  display: block !important; width: auto !important; min-width: 0 !important; clip-path: none !important; text-align: left !important;
+  border: 0 !important; background-clip: border-box !important;}
+:root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) td.msg {
+  padding: 9px 14px 7px 16px !important; border-radius: 14px 14px 0 0 !important; font-size: 12px !important; line-height: 1.45 !important;}
+:root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) td.msg br { display: none !important;}
+:root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) td.msg b { margin: 0 0 0 6px !important;}
+:root.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-on.awc-gameskin table.table:has(td.msg) td.msg + td {
+  padding: 8px 14px 11px 16px !important; border-radius: 0 0 14px 14px !important; line-height: 1.5 !important;}
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-gameskin table.table:has(td.msg) td.msg,
+:root.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-skin-hud.awc-gameskin table.table:has(td.msg) td.msg + td { border-radius: 0 !important;}

@@ -57,6 +57,12 @@
 
   /* ── notes de version de l'édition communauté ── */
   const UPDATE_NOTES = {
+    "1.0.10": {
+      title: "News en cartes empilées sur PC, comme sur mobile",
+      points: [
+        "Page News : chaque message devient une carte, avec la date et le joueur en haut puis le texte sur toute la largeur (même présentation que sur téléphone)",
+      ],
+    },
     "1.0.9": {
       title: "Vue 3D des systèmes retirée, app Android plus lisible au téléphone",
       points: [

@@ -1,9 +1,37 @@
 {
-  "version": "1.0.9",
-  "date": "16/09/2026",
-  "zip": "aw-cockpit-communaute-1.0.9.zip",
+  "version": "1.0.10",
+  "date": "17/09/2026",
+  "zip": "aw-cockpit-communaute-1.0.10.zip",
   "size": "5,2 Mo",
   "releases": [
+    {
+      "version": "1.0.10",
+      "date": "17/09/2026",
+      "title": "News en cartes empilées sur PC, comme sur mobile",
+      "points": [
+        "Page News : chaque message devient une carte, avec la date et le joueur en haut puis le texte sur toute la largeur (même présentation que sur téléphone)"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Stacked News cards on PC, like on mobile",
+          "points": [
+            "News page: each message becomes a card, with the date and player on top and the text across the full width (same layout as on a phone)"
+          ]
+        },
+        "es": {
+          "title": "News en tarjetas apiladas en PC, como en el móvil",
+          "points": [
+            "Página News: cada mensaje se convierte en una tarjeta, con la fecha y el jugador arriba y el texto a todo el ancho (la misma presentación que en el móvil)"
+          ]
+        },
+        "de": {
+          "title": "News als gestapelte Karten am PC, wie auf dem Handy",
+          "points": [
+            "News-Seite: Jede Nachricht wird zu einer Karte, mit Datum und Spieler oben und dem Text über die ganze Breite (gleiche Darstellung wie auf dem Handy)"
+          ]
+        }
+      }
+    },
     {
       "version": "1.0.9",
       "date": "16/09/2026",
@@ -397,8 +425,8 @@
       }
     }
   ],
-  "zip_firefox": "aw-cockpit-communaute-1.0.9-firefox.zip",
+  "zip_firefox": "aw-cockpit-communaute-1.0.10-firefox.zip",
   "size_firefox": "5,2 Mo",
-  "zip_bundle": "aw-cockpit-communaute-1.0.9-tous-navigateurs.zip",
+  "zip_bundle": "aw-cockpit-communaute-1.0.10-tous-navigateurs.zip",
   "size_bundle": "10,4 Mo"
 }
