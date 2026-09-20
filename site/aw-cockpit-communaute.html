@@ -812,13 +812,29 @@
     var f9 = document.querySelector('[data-i18n="faq9_a"]');
     if (f9) f9.innerHTML = t("faq9_a_apk");
   }
+  function apkOf(rel) {
+    return (rel && rel.assets || []).filter(function (a) { return /\.apk$/i.test(a.name); })[0] || null;
+  }
+  /* L'APK est déposé à la main (l'Action ne sait pas le signer) : la dernière version
+     n'en a donc pas toujours un. Sans ce repli, une sortie sans APK faisait disparaître
+     le bouton et réafficher « Bientôt » — alors que l'APK précédent reste téléchargeable. */
   function loadApk(version, asset) {
-    apk = { version: version, url: asset.browser_download_url, count: null };
-    renderApk();
+    if (asset) { apk = { version: version, url: asset.browser_download_url, count: null }; renderApk(); }
     fetch("https://api.github.com/repos/" + REPO + "/releases?per_page=100", { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (list) {
-        apk.count = (list || []).reduce(function (sum, rel) {
+        list = list || [];
+        if (!apk) {
+          for (var i = 0; i < list.length; i++) {
+            var a = apkOf(list[i]);
+            if (a) {
+              apk = { version: String(list[i].tag_name || "").replace(/^v/i, ""), url: a.browser_download_url, count: null };
+              break;
+            }
+          }
+        }
+        if (!apk) return;                      // aucune version n'a jamais eu d'APK : « Bientôt » reste
+        apk.count = list.reduce(function (sum, rel) {
           return sum + (rel.assets || []).filter(function (a) { return /\.apk$/i.test(a.name); })
             .reduce(function (n, a) { return n + (a.download_count || 0); }, 0);
         }, 0);
@@ -924,8 +940,7 @@
     .then(function (rel) {
       var tag = String(rel.tag_name || ""), version = tag.replace(/^v/i, "");
       var bundle = (rel.assets || []).filter(function (a) { return a.name === "aw-cockpit-communaute.zip"; })[0];
-      var apkAsset = (rel.assets || []).filter(function (a) { return /\.apk$/i.test(a.name); })[0];
-      if (apkAsset) loadApk(version, apkAsset);
+      loadApk(version, apkOf(rel));   // sans APK sur la dernière version : repli sur la plus récente qui en a un
       return fetch("https://raw.githubusercontent.com/" + REPO + "/" + encodeURIComponent(tag) + "/site/aw-cockpit-communaute/version.json", { cache: "no-store" })
         .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
         .then(function (vj) {
