@@ -100,8 +100,9 @@
       // jeu. Sinon (skin off), ancien comportement — superposé dans la barre.
       var row = info.progCell.querySelector(".progress-bar-timed");
       if (gaugeMode() && appendRowTime(row, hours, title)) return;
-      var bar = info.progCell.querySelector(".progress-bar") || info.progCell;
-      injectBarTime(bar, hours, title, null, -3);
+      // SOUS la barre : dedans, il recouvrait le « X/Y » du jeu (« 2j11h » sur
+      // « 104/507 ») — la barre de la liste est trop étroite pour deux textes.
+      addTimeLine(info.progCell, hours, title);
     });
   }
 
@@ -234,6 +235,14 @@
       // (HH:MM:SS) dans la colonne Remain -> ne rien injecter (sinon temps faux
       // calculé sur le "+1" lvl/qty, et doublon avec Remain).
       if (tr.hasAttribute("data-auto-produce")) return;
+      // Mod Android : planet-sb.js pose déjà son temps (.aw-eta, taux exact) dans
+      // les barres des bâtiments -> deux étiquettes superposées (« nombres
+      // doublés »). On lui laisse la barre et on retire la nôtre si elle y est.
+      if (bar.querySelector(".aw-eta")) {
+        var dbl = bar.querySelector("[data-aw-bartime]");
+        if (dbl) dbl.remove();
+        return;
+      }
       var remaining = null, rate = null, basis = "";
       if (tr.hasAttribute("data-points")) {
         // Bâtiment : restant via le titre "Progress: X / Y" (sinon data-points).

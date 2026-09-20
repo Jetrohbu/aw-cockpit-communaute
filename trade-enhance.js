@@ -1,6 +1,7 @@
 // AW Extension — Trade page enhancer.
 // On /Game/Trade:
-//   1. Prices table: extra "Coût PP" + "Temps farm" columns. PP/h is fetched
+//   1. Prices table: extra "Coût PP" + "Temps farm" columns, et le temps de financement
+//      d'un Trade Agreement ajouté dans la case "Trade Revenue". PP/h is fetched
 //      silently from /Game/Planets (sum row of the tfoot, last cell) and
 //      cached 5 min in chrome.storage. No user input.
 //   2. Inventory table: extra rows under "Supply Unit" — a PP ⇄ Astro Dollars
@@ -11,6 +12,10 @@
   "use strict";
 
   const DESTROYER_COST_PP = 30;
+  // Prix d'un Trade Agreement, règle du jeu : 20 000 $ par accord, gratuit quand le
+  // partenaire est Trader (même valeur que le plan de TA côté backend).
+  const TA_COST_USD = 20000;
+  const ROW_ID_TA = "aw-trade-ta-row";
   const ROW_ID_RATES = "aw-trade-rates-row";
   const ROW_ID_CONV = "aw-trade-conv-row";
   const ROW_ID_PP_EQ = "aw-trade-pp-eq-row";
@@ -1041,6 +1046,41 @@
     });
   }
 
+  /* Coût d'un Trade Agreement DANS la case « Trade Revenue » : le temps qu'il faut pour
+     le financer au cours du jour. Le reste (prix, PP, cours) est en infobulle. */
+  function ensureTARow(ppRate) {
+    const hote = findRowsByExactLabel("Trade Revenue")[0];
+    if (!hote) return;
+    const cells = hote.querySelectorAll("td, th");
+    const cible = cells[1] || cells[0];
+    if (!cible) return;
+
+    const ppCost = (isFinite(ppRate) && ppRate > 0) ? (TA_COST_USD / ppRate) : NaN;
+    const hours = (isFinite(ppCost) && userPPH > 0) ? (ppCost / userPPH) : NaN;
+    if (!isFinite(hours)) return;
+
+    // On calque la pilule du jeu (le badge « +0% ») : mêmes classes, donc même apparence
+    // quel que soit le skin, et les deux badges s'alignent sur la même ligne.
+    const modele = cible.querySelector("[class]:not([data-aw-injected])");
+    let tag = cible.querySelector("[data-aw-ta]");
+    if (!tag) {
+      tag = document.createElement("span");
+      tag.setAttribute("data-aw-ta", "1");
+      tag.setAttribute("data-aw-injected", "1");
+      cible.appendChild(tag);
+    }
+    tag.className = modele ? modele.className : "";
+    tag.style.cssText = "margin-left:8px;vertical-align:middle;white-space:nowrap;color:#fbbf24;" +
+      (modele ? "" : "display:inline-block;padding:2px 8px;border-radius:999px;font-size:.85em;" +
+                     "background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);");
+    if (cible.style) { cible.style.whiteSpace = "nowrap"; }
+    const texte = "🤝 " + fmtDuration(hours);
+    if (tag.textContent !== texte) tag.textContent = texte;
+    tag.title = "Un Trade Agreement coûte " + fmtMoney(TA_COST_USD) + " ≈ " + fmtPP(ppCost) +
+      " au cours de " + fmtMoney(ppRate) + "/PP — soit " + fmtDuration(hours) +
+      " de production (gratuit avec un Trader, 5 accords max).";
+  }
+
   function renderPricesAddon(ppRate, suRate) {
     const table = findPricesTable();
     if (!table) return;
@@ -1052,6 +1092,7 @@
     // « visibles » et déclenche 23 requêtes au lieu de 9.
     ensureTierFilter(table);
     ensurePricesCells(table, ppRate, suRate);
+    ensureTARow(ppRate);               // sous « Trade Revenue », pas dans la liste des prix
   }
 
   // ── Orchestration ──────────────────────────────────────────────────────
@@ -1090,7 +1131,7 @@
   function stopObserver() { if (observer) { observer.disconnect(); observer = null; } }
 
   function removeInjected() {
-    [ROW_ID_RATES, ROW_ID_CONV, ROW_ID_PP_EQ, ROW_ID_DEST, TOGGLE_ID].forEach(id => {
+    [ROW_ID_RATES, ROW_ID_CONV, ROW_ID_PP_EQ, ROW_ID_DEST, ROW_ID_TA, TOGGLE_ID].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.remove();
     });

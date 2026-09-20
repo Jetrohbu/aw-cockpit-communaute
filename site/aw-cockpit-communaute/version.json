@@ -1,9 +1,41 @@
 {
-  "version": "1.0.10",
-  "date": "17/09/2026",
+  "version": "1.0.11",
+  "date": "20/09/2026",
   "zip": "aw-cockpit-communaute-1.0.10.zip",
   "size": "5,2 Mo",
   "releases": [
+    {
+      "version": "1.0.11",
+      "date": "20/09/2026",
+      "title": "Ce que coûte un Trade Agreement, et le temps de pop mieux placé",
+      "points": [
+        "Page Trade : à côté de « Trade Revenue », un badge 🤝 dit combien de temps de production te coûte un Trade Agreement, au cours du jour (tout est calculé chez toi, à partir de la page que tu as ouverte)",
+        "Liste des planètes : le temps restant passe SOUS la barre de progression, il ne recouvre plus le « 104/507 » du jeu"
+      ],
+      "i18n": {
+        "en": {
+          "title": "What a Trade Agreement costs you, and a better spot for the growth timer",
+          "points": [
+            "Trade page: next to “Trade Revenue”, a 🤝 badge shows how much production time a Trade Agreement costs you at today’s rate (all worked out on your side, from the page you already opened)",
+            "Planets list: the remaining time now sits BELOW the progress bar, it no longer covers the game’s “104/507”"
+          ]
+        },
+        "es": {
+          "title": "Lo que te cuesta un Trade Agreement, y el tiempo de crecimiento mejor colocado",
+          "points": [
+            "Página Trade: junto a «Trade Revenue», una etiqueta 🤝 indica cuánto tiempo de producción te cuesta un Trade Agreement al precio de hoy (todo se calcula en tu equipo, a partir de la página que ya tienes abierta)",
+            "Lista de planetas: el tiempo restante pasa DEBAJO de la barra de progreso, ya no tapa el «104/507» del juego"
+          ]
+        },
+        "de": {
+          "title": "Was dich ein Trade Agreement kostet, und die Wachstumszeit besser platziert",
+          "points": [
+            "Trade-Seite: neben „Trade Revenue“ zeigt ein 🤝-Abzeichen, wie viel Produktionszeit dich ein Trade Agreement zum heutigen Kurs kostet (alles wird bei dir berechnet, aus der Seite, die du ohnehin geöffnet hast)",
+            "Planetenliste: die Restzeit steht jetzt UNTER dem Fortschrittsbalken und verdeckt nicht mehr das „104/507“ des Spiels"
+          ]
+        }
+      }
+    },
     {
       "version": "1.0.10",
       "date": "17/09/2026",

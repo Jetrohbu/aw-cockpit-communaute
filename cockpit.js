@@ -57,6 +57,13 @@
 
   /* ── notes de version de l'édition communauté ── */
   const UPDATE_NOTES = {
+    "1.0.11": {
+      title: "Ce que coûte un Trade Agreement, et le temps de pop mieux placé",
+      points: [
+        "Page Trade : à côté de « Trade Revenue », un badge 🤝 dit combien de temps de production te coûte un Trade Agreement, au cours du jour (tout est calculé chez toi, à partir de la page que tu as ouverte)",
+        "Liste des planètes : le temps restant passe SOUS la barre de progression, il ne recouvre plus le « 104/507 » du jeu",
+      ],
+    },
     "1.0.10": {
       title: "News en cartes empilées sur PC, comme sur mobile",
       points: [
