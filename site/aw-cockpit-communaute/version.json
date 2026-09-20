@@ -1,7 +1,7 @@
 {
   "version": "1.0.11",
   "date": "20/09/2026",
-  "zip": "aw-cockpit-communaute-1.0.10.zip",
+  "zip": "aw-cockpit-communaute-1.0.11.zip",
   "size": "5,2 Mo",
   "releases": [
     {
@@ -457,8 +457,8 @@
       }
     }
   ],
-  "zip_firefox": "aw-cockpit-communaute-1.0.10-firefox.zip",
+  "zip_firefox": "aw-cockpit-communaute-1.0.11-firefox.zip",
   "size_firefox": "5,2 Mo",
-  "zip_bundle": "aw-cockpit-communaute-1.0.10-tous-navigateurs.zip",
+  "zip_bundle": "aw-cockpit-communaute-1.0.11-tous-navigateurs.zip",
   "size_bundle": "10,4 Mo"
 }
