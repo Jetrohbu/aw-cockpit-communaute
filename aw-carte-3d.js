@@ -507,6 +507,75 @@
     return data;
   }
 
+  /* ── IDENTIFIANTS → TAGS / NOMS (04/10/2026) ───────────────────────────
+     Le jeu ne sert plus dans mapData ni `sec.alliances`, ni `systemOwnerships`,
+     ni `planet.allianceTag` / `planet.ownerName` : seulement `allianceId` et
+     `ownerId`. Sa propre carte les résout à part (mapDataCache.js du jeu) via
+     /api/v1/Alliance/byIds → [{id, tag, color}] et /api/v1/Player/byIds →
+     [{id, name}], par lots de 100. Sans ça, plus aucun tag : Portée et
+     Territoires dessinaient des calques VIDES, et la 3D perdait ses couleurs.
+     On fait pareil, mais avec un cache 24 h (chrome.storage aw3d_ids_cache)
+     pour ne redemander que les ids inconnus — le jeu, lui, le fait à chaque page.
+     Les champs sont ensuite REPOSÉS dans md, au format d'avant : readMapData et
+     tout le reste du fichier n'ont pas à changer. */
+  var IDS_TTL = 24 * 3600 * 1000, _ids = null;
+  async function idsCharger() {
+    if (_ids) return _ids;
+    var st = await storageGet(["aw3d_ids_cache"]);
+    var c = st && st.aw3d_ids_cache;
+    _ids = (c && c.a && c.p) ? c : { a: {}, p: {} };
+    return _ids;
+  }
+  async function idsDemander(url, ids, dest, pick) {
+    var now = Date.now();
+    var manque = ids.filter(function (id) { var e = dest[id]; return !e || now - e.t > IDS_TTL; });
+    for (var i = 0; i < manque.length; i += 100) {
+      var q = manque.slice(i, i + 100).map(function (id) { return "ids=" + encodeURIComponent(id); }).join("&");
+      try {
+        var r = await fetch(url + "?" + q, { headers: { Accept: "application/json" }, credentials: "same-origin" });
+        if (!r.ok) { console.warn("[AW3D] " + url + " → HTTP " + r.status); continue; }
+        (await r.json() || []).forEach(function (it) { if (it && it.id != null) dest[it.id] = pick(it, now); });
+      } catch (e) { console.warn("[AW3D] " + url + " KO:", e); }
+    }
+    return manque.length > 0;
+  }
+  async function enrichirIds(md) {
+    if (!md || !md.sectors) return;
+    var aIds = {}, pIds = {}, besoin = false;
+    md.sectors.forEach(function (sec) {
+      (sec.solarSystems || []).forEach(function (s) {
+        (s.planets || []).forEach(function (p) {
+          if (p.allianceId != null && !p.allianceTag) { aIds[p.allianceId] = 1; besoin = true; }
+          if (p.ownerId != null && !p.ownerName) { pIds[p.ownerId] = 1; besoin = true; }
+        });
+      });
+    });
+    if (!besoin) return;                       /* ancien format : rien à faire */
+    var c = await idsCharger();
+    var ka = Object.keys(aIds), kp = Object.keys(pIds);
+    var neufA = await idsDemander("/api/v1/Alliance/byIds", ka, c.a, function (it, t) { return { tag: it.tag || "", color: it.color || "", t: t }; });
+    var neufP = await idsDemander("/api/v1/Player/byIds", kp, c.p, function (it, t) { return { name: it.name || "", t: t }; });
+    if (neufA || neufP) { try { chrome.storage.local.set({ aw3d_ids_cache: c }); } catch (e) {} }
+    var decl = {};
+    md.sectors.forEach(function (sec) {
+      (sec.solarSystems || []).forEach(function (s) {
+        (s.planets || []).forEach(function (p) {
+          var a = p.allianceId != null ? c.a[p.allianceId] : null;
+          if (a && a.tag && !p.allianceTag) {
+            p.allianceTag = a.tag;
+            if (!decl[a.tag]) decl[a.tag] = { tag: a.tag, color: a.color || null };
+          }
+          var pl = p.ownerId != null ? c.p[p.ownerId] : null;
+          if (pl && pl.name && !p.ownerName) p.ownerName = pl.name + (p.allianceTag ? " [" + p.allianceTag + "]" : "");
+          else if (!p.ownerName && p.ownerId == null && !p.isUnknownOwner) p.ownerName = "Free Planet";
+        });
+      });
+    });
+    /* les couleurs déclarées, là où readMapData les a toujours lues */
+    var list = Object.keys(decl).map(function (k) { return decl[k]; });
+    if (list.length && md.sectors[0]) md.sectors[0].alliances = (md.sectors[0].alliances || []).concat(list);
+  }
+
   function readMapData() {
     var md = window.AW_MAP_DATA;
     if (!md || !md.sectors) md = parseInlineMapData();
@@ -702,6 +771,11 @@
        en teintes, elle n'est pas morte. */
     await Promise.race([pretes, new Promise(function (r) { setTimeout(r, 1000); })]);
     try { await galaxieComplete(); } catch (e) { console.warn("[AW3D] galaxie complète KO:", e); }
+    try {
+      var md0 = window.AW_MAP_DATA;
+      if (!md0 || !md0.sectors) { md0 = parseInlineMapData(); if (md0 && md0.sectors) window.AW_MAP_DATA = md0; }
+      await enrichirIds(md0);
+    } catch (e) { console.warn("[AW3D] tags d'alliance KO:", e); }
     var data = readMapData();
     if (!data) return null;
 

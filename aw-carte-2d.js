@@ -264,7 +264,16 @@
      flottante (#aw-map-viewer, masquée sur /Game/Map) : y dessiner allumait
      le bouton et ne montrait rien. On vise donc la carte du jeu d'abord, et
      l'on garde l'ancienne cible en repli pour la visionneuse. */
+  /* Conteneur des calques = le PARENT RÉEL des systèmes du jeu. Depuis le
+     04/10/2026 le jeu range ses .map-planet dans un calque intermédiaire
+     (#mapContent > div.map-layer.map-layer-systems) : insérés dans #mapContent,
+     nos calques passaient sous ce calque (invisibles) et hors de son repère.
+     On ne nomme aucune classe de calque ni de thème : où que le jeu pose ses
+     systèmes, on se pose à côté d'eux. L'ancienne structure (systèmes enfants
+     directs de #mapContent) donne le même résultat qu'avant. */
   function mapInner() {
+    var p = document.querySelector("#mapContent .map-planet");
+    if (p && p.parentElement) return p.parentElement;
     return document.getElementById("mapContent") || document.getElementById("aw-map-inner");
   }
 
