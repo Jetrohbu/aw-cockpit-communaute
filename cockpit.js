@@ -57,6 +57,15 @@
 
   /* ── notes de version de l'édition communauté ── */
   const UPDATE_NOTES = {
+    "1.0.12": {
+      title: "La carte remarche avec le nouveau format du jeu, et un survol plus fluide",
+      points: [
+        "Carte : couleurs d'alliance, propriétaires, Portée AW et Territoires AW refonctionnent (le jeu ne donne plus que des numéros : l'extension lit les noms comme sa propre carte, gardés 24 h)",
+        "Survol d'un système : courte visée avec crochets avant l'ouverture, bascule glissée d'un système à l'autre, repli en cascade, onde de choc à l'ouverture",
+        "Nouveau fond de carte « Signal » (Réglages 3D › Style) ; tableau des planètes de la fiche centré",
+        "Page Trade : les filtres du jeu (All / Resources / Artefacts / SU Bounties) alignés sous les tiers, dans tous les thèmes ; le bouton « Masquer Use Supply Unit » est retiré (le jeu filtre lui-même)",
+      ],
+    },
     "1.0.11": {
       title: "Ce que coûte un Trade Agreement, et le temps de pop mieux placé",
       points: [

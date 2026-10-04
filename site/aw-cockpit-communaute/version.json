@@ -1,9 +1,49 @@
 {
-  "version": "1.0.11",
-  "date": "20/09/2026",
-  "zip": "aw-cockpit-communaute-1.0.11.zip",
+  "version": "1.0.12",
+  "date": "04/10/2026",
+  "zip": "aw-cockpit-communaute-1.0.12.zip",
   "size": "5,2 Mo",
   "releases": [
+    {
+      "version": "1.0.12",
+      "date": "04/10/2026",
+      "title": "La carte remarche avec le nouveau format du jeu, et un survol plus fluide",
+      "points": [
+        "Carte : couleurs d'alliance, propriétaires, Portée AW et Territoires AW refonctionnent (le jeu ne donne plus que des numéros : l'extension lit les noms comme sa propre carte, gardés 24 h)",
+        "Survol d'un système : courte visée avec crochets avant l'ouverture, bascule glissée d'un système à l'autre, repli en cascade, onde de choc à l'ouverture",
+        "Nouveau fond de carte « Signal » (Réglages 3D › Style) ; tableau des planètes de la fiche centré",
+        "Page Trade : les filtres du jeu (All / Resources / Artefacts / SU Bounties) alignés sous les tiers, dans tous les thèmes ; le bouton « Masquer Use Supply Unit » est retiré (le jeu filtre lui-même)"
+      ],
+      "i18n": {
+        "en": {
+          "title": "The map works again with the game's new format, and smoother hovering",
+          "points": [
+            "Map: alliance colours, owners, AW Range and AW Territories work again (the game now only sends ids: the extension reads the names just like the game's own map, kept 24 h)",
+            "Hovering a system: a short aim with brackets before it opens, smooth switch from one system to the next, cascading fold, shockwave on opening",
+            "New “Signal” map background (3D settings › Style); the system card's planet table is now centred",
+            "Trade page: the game's filters (All / Resources / Artefacts / SU Bounties) lined up under the tiers, in every theme; the “Hide Use Supply Unit” button is gone (the game filters by itself)"
+          ]
+        },
+        "es": {
+          "title": "El mapa vuelve a funcionar con el nuevo formato del juego, y un paso del ratón más fluido",
+          "points": [
+            "Mapa: colores de alianza, propietarios, Alcance AW y Territorios AW vuelven a funcionar (el juego ya solo envía números: la extensión lee los nombres igual que el mapa del juego, guardados 24 h)",
+            "Al pasar sobre un sistema: breve apuntado con corchetes antes de abrirse, cambio suave de un sistema a otro, plegado en cascada, onda expansiva al abrir",
+            "Nuevo fondo de mapa «Signal» (Ajustes 3D › Estilo); la tabla de planetas de la ficha ahora está centrada",
+            "Página Trade: los filtros del juego (All / Resources / Artefacts / SU Bounties) alineados bajo los tiers, en todos los temas; se retira el botón «Ocultar Use Supply Unit» (el juego ya filtra)"
+          ]
+        },
+        "de": {
+          "title": "Die Karte funktioniert wieder mit dem neuen Spielformat, und flüssigeres Überfahren",
+          "points": [
+            "Karte: Allianzfarben, Besitzer, AW-Reichweite und AW-Territorien funktionieren wieder (das Spiel sendet nur noch Nummern: die Erweiterung liest die Namen wie die Karte des Spiels, 24 h gespeichert)",
+            "Überfahren eines Systems: kurzes Anvisieren mit Klammern vor dem Öffnen, fließender Wechsel von System zu System, Zusammenklappen in Kaskade, Schockwelle beim Öffnen",
+            "Neuer Kartenhintergrund „Signal“ (3D-Einstellungen › Stil); die Planetentabelle der Systemkarte ist jetzt zentriert",
+            "Trade-Seite: die Filter des Spiels (All / Resources / Artefacts / SU Bounties) unter den Tiers ausgerichtet, in allen Themes; die Schaltfläche „Use Supply Unit ausblenden“ entfällt (das Spiel filtert selbst)"
+          ]
+        }
+      }
+    },
     {
       "version": "1.0.11",
       "date": "20/09/2026",
@@ -457,8 +497,8 @@
       }
     }
   ],
-  "zip_firefox": "aw-cockpit-communaute-1.0.11-firefox.zip",
+  "zip_firefox": "aw-cockpit-communaute-1.0.12-firefox.zip",
   "size_firefox": "5,2 Mo",
-  "zip_bundle": "aw-cockpit-communaute-1.0.11-tous-navigateurs.zip",
+  "zip_bundle": "aw-cockpit-communaute-1.0.12-tous-navigateurs.zip",
   "size_bundle": "10,4 Mo"
 }

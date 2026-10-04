@@ -48,7 +48,7 @@ for f in files:
     txt = open(os.path.join(ROOT, f), encoding="utf-8", errors="replace").read()
     code = re.sub(r"/\*.*?\*/", "", txt, flags=re.S)
     code = re.sub(r"(^|[^:])//.*", r"\1", code)
-    for m in re.finditer(r"holocron-gt\.fr|aw_jwt_token|AndroidBridge|AW_CONFIG|AW_solarIngest|/api/(?!v1/Map/)", code):
+    for m in re.finditer(r"holocron-gt\.fr|aw_jwt_token|AndroidBridge|AW_CONFIG|AW_solarIngest|/api/(?!v1/(?:Map|Alliance|Player)/)", code):
         line = code.count("\n", 0, m.start()) + 1
         snippet = code[max(0, m.start() - 40):m.start() + 60].replace("\n", " ")
         if f in ("cockpit.js", "popup.js") and "UPDATE_PAGE" in snippet:

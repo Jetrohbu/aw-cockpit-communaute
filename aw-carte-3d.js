@@ -1035,6 +1035,7 @@
       "#aw3d-panel .aw3d-bgs .aw3d-chip::before{content:'';width:12px;height:12px;border-radius:50%;flex:none;",
       "  border:1px solid rgba(255,255,255,.28);background:#223;}",
       "#aw3d-panel [data-bg=spirale]::before{background:radial-gradient(circle at 40% 40%,#ffd9a0,#b0552a 45%,#1a1030 78%);}",
+      "#aw3d-panel [data-bg=signal]::before{background:radial-gradient(circle at 45% 45%,#ffe6c0,#c9b8ff 35%,#4a6ad0 62%,#060818 80%);}",
       "#aw3d-panel [data-bg=barree]::before{background:linear-gradient(120deg,#1a1030 30%,#e8a060 50%,#1a1030 70%);}",
       "#aw3d-panel [data-bg=dense]::before{background:radial-gradient(circle,#fff2d0,#d27a3c 55%,#40202a);}",
       "#aw3d-panel [data-bg=nebuleuse]::before{background:radial-gradient(circle at 30% 30%,#c080ff,#4a2a8a 50%,#10102a);}",
@@ -1068,7 +1069,14 @@
       "#aw3d-tip{position:absolute;z-index:40;width:250px;padding:9px 10px;border-radius:4px;pointer-events:none;",
       "  background:rgba(9,12,24,.96);border:1px solid rgba(158,170,220,.3);color:#e6e9f7;",
       "  font-family:inherit;font-size:.8125rem;line-height:1.4;opacity:0;transform:translateY(4px);",
-      "  transition:opacity .13s,transform .13s;box-shadow:0 14px 34px -14px rgba(0,0,0,.85);}",
+      "  transition:opacity .22s,transform .3s cubic-bezier(.2,.8,.2,1);box-shadow:0 14px 34px -14px rgba(0,0,0,.85);}",
+      /* D (04/10) : crochets de visée sur le système survolé */
+      "#aw3d-lock{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:30;opacity:0;will-change:transform,opacity;}",
+      "#aw3d-lock i{position:absolute;width:28%;height:28%;border:2px solid #ffb347;filter:drop-shadow(0 0 4px rgba(255,179,71,.75));}",
+      "#aw3d-lock i:nth-child(1){left:0;top:0;border-right:0;border-bottom:0;border-top-left-radius:3px;}",
+      "#aw3d-lock i:nth-child(2){right:0;top:0;border-left:0;border-bottom:0;border-top-right-radius:3px;}",
+      "#aw3d-lock i:nth-child(3){left:0;bottom:0;border-right:0;border-top:0;border-bottom-left-radius:3px;}",
+      "#aw3d-lock i:nth-child(4){right:0;bottom:0;border-left:0;border-top:0;border-bottom-right-radius:3px;}",
       "#aw3d-tip.on{opacity:1;transform:none;}",
       "#aw3d-tip .t-n{font-weight:700;font-size:.9rem;}",
       "#aw3d-tip .t-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:4px;}",
@@ -1078,9 +1086,12 @@
       "#aw3d-tip .t-xy{font-size:.68rem;color:rgba(255,255,255,.45);white-space:nowrap;",
       "  font-variant-numeric:tabular-nums;}",
       "#aw3d-tip .t-tab{width:100%;margin-top:7px;border-collapse:collapse;font-size:.72rem;}",
-      "#aw3d-tip .t-tab th{text-align:left;font-weight:600;color:rgba(255,255,255,.45);",
-      "  text-transform:uppercase;font-size:.62rem;letter-spacing:.04em;padding:1px 6px 2px 0;}",
-      "#aw3d-tip .t-tab td{padding:1px 6px 1px 0;border-top:1px solid rgba(255,255,255,.07);",
+      /* 04/10 : colonnes CENTRÉES (demande « centre mieux les noms dans les colonnes ») ;
+         #, Pop et SB serrées à leur contenu, le propriétaire prend le reste, centré */
+      "#aw3d-tip .t-tab th{text-align:center;font-weight:600;color:rgba(255,255,255,.45);",
+      "  text-transform:uppercase;font-size:.62rem;letter-spacing:.04em;padding:1px 6px 2px;}",
+      "#aw3d-tip .t-tab th:not(:last-child),#aw3d-tip .t-tab td:not(:last-child){width:1%;}",
+      "#aw3d-tip .t-tab td{text-align:center;vertical-align:middle;padding:1px 6px;border-top:1px solid rgba(255,255,255,.07);",
       "  font-variant-numeric:tabular-nums;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;}",
       "#aw3d-tip .t-o{margin-top:7px;font-size:.72rem;color:rgba(255,255,255,.6);max-height:46px;overflow:hidden;}",
       "#aw3d-tip .t-o b{color:#fff;font-weight:600;}",
@@ -1097,8 +1108,8 @@
       "#aw3d-tip.big .t-t i{width:11px;height:11px;}",
       "#aw3d-tip.big .t-xy{font-size:1rem;}",
       "#aw3d-tip.big .t-tab{margin-top:12px;font-size:1.12rem;}",
-      "#aw3d-tip.big .t-tab th{font-size:.86rem;padding:3px 12px 5px 0;}",
-      "#aw3d-tip.big .t-tab td{padding:4px 12px 4px 0;max-width:250px;}",
+      "#aw3d-tip.big .t-tab th{font-size:.86rem;padding:3px 10px 5px;}",
+      "#aw3d-tip.big .t-tab td{padding:4px 10px;max-width:250px;}",
       "#aw3d-tip.big .t-o{font-size:1.05rem;max-height:110px;margin-top:12px;}",
       "#aw3d-tip.big .t-g{font-size:1rem;margin-top:10px;}",
       "#aw3d-tip.big .t-f{font-size:.92rem;margin-top:12px;}",
@@ -1109,8 +1120,8 @@
       "#aw3d-tip.big.compact .t-t i{width:9px;height:9px;}",
       "#aw3d-tip.big.compact .t-xy{font-size:.8rem;}",
       "#aw3d-tip.big.compact .t-tab{margin-top:8px;font-size:.88rem;}",
-      "#aw3d-tip.big.compact .t-tab th{font-size:.68rem;padding:1px 8px 3px 0;}",
-      "#aw3d-tip.big.compact .t-tab td{padding:2px 8px 2px 0;max-width:170px;}",
+      "#aw3d-tip.big.compact .t-tab th{font-size:.68rem;padding:1px 7px 3px;}",
+      "#aw3d-tip.big.compact .t-tab td{padding:2px 7px;max-width:170px;}",
       "#aw3d-tip.big.compact .t-o{font-size:.82rem;max-height:60px;margin-top:8px;}",
       "#aw3d-tip.big.compact .t-g{font-size:.78rem;margin-top:6px;}",
       "#aw3d-tip.big.compact .t-f{font-size:.72rem;margin-top:8px;}",
@@ -1119,8 +1130,8 @@
       "#aw3d-tip.big.tiny .t-t{font-size:.68rem;}",
       "#aw3d-tip.big.tiny .t-xy{font-size:.7rem;}",
       "#aw3d-tip.big.tiny .t-tab{margin-top:6px;font-size:.76rem;}",
-      "#aw3d-tip.big.tiny .t-tab th{font-size:.62rem;padding:1px 6px 2px 0;}",
-      "#aw3d-tip.big.tiny .t-tab td{padding:1px 6px 1px 0;max-width:140px;}",
+      "#aw3d-tip.big.tiny .t-tab th{font-size:.62rem;padding:1px 5px 2px;}",
+      "#aw3d-tip.big.tiny .t-tab td{padding:1px 5px;max-width:140px;}",
       "#aw3d-tip.big.tiny .t-o,#aw3d-tip.big.tiny .t-g{font-size:.72rem;margin-top:5px;max-height:46px;}",
       "#aw3d-tip.big.tiny .t-f{font-size:.66rem;margin-top:6px;}",
       "#aw3d-tip.big.sheet{top:auto !important;left:8px !important;right:8px !important;width:auto !important;}",
@@ -1270,7 +1281,7 @@
           /* ── onglet Style : fond, portée, commandes ── */
           '<div class="aw3d-pane" data-pane="style" hidden>' +
             '<div class="aw3d-grp"><div class="aw3d-lab">Fond de carte</div><div class="aw3d-row aw3d-bgs" id="aw3d-bgs">' +
-              ["spirale", "barree", "dense", "nebuleuse", "froide", "sobre", "vide"]
+              ["spirale", "signal", "barree", "dense", "nebuleuse", "froide", "sobre", "vide"]
                 .map(function (k) {
                   return '<button class="aw3d-chip" type="button" data-bg="' + k + '"></button>';
                 }).join("") +
@@ -1702,10 +1713,12 @@
       /* uFade : estompage du DÉCOR (galaxie, ciel, amas) pendant qu'un système
          est déployé, cf. decorFade() — 1 pour les planètes */
       "uniform float uFade;",
+      /* uPow : dureté du grain (4 = étoile franche ; 1,8 = grain doux du fond Signal) */
+      "uniform float uPow;",
       "void main(){",
       "  float d = distance(gl_PointCoord, vec2(0.5));",
       "  float s = clamp(1.0 - d*2.0, 0.0, 1.0);",
-      "  s = pow(s, 4.0);",
+      "  s = pow(s, uPow);",
       "  if(s < 0.002) discard;",
       /* Étoiles opaques : alpha plein, le dégradé `s` continue de faire le rond
          mais son cœur est franc. En revanche la couleur est BAISSÉE, pas
@@ -1735,7 +1748,7 @@
              points étaient dessinés deux fois trop gros en surface — d'où un
              ciel saturé d'étoiles, et deux fois plus de fragments à remplir */
           uPixelRatio:{value: renderer.getPixelRatio()},
-          uFade:{value: 1}
+          uFade:{value: 1}, uPow:{value: 4}
         },
         transparent:true, depthWrite:false, blending:T.AdditiveBlending
       });
@@ -1856,6 +1869,12 @@
     var BACKGROUNDS = {
       spirale:   { label: "Spirale",   count: 1.00, size: 1.00, branches: 5, spin: 1.6,  power: 4, randomness: 0.20,
                    inside: "#ff6030", outside: "#1b3984", neb: 1.00 },
+      /* « Signal » (04/10) : la galaxie de la maquette du jeu Signal — 4 bras
+         larges, dispersion forte vers le centre, cœur crème → lavande → bleu,
+         halo central large, grains doux (uPow 1.8 au lieu de 4). Construite à
+         part dans buildGalaxy (kind: "signal"). */
+      signal:    { label: "Signal",    count: 0.45, size: 1.50, branches: 4, spin: 3.4,  power: 4, randomness: 0.20,
+                   inside: "#ffd6a0", outside: "#6f9cff", neb: 1.00, kind: "signal" },
       barree:    { label: "Barrée",    count: 0.95, size: 1.05, branches: 2, spin: 2.7,  power: 3, randomness: 0.26,
                    inside: "#ffb347", outside: "#3a2a6e", neb: 0.90 },
       dense:     { label: "Dense",     count: 1.20, size: 0.85, branches: 7, spin: 1.15, power: 6, randomness: 0.14,
@@ -1902,7 +1921,24 @@
       var pos = new Float32Array(n*3), col = new Float32Array(n*3),
           rnd = new Float32Array(n*3), sca = new Float32Array(n);
       var cIn = new T.Color(params.inside), cOut = new T.Color(params.outside), mix = new T.Color();
+      var SIG = (BACKGROUNDS[bgStyle] || {}).kind === "signal";
+      var sMid = new T.Color("#c9b8ff");
       for (var i = 0; i < n; i++) {
+        if (SIG) {
+          /* recette de la maquette Signal (etape4-pont.html, galaxy()) : rayon
+             0,02-1,02 × radius, 4 bras, torsion 3,4, dispersion d'autant plus
+             forte qu'on est près du centre, 15 % d'étoiles égarées ×2,5 */
+          var j3 = i*3, arm = i % 4, sr = Math.pow(Math.random(), 1.35) + 0.02;
+          var off = gss() * (0.12 + 0.5 * (1 - sr)) * (Math.random() < 0.15 ? 2.5 : 1);
+          var sa = arm * Math.PI / 2 + sr * 3.4 + off;
+          pos[j3] = Math.sin(sa) * sr * params.radius;
+          pos[j3+1] = gss() * 0.045 * (1.2 - sr) * params.radius;
+          pos[j3+2] = Math.cos(sa) * sr * params.radius;
+          mix.copy(cIn).lerp(sr < 0.45 ? sMid : cOut, Math.min(1, sr * 1.3)).multiplyScalar(0.35 + Math.random() * 0.5);
+          col[j3] = mix.r; col[j3+1] = mix.g; col[j3+2] = mix.b;
+          sca[i] = 0.4 + Math.random() * Math.random() * 1.6;
+          continue;
+        }
         /* 3 étoiles sur 10 en champ uniforme sur TOUT le disque (la carte
            entière est peuplée), le reste concentré dans les bras spiraux */
         var i3 = i*3, field = (i % 10) < 3, r, ang;
@@ -1928,6 +1964,7 @@
       g.setAttribute("aRandom", new T.BufferAttribute(rnd,3));
       g.setAttribute("aScale", new T.BufferAttribute(sca,1));
       galaxyMat = mat(params.size, false);
+      if (SIG) galaxyMat.uniforms.uPow.value = 1.8;
       galaxy = new T.Points(g, galaxyMat);
       /* DÉCOR, donc DERRIÈRE — et il faut le DIRE à three, la géométrie n'y
          suffit pas : un T.Points est trié sur UN point, le centre de sa
@@ -1950,7 +1987,7 @@
       var nmix = new T.Color();
       /* la nébuleuse est le plus gros surdessin de la scène : on suit le parti
          pris choisi au lieu d'en poser 34 quoi qu'il arrive */
-      var nCount = Math.max(6, Math.round(34 * Math.min(1, nebK)));
+      var nCount = SIG ? 0 : Math.max(6, Math.round(34 * Math.min(1, nebK)));
       for (var b = 0; b < nCount; b++) {
         var fr = (b + 1) / nCount;
         var rr = Math.pow(fr, 1.2) * params.radius * 0.92;
@@ -1966,7 +2003,10 @@
       }
       coreGlow = new T.Sprite(new T.SpriteMaterial({map: haloTex(), color: 0xffd9a8,
         transparent: true, blending: T.AdditiveBlending, depthWrite: false, opacity: .38}));
-      coreGlow.scale.setScalar(params.radius * 0.16);
+      /* Signal : un seul grand halo crème (la moitié du rayon), sans voile de bras */
+      coreGlow.userData.k = SIG ? 0.5 : 0.16;
+      if (SIG) { coreGlow.material.color.set(0xffd9a0); coreGlow.material.opacity = 0.28; }
+      coreGlow.scale.setScalar(params.radius * coreGlow.userData.k);
       nebula.add(coreGlow);
       var coreWhite = new T.Sprite(new T.SpriteMaterial({map: haloTex(), color: 0xffffff,
         transparent: true, blending: T.AdditiveBlending, depthWrite: false, opacity: .75}));
@@ -1982,6 +2022,7 @@
       nebula.renderOrder = -10;
       scene.add(nebula);
     }
+    function gss(){ var u = 0; for (var q = 0; q < 4; q++) u += Math.random(); return (u - 2) / 2; }
     function jit(){ return Math.pow(Math.random(), params.power) * (Math.random() < 0.5 ? 1 : -1); }
 
     /* ── 5.4 · l'état de la carte ─────────────────────────────────────── */
@@ -2280,6 +2321,7 @@
         if (it.ob.lbl3 === it.lbl) it.ob.lbl3 = null;
         if (it.ob.flash3 === it.flash) it.ob.flash3 = null;
       });
+      if (S3.sys) S3.sys.foldT = null;
       S3.list = []; S3.sys = null;
       if (S3.light && S3.light.parent) S3.light.parent.remove(S3.light);
     }
@@ -2452,6 +2494,64 @@
           S3.list.push({ ob: ob, mesh: pg, lbl: lbl, flash: flash });
         });
       s3Layout(sys);
+      /* B : construit après le repli du précédent → la cascade part de maintenant */
+      sys.unfoldT = frameT; sys.foldT = null;
+      shockFire(sys);
+    }
+    /* ── E · ONDE DE CHOC à l'ouverture : anneau dans le plan du système + éclat du soleil ── */
+    function shockFire(sys) {
+      if (!shock) {
+        shock = new T.Mesh(new T.RingGeometry(.86, 1, 96), new T.MeshBasicMaterial({ color: 0xffe2b0,
+          transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: T.AdditiveBlending, side: T.DoubleSide }));
+        shock.rotation.x = -Math.PI / 2;
+        shockSun = new T.Sprite(new T.SpriteMaterial({ map: haloTex(), color: 0xfff0d8, transparent: true,
+          opacity: 0, depthWrite: false, depthTest: false, blending: T.AdditiveBlending }));
+        [shock, shockSun].forEach(function (o) {
+          o.frustumCulled = false; o.renderOrder = 5; o.visible = false; o.layers.set(LAYER_OPEN);
+        });
+      }
+      if (shock.parent !== group) { group.add(shock); group.add(shockSun); }
+      shock.userData = { sys: sys, t0: frameT };
+    }
+    function updateShock(t) {
+      if (!shock || !shock.userData.sys) return;
+      var su = shock.userData, k = (t - su.t0) / .95;
+      if (k >= 1 || su.sys !== S3.sys) { shock.visible = shockSun.visible = false; su.sys = null; return; }
+      var e = 1 - Math.pow(1 - k, 3), sy = su.sys, R0 = unit * .3, R1 = (sy.outerOpen || unit * 4) * 1.08;
+      shock.visible = shockSun.visible = true;
+      shock.position.set(sy.cx * unit, sy.node.position.y, sy.cy * unit);
+      shockSun.position.copy(shock.position);
+      shock.scale.setScalar(R0 + (R1 - R0) * e);
+      shock.material.opacity = .7 * (1 - k) * (1 - k);
+      var sb = Math.sin(Math.PI * Math.min(1, k * 1.6));
+      shockSun.scale.setScalar(unit * (1.4 + 2.6 * sb));
+      shockSun.material.opacity = .85 * sb;
+    }
+    /* ── D · CROCHETS DE VISÉE ── */
+    function lockBox() {
+      if (lockEl) return lockEl;
+      var tp = tip(), host = tp && tp.parentNode;
+      if (!host) return null;
+      lockEl = document.createElement("div");
+      lockEl.id = "aw3d-lock";
+      lockEl.innerHTML = "<i></i><i></i><i></i><i></i>";
+      host.appendChild(lockEl);
+      return lockEl;
+    }
+    function updateLock(dt, t) {
+      var el = lockBox();
+      if (!el) return;
+      var tgt = hovPend ? hovCand : hov;
+      if (tgt !== aimSys) { aimSys = tgt; aimK = 0; }
+      if (!tgt || !tgt.vis) { if (el.style.opacity !== "0") el.style.opacity = "0"; return; }
+      aimK += (1 - aimK) * Math.min(1, dt * 11);
+      var pres = tgt === openSys ? openF : 0;
+      var r = Math.max(12, (tgt.pxCell || 20) * (tgt.ringK || .92) * .8125 * 1.35);
+      var d = 2 * r * (1 + 1.3 * (1 - aimK));
+      var rot = 45 * (1 - aimK) + (hovPend && hovCand === tgt ? Math.sin(t * 9) * 3 : 0);
+      el.style.width = el.style.height = d.toFixed(1) + "px";
+      el.style.transform = "translate(" + (tgt.sx - d / 2).toFixed(1) + "px," + (tgt.sy - d / 2).toFixed(1) + "px) rotate(" + rot.toFixed(2) + "deg)";
+      el.style.opacity = (aimK * (1 - pres) * (sel === tgt ? .5 : 1)).toFixed(3);
     }
     var inspector = null, orbitLines = [], scanRing = null, rangeRing = null, visionRing = null;
 
@@ -2514,17 +2614,30 @@
        sizePortrait / yPortrait : téléphone en portrait — rayon en fraction de la LARGEUR (,44 débordait : perspective + inclinaison), centre à 30 % de la hauteur */
     var PRESENT = { x: .31, y: .47, roll: -.22, pitch: .38, disc: .82, size: .44, sizeBloc: .34, orbit: .06, spin: .35, wheel: .025, sizePortrait: .42, yPortrait: .30 }, PITCH_MAX = 1.36;   /* roll < 0 : penché à DROITE (14/09 « de l'autre côté, même inclinaison ») */
     var openCam = null, openSys = null, openF = 0, _openW = null, _openD = null, _openT = null, _openO = null;
+    var presSys = null, presBlend = 1, presHold = 0, presD = null, _presP = null, _presFrom = null;
     function smooth01(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
     function updateOpenCam(s) {
       if (!openCam) {
         openCam = new T.PerspectiveCamera();
         _openW = new T.Vector3(); _openD = new T.Vector3(); _openT = new T.Vector3(); _openO = new T.Vector3();
       }
-      openF = smooth01(s.deploy * 1.25);
+      var fT = smooth01(s.deploy * 1.25);
       openCam.copy(camera, false);
       /* même orientation, même distance, mais braquée sur le système (en proportion de openF) */
       _openW.set(s.cx * unit, s.node.position.y, s.cy * unit).applyMatrix4(group.matrixWorld);
-      _openD.copy(_openW).sub(target).multiplyScalar(openF);
+      if (!_presP) { _presP = new T.Vector3(); _presFrom = new T.Vector3(); }
+      if (presSys !== s) {
+        /* B : déjà présenté → on glisse vers le nouveau sans repasser par la carte */
+        if (presSys && openF > .3) { _presFrom.copy(_presP); presBlend = 0; presHold = openF; }
+        else { presBlend = 1; presD = null; }
+        presSys = s;
+      }
+      if (presBlend < 1) {
+        presBlend = Math.min(1, presBlend + frameDt / .45);
+        _presP.lerpVectors(_presFrom, _openW, smooth01(presBlend));
+        openF = Math.max(fT, presHold * (1 - presBlend) + fT * presBlend);
+      } else { _presP.copy(_openW); openF = fT; }
+      _openD.copy(_presP).sub(target).multiplyScalar(openF);
       openCam.position.add(_openD);
       _openT.copy(target).add(_openD);                 /* point visé = cible → système */
       /* plan plus incliné : on tourne autour du point visé, en éloignant la caméra de la verticale */
@@ -2537,6 +2650,9 @@
       /* portrait (téléphone) : l'anneau extérieur fait PRESENT.sizePortrait de la LARGEUR */
       var sizeK = portrait ? PRESENT.sizePortrait * cw / ch : (isFull() ? PRESENT.size : PRESENT.sizeBloc);
       var dWant = rFull / (2 * sizeK * Math.tan(camera.fov * Math.PI / 360));
+      /* B : la taille du bloc n'est connue qu'une fois les sphères posées → on y va en douceur */
+      presD = presD == null ? dWant : presD + (dWant - presD) * Math.min(1, frameDt * 6);
+      dWant = presD;
       /* taille FIXE à l'écran, quel que soit le zoom de la carte (avant : jamais plus loin que la caméra
          de la carte — après une recherche, qui rapproche la caméra, le système débordait du téléphone) */
       rr = rr + (dWant - rr) * openF;
@@ -2568,7 +2684,7 @@
         occSetLayer(occNode, true);
       }
       openSys = s;
-      if (!s) { openF = 0; openEllipse = null; return; }
+      if (!s) { openF = 0; openEllipse = null; presSys = null; presD = null; return; }
       updateOpenCam(s);
       if (!occScene) {
         occScene = new T.Scene();
@@ -2654,6 +2770,12 @@
     var LAYERS0 = {grid:true, tags:1, star:false, fleets:true, fog:false};
     var filters = {mine:false, ally:false, enemy:false, free:false};
     var range = 8, sel = null, hov = null, hovPlanet = null, hovFleet = null, circleGeo = null;
+    /* A : changement de survol validé (après l'intention) */
+    function setHov(s) {
+      hov = s;
+      if (!sel) { if (s) showSystemTip(s); else hideTip(); }
+      else if (s) showSystemTip(s);
+    }
 
     /* ── 5.5 · textures et matériaux ───────────────────────────────────────
        TOUT ce qui est fabriqué ici est PARTAGÉ et mis en cache par clé.
@@ -3880,6 +4002,21 @@
        Avant (14/09) : rate 7, step .07, dur .45 → orbites à 95 % en 0,43 s, cascade finie en 1,22 s.
        Maintenant ×2 : orbites à 95 % en 0,86 s, cascade finie en 2,44 s. */
     var UNFOLD = { rate: 3.5, step: .14, dur: .9 };
+    /* ── ANIMATIONS DE SURVOL (04/10, labo) ─────────────────────────────────
+       A · intention : un système ne s'ouvre qu'après HOVER_INTENT s sous le
+           curseur (on ne fait plus clignoter la carte en la traversant) ; le
+           quitter attend HOVER_LEAVE s. Les crochets (D) répondent tout de suite.
+       B · bascule A → B : la présentation glisse d'un système à l'autre
+           (presBlend) au lieu de repasser par la carte ; B attend que A ait
+           replié ses planètes pour construire les siennes.
+       C · repli en CASCADE INVERSE (FOLD) : orbites extérieures d'abord,
+           aspirées en tourbillon vers le soleil, petit éclair à l'avalement.
+       D · crochets de visée HTML (#aw3d-lock) qui se resserrent sur la cible.
+       E · onde de choc + éclat du soleil à l'ouverture (shock). */
+    var FOLD = { step: .03, dur: .26 }, FOLD_TOTAL = 11 * .03 + .26 + .02;
+    var HOVER_INTENT = .15, HOVER_LEAVE = .12;
+    var hovPend = false, hovCand = null, hovCandAt = 0, frameT = 0, frameDt = 0;
+    var aimSys = null, aimK = 0, lockEl = null, shock = null, shockSun = null;
 
     function distFor(radiusCells) {
       var R = radiusCells * unit;
@@ -4058,6 +4195,8 @@
       try {
         var dt = Math.min(.05, frameAcc), t = clock.elapsedTime;
         frameAcc = 0;
+        frameT = t; frameDt = dt;
+        if (hovPend && t - hovCandAt >= (hovCand ? HOVER_INTENT : HOVER_LEAVE)) { hovPend = false; setHov(hovCand); }
         /* l'horloge n'appartient qu'à la boucle : les entrées ne font que
            lever actPending, on le consomme ici (cf. commentaire sur actPending) */
         if (actPending) { lastAct = t; actPending = false; }
@@ -4103,7 +4242,7 @@
         if (galaxy && group) galaxy.rotation.y = group.rotation.y;
         if (nebula && group) nebula.rotation.y = group.rotation.y;
         /* le cœur respire doucement, comme la référence */
-        if (coreGlow) coreGlow.scale.setScalar(params.radius * 0.16 * (1 + 0.06 * Math.sin(t * 0.8)));
+        if (coreGlow) coreGlow.scale.setScalar(params.radius * (coreGlow.userData.k || 0.16) * (1 + 0.06 * Math.sin(t * 0.8)));
         updateMap(t, dt);
         updateVeil();
         updateAxes();   /* réglettes de coordonnées, redessinées seulement si le cadrage a bougé */
@@ -4449,7 +4588,14 @@
         s.deploy += ((s === active ? 1 : 0) - s.deploy) * Math.min(1, dt * (s === active ? UNFOLD.rate : 7));
         if (s.deploy > dmax) dmax = s.deploy;
         /* horloge de la cascade des planètes : départ quand le système devient actif */
-        if (s === active) { if (s.unfoldT == null) s.unfoldT = t; } else if (s.deploy < .02) s.unfoldT = null;
+        if (s === active) {
+          /* revenu dessus pendant son repli : la cascade repart de zéro */
+          if (s.foldT != null) { s.foldT = null; if (s === S3.sys) s.unfoldT = t; }
+          if (s.unfoldT == null) s.unfoldT = t;
+        } else {
+          if (s === S3.sys && s.foldT == null && s.unfoldT != null) s.foldT = t;   /* C : début du repli */
+          if (s.deploy < .02) s.unfoldT = null;
+        }
         if (s === S3.sys) s.openRot = (s.openRot || 0) + dt * PRESENT.wheel;
         var fog = layers.fog && !s.inVision ? .3 : 1;
         var op = s.dim * fog, sc = 1 + s.deploy * 2.2;
@@ -4557,6 +4703,7 @@
         s.sx = (_v.x*.5+.5) * w; s.sy = (-_v.y*.5+.5) * h;
       }
       decorFade(dmax);
+      updateLock(dt, t);
 
       placeLabels(w, h, dt);
 
@@ -4567,8 +4714,11 @@
         var zf = Math.max(1, Math.min(3, pxCellNow / 70));
         /* planètes texturées : seul le système actif (ou celui qui se replie) en a */
         if (true) {   /* 14/09 : aussi au doigt (testé sur l'émulateur : 60 i/s système ouvert) */
-          if (active && active !== S3.sys && active.deploy > .02) s3Build(active);
-          else if (S3.sys && S3.sys !== active && S3.sys.deploy < .02) s3Clear();
+          /* C : le système quitté garde ses planètes jusqu'à la fin du repli en cascade ;
+             B : le suivant ne construit les siennes qu'ensuite (une seule série à la fois) */
+          if (S3.sys && S3.sys !== active &&
+              (S3.sys.foldT != null ? t - S3.sys.foldT > FOLD_TOTAL : S3.sys.deploy < .02)) s3Clear();
+          if (active && active !== S3.sys && !S3.sys && active.deploy > .02) s3Build(active);
           if (S3.sys && S3.light) {
             S3.light.position.set(S3.sys.cx * unit, S3.sys.node.position.y, S3.sys.cy * unit);
             if (S3.sunU) S3.sunU.value.copy(S3.light.position).applyMatrix4(group.matrixWorld);
@@ -4578,6 +4728,7 @@
             S3.down.set(0, -1, 0).applyQuaternion(lcam.quaternion).applyQuaternion(group.getWorldQuaternion(S3.gq).invert());
           }
         }
+        updateShock(t);
         for (var o = 0; o < orbits.length; o++) {
           var ob = orbits[o], sy = ob.s, dp = sy.deploy, swirl = 0, lift = 0, sk = -1, flashK = -1;
           /* DÉPLOIEMENT EN CASCADE (horloge propre, cf. s.unfoldT) : au survol, les planètes
@@ -4599,6 +4750,11 @@
             /* éclair : à l'arrivée (0,6 s), ou dès le surgissement pour le warp */
             if (fx.mode === 2) { if (e0 >= 0 && e0 < 0.55 / fx.dur) flashK = e0 * fx.dur / 0.55; }
             else if (e0 >= 1 && e0 < 1 + 0.6 / fx.dur) flashK = (e0 - 1) * fx.dur / 0.6;
+          } else if (sy === S3.sys && sy !== active && sy.foldT != null && ob.mesh3) {
+            /* C : REPLI EN CASCADE INVERSE — orbite extérieure d'abord, aspirée en tourbillon */
+            var ef = (t - sy.foldT - (11 - (ob.k % 12)) * FOLD.step) / FOLD.dur, fk = Math.max(0, Math.min(1, ef));
+            dp = 1 - fk * fk * fk; swirl = fk * fk * 2.6; sk = 1 - fk * fk;
+            if (ef >= 1 && ef < 1 + .22 / FOLD.dur) flashK = .55 + .45 * (ef - 1) * FOLD.dur / .22;
           } else if (sy === active && sy.unfoldT != null) {
             /* cascade d'origine (mobile, planètes en points) */
             var ek2 = Math.max(0, Math.min(1, (t - sy.unfoldT - ob.k * UNFOLD.step) / UNFOLD.dur));
@@ -4658,7 +4814,8 @@
               ob.lbl3.position.set(x + S3.down.x * loff, ey + S3.down.y * loff, z + S3.down.z * loff);
             }
           }
-          sca[o] = ob.mesh3 ? 0 : (.55 + (o % 3) * .12) * (1 + dp * 2.4) * beat * zf * (sy.node.visible ? 1 : 0);
+          /* B : en attendant ses sphères (repli du précédent), le système visé ne montre pas de points */
+          sca[o] = (ob.mesh3 || (sy === active && S3.sys && S3.sys !== sy)) ? 0 : (.55 + (o % 3) * .12) * (1 + dp * 2.4) * beat * zf * (sy.node.visible ? 1 : 0);
           /* seules les planètes du système déployé sont cliquables */
           ob.vis = sy.deploy > .5;
           if (ob.vis) {
@@ -5405,12 +5562,10 @@
       var s = pickSystem(mx, my);
       /* le bloc présenté a glissé à gauche : aller vers ses planètes ne doit pas le refermer */
       if (!s && hov && hov === openSys && onOpenBlock(mx, my)) s = hov;
-      if (s !== hov) {
-        hov = s;
-        canvas.style.cursor = s ? "pointer" : "";
-        if (!sel) { if (s) showSystemTip(s); else hideTip(); }
-        else if (s) showSystemTip(s);
-      }
+      /* A : on note le candidat, la boucle le valide après HOVER_INTENT / HOVER_LEAVE */
+      canvas.style.cursor = s ? "pointer" : "";
+      if (s === hov) hovPend = false;
+      else if (!hovPend || hovCand !== s) { hovPend = true; hovCand = s; hovCandAt = frameT; }
     });
     function stopDrag() { dragging = false; rotating = false; canvas.classList.remove("dragging"); }
     canvas.addEventListener("pointerup", function (e) {
@@ -5480,7 +5635,7 @@
       stopDrag();
     });
     canvas.addEventListener("pointerleave", function () {
-      stopDrag(); hov = null; hovPlanet = null; hovFleet = null; if (!sel) hideTip();
+      stopDrag(); hov = null; hovPend = false; hovPlanet = null; hovFleet = null; if (!sel) hideTip();
     });
     canvas.addEventListener("wheel", function (e) {
       e.preventDefault();
