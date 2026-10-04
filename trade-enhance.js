@@ -24,6 +24,11 @@
   const CELL_CLASS = "aw-trade-extra-cell";
   const TOGGLE_ID = "aw-trade-usesu-toggle";
   const USESU_ROW_ATTR = "data-aw-usesu-row";
+  // Filtre de tier : masquage par ATTRIBUT + règle CSS, jamais par row.style.display.
+  // Le jeu a ajouté (04/10/2026) son propre filtre « Prices: All | Resource | Artefact |
+  // SU | Bounty » : écrire style.display = "" réaffichait toutes les 1,5 s des lignes
+  // que le jeu venait de masquer.
+  const TIERHIDE_ATTR = "data-aw-tierhide";
   const STORAGE_KEY_PPH = "aw_user_pph";
   const STORAGE_KEY_PP = "aw_user_pp";
   const STORAGE_KEY_PPH_TS = "aw_user_pph_ts";
@@ -59,7 +64,6 @@
   let userPP = 0;   // stock total de Production Points (somme des planètes)
   let pphTs = 0;
   let pphFetching = false;
-  let useSUHidden = true; // default: hide them — they clutter the table
   let tierSel = "1";      // tier d'artefacts affiché (1|2|3) — un seul à la fois
 
   function isTradePage() { return /\/Game\/Trade(\/|$|\?)/i.test(location.pathname); }
@@ -201,7 +205,8 @@
         if (isFinite(v) && v > 0) userPPH = v;
         if (isFinite(p) && p >= 0) userPP = p;
         if (isFinite(t) && t > 0) pphTs = t;
-        if (r && typeof r[STORAGE_KEY_HIDE_USESU] === "boolean") useSUHidden = r[STORAGE_KEY_HIDE_USESU];
+        // ancien bouton « Masquer Use Supply Unit » retiré (filtre « SU » du jeu) : on oublie son choix
+        if (r && STORAGE_KEY_HIDE_USESU in r) { try { chrome.storage.local.remove(STORAGE_KEY_HIDE_USESU); } catch (_) {} }
         if (r && /^[123]$/.test(String(r[STORAGE_KEY_TIER]))) tierSel = String(r[STORAGE_KEY_TIER]);
         // Seule la page Trade affiche PP/h : ailleurs, pas de lecture de /Game/Planets
         // (tick() la relance dès qu'on arrive sur Trade).
@@ -210,10 +215,6 @@
       });
       chrome.storage.onChanged.addListener((changes, area) => {
         if (area !== "local") return;
-        if (changes[STORAGE_KEY_HIDE_USESU]) {
-          useSUHidden = !!changes[STORAGE_KEY_HIDE_USESU].newValue;
-          schedule();
-        }
       });
     } catch (_) {}
   } else if (isTradePage()) {
@@ -775,73 +776,8 @@
 
   // ── Prices augmentation ───────────────────────────────────────────────
 
-  function useSULabel() {
-    return useSUHidden ? "👁 Afficher Use Supply Unit" : "🚫 Masquer Use Supply Unit";
-  }
-
-  // Le "titre à fond bleu" du jeu = div.head (fond rgb(35,30,100)).
-  // Il est dans un conteneur frère du tableau, pas dans une carte Bootstrap :
-  // on remonte depuis le tableau et on prend la .head du plus petit sous-arbre
-  // englobant (gère .head dans le même conteneur OU un conteneur frère).
-  function findCardHeader(table) {
-    let node = table;
-    for (let i = 0; i < 6 && node; i++) {
-      const head = node.querySelector && node.querySelector(".head");
-      if (head) return head;
-      node = node.parentElement;
-    }
-    // Repli: en-têtes Bootstrap classiques, sinon avant le tableau.
-    const card = table.closest(".card, .panel");
-    return card ? card.querySelector(".card-header, .panel-heading") : null;
-  }
-
-  // Place le bouton dans le titre bleu si on le trouve, sinon repli sur
-  // l'ancien emplacement (juste avant le tableau).
-  function placeUseSUToggle(btn, table) {
-    const header = findCardHeader(table);
-    if (header) {
-      if (btn.parentElement !== header) {
-        // Coin GAUCHE du titre bleu, centré verticalement (cf. capture : rectangle jaune).
-        // Le titre "Trade & Artefacts" est centré via text-align ; on positionne le
-        // bouton en absolu pour ne pas décaler ce texte.
-        if (getComputedStyle(header).position === "static") {
-          header.style.position = "relative";
-        }
-        btn.style.cssText = "position:absolute;left:8px;top:50%;transform:translateY(-50%);margin:0;font-size:0.85em;z-index:2;";
-        header.appendChild(btn);
-      }
-    } else if (btn.parentElement !== table.parentElement) {
-      btn.style.cssText = "margin:4px 8px 8px 0;font-size:0.85em;";
-      table.parentElement.insertBefore(btn, table);
-    }
-  }
-
-  function ensureUseSUToggle(table) {
-    let btn = document.getElementById(TOGGLE_ID);
-    if (btn) {
-      btn.textContent = useSULabel();
-      placeUseSUToggle(btn, table); // ré-ancre dans le titre si la carte a été re-rendue
-      return btn;
-    }
-    btn = document.createElement("button");
-    btn.id = TOGGLE_ID;
-    btn.setAttribute("data-aw-injected", "1");
-    btn.type = "button";
-    // btn-outline-light : reste lisible sur le fond bleu du titre
-    btn.className = "btn btn-sm btn-outline-light";
-    btn.textContent = useSULabel();
-    btn.addEventListener("click", () => {
-      useSUHidden = !useSUHidden;
-      if (typeof chrome !== "undefined" && chrome.storage) {
-        try { chrome.storage.local.set({ [STORAGE_KEY_HIDE_USESU]: useSUHidden }); } catch (_) {}
-      }
-      btn.textContent = useSULabel();
-      schedule();
-    });
-    placeUseSUToggle(btn, table);
-    return btn;
-  }
-
+  // Le bouton « Masquer / Afficher Use Supply Unit » a été retiré le 04/10/2026 : le jeu
+  // filtre lui-même ses prix (« Prices: All | Resource | Artefact | SU | Bounty »).
 
   function findPricesTable() {
     const ppRows = findRowsByExactLabel("Production Point");
@@ -927,10 +863,7 @@
       const isPPRow = /^Production Point$/i.test(firstLabel);
       const isUseSURow = /Use\s+Supply\s+Unit/i.test(txt);
 
-      if (isUseSURow) {
-        row.setAttribute(USESU_ROW_ATTR, "1");
-        row.style.display = useSUHidden ? "none" : "";
-      }
+      if (isUseSURow) row.setAttribute(USESU_ROW_ATTR, "1");
 
       let costCell = row.querySelector("td." + CELL_CLASS + "[data-aw-col='cost']");
       let timeCell = row.querySelector("td." + CELL_CLASS + "[data-aw-col='time']");
@@ -953,7 +886,7 @@
       // Tendance : uniquement pour les lignes VISIBLES (le filtre de tier en
       // masque les 2/3) et jamais pour « Use Supply Unit », qui est une action
       // et non un item coté.
-      if (!isUseSURow && row.style.display !== "none") {
+      if (!isUseSURow && !row.hasAttribute(TIERHIDE_ATTR) && row.style.display !== "none") {
         ensureTrend(row, cells, itemName(firstLabel));
       }
 
@@ -1036,14 +969,71 @@
       b.style.color = on ? TH.accent : TH.txt;
       b.setAttribute("aria-pressed", on ? "true" : "false");   // cf. skins HUD / Verre
     });
+    if (!document.getElementById("aw-trade-tierhide-css")) {
+      const st = document.createElement("style");
+      st.id = "aw-trade-tierhide-css";
+      st.textContent = "tr[" + TIERHIDE_ATTR + "]{display:none !important;}";
+      (document.head || document.documentElement).appendChild(st);
+    }
     tbody.querySelectorAll("tr").forEach((row) => {
       if (row.getAttribute("data-aw-injected") === "1") return;
       const t = tierOfRow(row);
       if (!t) return; // PP / Supply Unit / lignes sans tier : intouchées
-      if (t !== tierSel) row.style.display = "none";
-      else if (row.getAttribute(USESU_ROW_ATTR) === "1") row.style.display = useSUHidden ? "none" : "";
-      else row.style.display = "";
+      // on n'ajoute ni ne retire que NOTRE masque : la visibilité choisie par le jeu reste la sienne
+      if (t !== tierSel) { if (!row.hasAttribute(TIERHIDE_ATTR)) row.setAttribute(TIERHIDE_ATTR, "1"); }
+      else if (row.hasAttribute(TIERHIDE_ATTR)) row.removeAttribute(TIERHIDE_ATTR);
     });
+  }
+
+  /* Filtre de prix DU JEU (04/10/2026 : « Prices: All | Resources | Artefacts | SU Bounties »,
+     boutons [data-price-filter] dans l'en-tête du tableau). On DÉPLACE ces boutons dans une
+     barre au même gabarit que la barre de tiers, juste en dessous : leurs écouteurs sont posés
+     sur les boutons eux-mêmes (script de la page), un déplacement ne les casse pas, et l'état
+     « active » reste géré par le jeu — on ne fait que le repeindre. La barre de tiers ne sert
+     que quand des artefacts sont affichés : masquée pour Resources / SU Bounties. */
+  function ensurePriceFilterBar(table) {
+    const btns = Array.from(document.querySelectorAll("[data-price-filter]"));
+    if (!btns.length || !table.parentNode) return;
+    let bar = table.parentNode.querySelector("[data-aw-pricebar]");
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.setAttribute("data-aw-injected", "1");
+      bar.setAttribute("data-aw-pricebar", "1");
+      bar.style.cssText =
+        "display:flex;gap:6px;justify-content:center;margin:0 0 10px;padding:6px;" +
+        "background:#0d1319;border-radius:6px;border:1px solid " + TH.lineSoft + ";";
+      const tier = table.parentNode.querySelector("[data-aw-tierbar]");
+      table.parentNode.insertBefore(bar, tier ? tier.nextSibling : table);
+    }
+    btns.forEach((b) => {
+      if (b.parentNode !== bar) {
+        bar.appendChild(b);
+        b.addEventListener("click", () => setTimeout(schedule, 0));
+      }
+      const on = b.classList.contains("active");
+      b.style.cssText =
+        "flex:1;max-width:190px;padding:7px 10px;font-size:13px;font-weight:700;letter-spacing:.8px;cursor:pointer;" +
+        "font-family:inherit;border-radius:6px;text-transform:uppercase;white-space:nowrap;box-shadow:none;" +
+        "transition:background .15s,border-color .15s;" +
+        "background:" + (on ? TH.onBg : "#121a20") + ";border:1px solid " + (on ? TH.onLine : TH.line) + ";" +
+        "color:" + (on ? TH.accent : TH.txt) + ";";
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    // l'étiquette « Prices: » reste seule dans l'en-tête une fois les boutons partis : masquée
+    table.querySelectorAll("thead td > span, thead th > span").forEach((sp) => {
+      if (/^\s*Prices\s*:?\s*$/i.test(sp.textContent || "") && sp.style.getPropertyPriority("display") !== "important") sp.style.setProperty("display", "none", "important");   // le jeu met d-sm-inline (!important)
+    });
+    const tierBar = table.parentNode.querySelector("[data-aw-tierbar]");
+    const actif = (btns.find((b) => b.classList.contains("active")) || {}).getAttribute
+      ? btns.find((b) => b.classList.contains("active")).getAttribute("data-price-filter") : "all";
+    if (tierBar) {
+      // barre du jeu juste SOUS la barre de tiers (demande du 04/10), sans marge entre les deux
+      if (tierBar.nextSibling !== bar) table.parentNode.insertBefore(bar, tierBar.nextSibling);
+      const vis = actif === "all" || actif === "artefacts";
+      tierBar.style.display = vis ? "flex" : "none";
+      tierBar.style.marginBottom = "6px";
+      bar.style.marginTop = vis ? "0" : "6px";
+    }
   }
 
   /* Coût d'un Trade Agreement DANS la case « Trade Revenue » : le temps qu'il faut pour
@@ -1084,13 +1074,15 @@
   function renderPricesAddon(ppRate, suRate) {
     const table = findPricesTable();
     if (!table) return;
-    ensureUseSUToggle(table);
+    const oldToggle = document.getElementById(TOGGLE_ID);   // bouton d'une version précédente
+    if (oldToggle) oldToggle.remove();
     ensurePricesHeaders(table);
     // Le filtre de tier AVANT les cellules : c'est lui qui fixe la visibilité,
     // et la colonne Tendance ne demande son historique que pour les lignes
     // visibles. Dans l'autre ordre, le premier tick voit les 21 artefacts
     // « visibles » et déclenche 23 requêtes au lieu de 9.
     ensureTierFilter(table);
+    ensurePriceFilterBar(table);
     ensurePricesCells(table, ppRate, suRate);
     ensureTARow(ppRate);               // sous « Trade Revenue », pas dans la liste des prix
   }
@@ -1137,11 +1129,8 @@
     });
     document.querySelectorAll("." + HEADER_CLASS + ", ." + CELL_CLASS).forEach(el => el.remove());
     document.querySelectorAll("[data-aw-val], [data-aw-trend]").forEach(el => el.remove());
-    // Restore Use SU rows visibility when leaving the page
-    document.querySelectorAll("[" + USESU_ROW_ATTR + "]").forEach(r => {
-      r.style.display = "";
-      r.removeAttribute(USESU_ROW_ATTR);
-    });
+    document.querySelectorAll("[" + USESU_ROW_ATTR + "]").forEach(r => r.removeAttribute(USESU_ROW_ATTR));
+    document.querySelectorAll("[" + TIERHIDE_ATTR + "]").forEach(r => r.removeAttribute(TIERHIDE_ATTR));
     // Legacy banner from earlier dev versions
     const old = document.getElementById("aw-trade-pph-banner");
     if (old) old.remove();
